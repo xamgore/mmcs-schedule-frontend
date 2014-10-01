@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Интерактивное расписание мехмата ЮФУ</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link href="css/style.css" rel="stylesheet" type="text/css"/>
+    <link href="css/print-style.css" rel="stylesheet" type="text/css" media="print"/>
+    <link href="js/window/window.css" rel="stylesheet" type="text/css"/>
+    <script src="js/jquery-2.1.0.min.js"></script>
+    <script src="js/window/window.js"></script>
+    <script src="js/schedule.js"></script>
+</head>
+<body>
+<div class="shadow"></div>
+<div class="window_block">
+    <div class="window"></div>
+</div>
+<div class="page_body">
+    <div class="header_wrapper">
+        <div class="header_box">
+            <div class="site_title">
+                <a href="http://mmcs.sfedu.ru/" title="Факультет математики, механики и компьютерных наук ЮФУ">
+                    <h1 class="faculty_title">Расписание факультета математики, механики и компьютерных наук [beta]</h1>
+                </a>
+
+                <p class="week_now"><!-- ToDo: Рассказ о текущей неделе --></p>
+            </div>
+            <div class="logo"><a href="http://sfedu.ru/" border="0"><img src="img/logo_sfedu_white.png"/></a></div>
+        </div>
+    </div>
+    <div class="choice_timetable_wrapper">
+        <div class="choice_timetable">
+            <select id="type" class="default_select">
+                <option value="0" selected='selected'>Выберите тип расписания:</option>
+                <option value="group">Группа</option>
+                <option value="teacher">Преподаватель</option>
+                <option value="auditory">Аудитория</option>
+                <option value="course">Курс</option>
+                <option value="chair" disabled="disabled">Кафедра</option>
+                <option value="session" disabled="disabled">Сессия</option>
+            </select>
+            <select id="course" class="default_select" disabled="disabled">
+                <option value="0">Выберите курс:</option>
+            </select>
+            <select id="group" class="default_select" disabled="disabled">
+                <option value="0">Выберите группу:</option>
+            </select>
+            <select id="teacher" class="default_select" style="display: none">
+                <option value="0">Выберите преподавателя:</option>
+            </select>
+            <select id="auditory" class="default_select" style="display: none">
+                <option value="0">Выберите аудиторию:</option>
+            </select>
+            <select id="day" class="default_select" style="display: none" disabled="disabled">
+                <option value="0" selected='selected'>Выберите день:</option>
+                <option value="1">Понедельник</option>
+                <option value="2">Вторник</option>
+                <option value="3">Среда</option>
+                <option value="4">Четверг</option>
+                <option value="5">Пятница</option>
+                <option value="6">Суббота</option>
+            </select>
+
+            <div class="print_schedule" onclick="window.print();"></div>
+        </div>
+    </div>
+    <div id="welcome_wrapper" class="welcome_wrapper">
+        <div class="welcome_text">
+            <p>Добро пожаловать в раздел интерактивого расписания!</p>
+
+            <p>Последовательно выберите тип расписания, затем курс/группу, аудиторию или преподавателя.</p>
+
+            <p>При следующем посещении этой страницы отобразится последнее выбранное Вами расписание.</p>
+        </div>
+    </div>
+    <div id="timetable_wrapper" class="timetable_wrapper">
+        <div class="type_timetable"></div>
+        <table class="timetable" border="1" bordercolor="#d7d7d7" cellspacing="0" cellpadding="0">
+            <!-- ToDo: На самом деле всю таблицу нужно рисовать в createTimeTable() -->
+            <tr class="tr_top">
+                <td></td>
+                <td class="top" width="16%">Понедельник</td>
+                <td class="top" width="16%">Вторник</td>
+                <td class="top" width="16%">Среда</td>
+                <td class="top" width="16%">Четверг</td>
+                <td class="top" width="16%">Пятница</td>
+                <td class="top" width="16%">Суббота</td>
+            </tr>
+            <tr class="tr_1"></tr>
+            <tr class="tr_2"></tr>
+            <tr class="tr_3"></tr>
+            <tr class="tr_4"></tr>
+            <tr class="tr_5"></tr>
+            <tr class="tr_6"></tr>
+        </table>
+    </div>
+    <div class="footer">
+        <div class="footer_menu">
+            <a href="#" class="about" style="display: none">О сайте</a>
+            <a href="#" class="settings" style="display: none">Индивидуальные настройки</a>
+        </div>
+        <div class="copyright">
+            <a href="http://vk.com/public67527475">IT-лаборатория мехмата ЮФУ</a> <span>© 2015</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>
