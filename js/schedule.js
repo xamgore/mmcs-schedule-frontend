@@ -239,12 +239,11 @@ $(function () {
                 case 'group':
                     $("#course").removeAttr("disabled");
                     $.getJSON(host + ':3000/courses/list', function (data) {
-                            $("#course").html('<option value="0">Выберите курс:</option>'); // Сначала чистим select
-                            $.each(data, function (i) {
-                                $("#course").append('<option value="' + data[i].id + '">' + data[i].title + '</option>');
-                            });
+                        $("#course").html('<option value="0">Выберите курс:</option>'); // Сначала чистим select
+                        $.each(data, function (i) {
+                            $("#course").append('<option value="' + data[i].id + '">' + data[i].title + '</option>');
                         });
-                    }
+                    });
                     $('#group [value=0]').attr("selected", "selected");	// Убирает баг
                     $("#group").attr("disabled", "disabled"); // Убирает баг
                     $("#course").show();
@@ -253,7 +252,8 @@ $(function () {
                     $("#auditory").hide();
                     $("#day").hide();
                     break;
-                case 'teacher':
+                case
+                'teacher':
                     $("#teacher").removeAttr("disabled");
                     $.getJSON(host + ':3000/teachers/list', function (data) {
                         $("#teacher").html('<option value="0">Выберите преподавателя:</option>'); // Сначала чистим select
@@ -267,7 +267,8 @@ $(function () {
                     $("#auditory").hide();
                     $("#day").hide();
                     break;
-                case 'auditory':
+                case
+                'auditory':
                     $("#auditory").removeAttr("disabled");
                     $.getJSON(host + ':3000/classrooms/list', function (data) {
                         $("#auditory").html('<option value="0">Выберите аудиторию:</option>'); // Сначала чистим select
@@ -315,7 +316,7 @@ $(function () {
         if ($('#timetable_wrapper').css('display') == 'block')
             hideTimeTable();
     });
-    // Группа -> Выбор курса
+// Группа -> Выбор курса
     $('#course').change(function () {
         if (($('#course option:selected').val() != '0') && ($('#type option:selected').val() == 'group')) {
             $.getJSON('getdata.php', {
@@ -338,7 +339,7 @@ $(function () {
         if ($('#timetable_wrapper').css('display') == 'block')
             hideTimeTable();
     });
-    // Группа -> Курс -> Выбор группы [Вывод расписания]
+// Группа -> Курс -> Выбор группы [Вывод расписания]
     $('#group').change(function () {
         if ($('#group option:selected').val() != '0') {
             $.getJSON('getdata.php', {
@@ -355,7 +356,7 @@ $(function () {
         }
         else hideTimeTable();
     });
-    // Преподаватель -> Выбор преподавателя [Вывод расписания]
+// Преподаватель -> Выбор преподавателя [Вывод расписания]
     $('#teacher').change(function () {
         if ($('#teacher option:selected').val() != '0') {
             //$.getJSON('getdata.php', {'data': 'schedule', 'type': 'Teacher', 'id': $('#teacher option:selected').val()}, function(json_schedule){
@@ -368,7 +369,7 @@ $(function () {
         }
         else hideTimeTable();
     });
-    // Аудитория -> Выбор аудитории [Вывод расписания]
+// Аудитория -> Выбор аудитории [Вывод расписания]
     $('#auditory').change(function () {
         if ($('#auditory option:selected').val() != '0') {
             $.getJSON('getdata.php', {
@@ -384,7 +385,7 @@ $(function () {
         }
         else hideTimeTable();
     });
-    // Курс -> Выбор курса
+// Курс -> Выбор курса
     $('#course').change(function () {
         if (($('#course option:selected').val() != '0') && ($('#type option:selected').val() == 'course')) {
             $("#day").removeAttr("disabled");
@@ -398,7 +399,7 @@ $(function () {
         if ($('#timetable_wrapper').css('display') == 'block')
             hideTimeTable();
     });
-    // Курс -> Выбор курса -> Выбор дня [Вывод расписания]
+// Курс -> Выбор курса -> Выбор дня [Вывод расписания]
     $('#day').change(function () {
         if ($('#day option:selected').val() != '0') {
             $.getJSON('getdata.php', {
@@ -425,4 +426,5 @@ $(function () {
         createTimeTable();
     });
     $('.week_now').text('Сейчас верхняя неделя'); // ToDo: Получение данных у backend'а
-});
+})
+;
