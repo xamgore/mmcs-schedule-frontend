@@ -5,9 +5,9 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <link href="css/style.css" rel="stylesheet" type="text/css"/>
     <link href="css/print-style.css" rel="stylesheet" type="text/css" media="print"/>
-    <link href="js/window/window.css" rel="stylesheet" type="text/css"/>
-    <script src="js/jquery-2.1.0.min.js"></script>
-    <script src="js/window/window.js"></script>
+    <link href="lib/window/window.css" rel="stylesheet" type="text/css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="lib/window/window.js"></script>
     <script src="js/timetable.js"></script>
     <script src="js/schedule.js"></script>
 </head>
@@ -24,7 +24,7 @@
                     <h1 class="faculty_title">Расписание факультета математики, механики и компьютерных наук [beta]</h1>
                 </a>
 
-                <p class="week_now"><!-- ToDo: Рассказ о текущей неделе --></p>
+                <p class="week_now" />
             </div>
             <div class="logo"><a href="http://sfedu.ru/" border="0"><img src="img/logo_sfedu_white.png"/></a></div>
         </div>
@@ -63,6 +63,15 @@
 
             <div class="print_schedule" onclick="window.print();"></div>
         </div>
+    </div>
+    <div class="management_wrapper">
+        <select id="management" class="default_select">
+            <option value="0" selected="selected">Выберите действие</option>
+            <option value="1">Добавить преподавателя</option>
+            <option value="2">Добавить аудиторию</option>
+            <option value="3">Добавить курс</option>
+            <option value="4">Добавить группу</option>
+        </select>
     </div>
     <div id="welcome_wrapper" class="welcome_wrapper">
         <div class="welcome_text">

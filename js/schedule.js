@@ -1,3 +1,22 @@
+// Состояние веб-интерфейса. Возможно, закэшированное.
+var appState = {};
+
+var backendURL = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
+
+function getJSON(route, callback)
+{
+    $.getJSON(backendURL + route, {} , callback);
+}
+
+function whichWeek()
+{
+    getJSON('schedule/week', function (data) {
+        appState.type = data.type;
+        var actualweek = appState.type ? 'верхняя неделя' : 'нижняя неделя';
+        $('.week_now').text('Сейчас ' + actualweek);
+    });
+}
+
 // Версия 1.2.1
 $(function () {
     var host = window.document.location.protocol + '//' + window.document.location.hostname;
@@ -9,13 +28,15 @@ $(function () {
     var $room = $("#auditory");
     var $type = $('#type');
     var $selectList = [$grade, $group, $teacher, $room, $day];
+    var $management = $('#management');
 
     createTimeTable();
-    $('.week_now').text('Сейчас верхняя неделя'); // ToDo: Получение данных у backend'а
+
+    whichWeek();
+
     $(window).resize(function () {
         optimizationTimeTable();
     });
-
 
     // j - строка таблицы
     // i - столбец таблицы
@@ -25,7 +46,6 @@ $(function () {
         teacher: [$teacher],
         auditory: [$room]
     };
-
 
     var typeVisualization = function(type) {
         $selectList.forEach(function (elem) {
@@ -72,7 +92,7 @@ $(function () {
         auditory: function (data) {
             $room.html('<option value="0">Выберите аудиторию:</option>'); // Сначала чистим select
             $.each(data, function (i, room) {
-                $room.append('<option value="' + room.id + '">' + room.title + '</option>');
+                $room.append('<option value="' + room.id + '">' + room.name + '</option>');
             });
         }
     };
@@ -83,21 +103,11 @@ $(function () {
         $.getJSON(url, callbackMap[type]);
     };
 
-
-
-
-
-
-
-
     var invalidateType = function() {
         $selectList.forEach(function(elem) {
             elem.attr("disabled", "disabled").val('0');
         });
     };
-
-
-
 
     // Выбор типа расписания
     $type.change(function () {
@@ -160,7 +170,6 @@ $(function () {
     //
     //});
 
-
     // Преподаватель -> Выбор преподавателя [Вывод расписания]
     $teacher.change(function () {
         var teacher = $teacher.val();
@@ -213,7 +222,6 @@ $(function () {
     //    $day.val('0');
     //});
 
-
     // Курс -> Выбор курса -> Выбор дня [Вывод расписания]
     //$day.change(function () {
     //    var day = $day.val();
@@ -236,8 +244,120 @@ $(function () {
     //    $('.type_timetable').html('Курс ' + $grade.children('option:selected').text());
     //});
 
+    /**
+     * Часть про редактирование расписания
+     */
+    $.fn.manager = {};
 
+    $.fn.manager.putTeacher = function()
+    {
+        var name = $('#teacherName').val();
+        var degree = $('#teacherDegree').val();
 
+        $.ajax({
+            url: backendURL + 'teacher',
+            type: 'PUT',
+            data: "name=" + name + "&degree=" + degree,
+            success: function(data) {
+                $.fn.close_window();
+            }
+        });
+    };
 
+    $.fn.manager.putRoom = function()
+    {
+        var name = $('#roomName').val();
 
+        $.ajax({
+            url: backendURL + 'room',
+            type: 'PUT',
+            data: "name=" + name,
+            success: function(data) {
+                $.fn.close_window();
+            }
+        });
+    };
+
+    $.fn.manager.putGrade = function()
+    {
+        var num = $('#gradeNum').val();
+        var degree = $('#gradeDegree').val();
+
+        $.ajax({
+            url: backendURL + 'grade',
+            type: 'PUT',
+            data: "num=" + num + "&degree=" + degree,
+            success: function(data) {
+                $.fn.close_window();
+            }
+        });
+    };
+
+    $.fn.manager.putGroup = function()
+    {
+        var name = $('#groupName').val();
+        var num = $('#groupNum').val();
+        var gradeID = $('#groupGradeID').val();
+
+        $.ajax({
+            url: backendURL + 'group',
+            type: 'PUT',
+            data: "name=" + name + "&num=" + num + "&gradeID=" + gradeID,
+            success: function(data) {
+                $.fn.close_window();
+            }
+        });
+    };
+
+    $management.change(function () {
+        var action = $management.val();
+        $management.val(0);
+
+        switch (action) {
+            case '1':
+                var form = '<input id="teacherName" type="text" value="" placeholder="Имя"><br\>\
+                <input id="teacherDegree" type="text" value="" placeholder="Степень"><br\>\
+                <input type="button" value="Добавить" onclick="$.fn.manager.putTeacher()">';
+                $.fn.open_window('Добавить преподавателя',form);
+
+                break;
+
+            case '2':
+                var form = '<input id="roomName" type="text" value="" placeholder="Имя"><br\>\
+                <input type="button" value="Добавить" onclick="$.fn.manager.putRoom()">';
+                $.fn.open_window('Добавить аудиторию',form);
+
+                break;
+
+            case '3':
+                var form = '<input id="gradeNum" type="text" value="" placeholder="Номер курса" \><br\>\
+                <select id="gradeDegree">\
+                <option>Степень обучения</option>\
+                <option value="bachelor">bachelor</option> \
+                <option value="master">master</option> \
+                <option value="specialist">specialist</option> \
+                </select><br\>\
+                <input type="button" value="Добавить" onclick="$.fn.manager.putGrade()">';
+                $.fn.open_window('Добавить курс',form);
+
+                break;
+
+            case '4':
+                // name str, num int, gradeID int
+                var form = '<input id="groupName" type="text" value="" placeholder="Имя"\><br\>\
+                <input id="groupNum" type="text" value="" placeholder="Номер" \>\
+                <select id="groupGradeID"><option>Курс</option></select>\
+                <input type="button" value="Добавить" onclick="$.fn.manager.putGroup()">';
+                $.fn.open_window('Добавить группу',form);
+
+                getJSON('grade/list', function (data) {
+                    var select = $('#groupGradeID');
+                    $.each(data, function (i) {
+                        select.append('<option value="' + data[i].id + '">' + data[i].degree + ' ' + data[i].num + '</option>');
+                    });
+                });
+
+                break;
+        }
+    });
 });
