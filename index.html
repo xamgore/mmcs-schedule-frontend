@@ -5,9 +5,16 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <link href="css/style.css" rel="stylesheet" type="text/css"/>
     <link href="css/print-style.css" rel="stylesheet" type="text/css" media="print"/>
+
     <link href="lib/window/window.css" rel="stylesheet" type="text/css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="lib/window/window.js"></script>
+
+    <script src="js/helpers.js"></script>
+    <script src="js/scheduleData.js"></script>
+    <script src="js/timetableHelp.js"></script>
+    <script src="js/timetableGen.js"></script>
+
     <script src="js/timetable.js"></script>
     <script src="js/schedule.js"></script>
 </head>
@@ -34,10 +41,10 @@
             <select id="type" class="default_select">
                 <option value="0" selected='selected'>Выберите тип расписания:</option>
                 <option value="group">Группа</option>
-                <option value="teacher">Преподаватель</option>
-                <option value="auditory">Аудитория</option>
-                <option value="chair" disabled="disabled">Кафедра</option>
-                <option value="session" disabled="disabled">Сессия</option>
+                <!--<option value="teacher">Преподаватель</option>-->
+                <!--<option value="auditory">Аудитория</option>-->
+                <!--<option value="chair" disabled="disabled">Кафедра</option>-->
+                <!--<option value="session" disabled="disabled">Сессия</option>-->
             </select>
             <select id="course" class="default_select" disabled="disabled">
                 <option value="0">Выберите курс:</option>
@@ -85,22 +92,6 @@
     <div id="timetable_wrapper" class="timetable_wrapper">
         <div class="type_timetable"></div>
         <table class="timetable" border="1" bordercolor="#d7d7d7" cellspacing="0" cellpadding="0">
-            <!-- ToDo: На самом деле всю таблицу нужно рисовать в createTimeTable() -->
-            <tr class="tr_top">
-                <td></td>
-                <td class="top" width="16%">Понедельник</td>
-                <td class="top" width="16%">Вторник</td>
-                <td class="top" width="16%">Среда</td>
-                <td class="top" width="16%">Четверг</td>
-                <td class="top" width="16%">Пятница</td>
-                <td class="top" width="16%">Суббота</td>
-            </tr>
-            <tr class="tr_1"></tr>
-            <tr class="tr_2"></tr>
-            <tr class="tr_3"></tr>
-            <tr class="tr_4"></tr>
-            <tr class="tr_5"></tr>
-            <tr class="tr_6"></tr>
         </table>
     </div>
     <div class="footer">

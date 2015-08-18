@@ -366,18 +366,16 @@ td {
     padding: 5px 0px 2px 0px
 }
 
-.timetable td.subject_cell .table_subgroups .subgroups .first_subgroup {
+.timetable td.subject_cell .table_subgroups .subgroups td:first-child {
     min-width: 40px;
     width: 50%;
     border-right: 1px solid #d7d7d7;
 }
-
-.timetable td.subject_cell .table_subgroups .subgroups .second_subgroup {
+.timetable td.subject_cell .table_subgroups .subgroups td:not(:first-child):not(:last-child) {
     min-width: 40px;
     width: 50%;
 }
-
-.timetable td.subject_cell .table_subgroups .subgroups .third_subgroup {
+.timetable td.subject_cell .table_subgroups .subgroups td:last-child {
     min-width: 40px;
     width: 33%;
     border-left: 1px solid #d7d7d7;
@@ -428,3 +426,4 @@ td {
 .footer .copyright a:hover {
     text-decoration: underline
 }
+
