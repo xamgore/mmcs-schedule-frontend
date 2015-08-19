@@ -30,7 +30,7 @@ $(function () {
      */
     /**
      * @callback gradeCallback
-     * @param {group_t[]} currentWeek
+     * @param {grade_t[]} grade
      */
     /**
      * @param {gradeCallback} cb

@@ -4,13 +4,17 @@
 	<meta charset="UTF-8">
 
 	<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" type="text/css">
-	<link rel="stylesheet" href="main.css" type="text/css">
+
 
 	<link rel="stylesheet" href="../bower_components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css">
 
 	<script type="text/javascript" src="../bower_components/jquery/dist/jquery.min.js"></script>
 	<script type="text/javascript" src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="../bower_components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+
+    <script type="text/javascript" src="/static/schedule/scheduleData.js"></script>
+	<script type="text/javascript" src="/static/editor/main.js"></script>
+    <link rel="stylesheet" href="/static/editor/main.css" type="text/css">
 	<title>Document</title>
 </head>
 <body>
@@ -41,37 +45,17 @@
 				</div>
 
 				<div class="col-md-3">
-					<select class="select-single">
-						<option value="1">8.00</option>
-						<option value="2">9.50</option>
-						<option value="3">11.55</option>
-						<option value="4">13.45</option>
-						<option value="5">15.50</option>
+					<select class="select-single" id="time">
 					</select>
 				</div>
 
 				<div class="col-md-3">
-					<select class="select-single">
-						<option value="1">1</option>
-						<option value="2">2</option>
-						<option value="3">3</option>
-						<option value="4">4</option>
-						<option value="5">Маг1</option>
-						<option value="6">Маг2</option>
+					<select class="select-single" id="grades">
 					</select>
 				</div>
 
 				<div class="col-md-3">
-					<select class="select-multiple" multiple="multiple">
-						<option value="1">1</option>
-						<option value="2">2</option>
-						<option value="3">3</option>
-						<option value="4">4</option>
-						<option value="5">5</option>
-						<option value="6">6</option>
-						<option value="7">7</option>
-						<option value="8">8</option>
-						<option value="9">9</option>
+					<select class="select-multiple" multiple="multiple" id="groups">
 					</select>
 				</div>
 			</div>
@@ -162,19 +146,5 @@
 			</div>
 		</div>
 	</div>
-
-
-	<script type="text/javascript">
-	    $('.select-multiple').multiselect({
-			buttonContainer: '<div style="margin: 0 auto;"></div>',
-			buttonWidth: '90%'
-		});
-	    $('.select-single').multiselect({
-			buttonContainer: '<div style="margin: 0 auto;"></div>',
-			buttonWidth: '90%',
-			enableFiltering: true,
-			filterPlaceholder: 'Search for something...'
-		});
-	</script>
 </body>
 </html>
