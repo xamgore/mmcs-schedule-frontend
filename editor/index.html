@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+	<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" type="text/css">
+	<link rel="stylesheet" href="main.css" type="text/css">
+
+	<link rel="stylesheet" href="../bower_components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css">
+
+	<script type="text/javascript" src="../bower_components/jquery/dist/jquery.min.js"></script>
+	<script type="text/javascript" src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../bower_components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+	<title>Document</title>
+</head>
+<body>
+
+
+	<div class="main-wrapper">
+
+		<div class="container container-choice">
+			<div class="row row-choice-head">
+
+				<div class="col-md-3">День</div>
+				<div class="col-md-3">Время</div>
+				<div class="col-md-3">Курс</div>
+				<div class="col-md-3">Группа</div>
+			</div>
+
+			<div class="row row-choice">
+
+				<div class="col-md-3">
+					<select class="select-single" id="day">
+						<option value="1">Пн</option>
+						<option value="2">Вт</option>
+						<option value="3">Ср</option>
+						<option value="4">Чт</option>
+						<option value="5">Пт</option>
+						<option value="6">Сб</option>
+					</select>
+				</div>
+
+				<div class="col-md-3">
+					<select class="select-single">
+						<option value="1">8.00</option>
+						<option value="2">9.50</option>
+						<option value="3">11.55</option>
+						<option value="4">13.45</option>
+						<option value="5">15.50</option>
+					</select>
+				</div>
+
+				<div class="col-md-3">
+					<select class="select-single">
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+						<option value="5">Маг1</option>
+						<option value="6">Маг2</option>
+					</select>
+				</div>
+
+				<div class="col-md-3">
+					<select class="select-multiple" multiple="multiple">
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+						<option value="5">5</option>
+						<option value="6">6</option>
+						<option value="7">7</option>
+						<option value="8">8</option>
+						<option value="9">9</option>
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<div class="container container-control">
+
+			<!-- ЭТУ СТРОКУ ДОБАВЛЯТЬ ДЛЯ НОВОГО ПРЕДМЕТА -->
+			<div class="row row-control">
+				<div class="col-md-2 col-subject">
+					<div class="row row-subject-head">
+						<div class="col-md-12">Предмет</div>
+					</div>
+
+					<div class="row row-subject">
+						<select class="select-single select-subject input-large">
+							<option value="1">Матан</option>
+							<option value="2">Алгебра</option>
+						</select>
+					</div>
+
+				</div>
+
+				<div class="col-md-10">
+					<div class="row row-params-head">
+						<div class="col-md-3">Преподаватель</div>
+						<div class="col-md-3">Кабинет</div>
+						<div class="col-md-3">Неделя</div>
+						<div class="col-md-3">Другое время</div>
+					</div>
+
+
+					<!-- ЭТУ СТРОКУ ДОБАВЛЯТЬ ДЛЯ НОВЫХ ПАРАМЕТРОВ -->
+					<div class="row row-params">
+						<div class="col-md-3">
+							<select class="select-single input-large">
+								<option value="1">Чалов</option>
+								<option value="2">Левенштам</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<select class="select-single input-large">
+								<option value="1">312</option>
+								<option value="2">320</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<select class="select-single input-large">
+								<option value="1">Верхняя</option>
+								<option value="2">Нижняя</option>
+								<option value="3" selected>Целая</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<input type="text" class="input-time">
+						</div>
+					</div>
+					<!-- ========================================== -->
+
+					<div class="row row-btn-add">
+						<div class="col-md-12">
+							<button type="button" class="btn btn-primary btn-add-params">
+								<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Добавить преподавателя
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<!-- ========================================== -->
+
+			<div class="row row-btn-add">
+				<div class="col-md-12">
+					<button type="button" class="btn btn-primary btn-add-subject">
+						<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Добавить ячейку в расписание
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="row row-btn-save">
+				<div class="col-md-12">
+					<button type="button" class="btn btn-success btn-save">
+						<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Сохранить
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script type="text/javascript">
+	    $('.select-multiple').multiselect({
+			buttonContainer: '<div style="margin: 0 auto;"></div>',
+			buttonWidth: '90%'
+		});
+	    $('.select-single').multiselect({
+			buttonContainer: '<div style="margin: 0 auto;"></div>',
+			buttonWidth: '90%',
+			enableFiltering: true,
+			filterPlaceholder: 'Search for something...'
+		});
+	</script>
+</body>
+</html>
