@@ -65,10 +65,7 @@ $(function () {
     // =========================
 
     /**
-     * @param {object} grade
-     * @param {number} grade.id
-     * @param {number} grade.num
-     * @param {string} grade.degree
+     * @param {grade_t} grade
      * @returns {string}
      */
     menu.gradeOption = function (grade) {
@@ -77,10 +74,7 @@ $(function () {
 
 
     /**
-     * @param {object} group
-     * @param {number} group.id
-     * @param {number} group.num
-     * @param {string} [group.name]
+     * @param {group_t} group
      * @returns {string}
      */
     menu.groupOption = function (group) {
@@ -92,39 +86,37 @@ $(function () {
     //  menu data loaders
     // =========================
 
-
     /**
-     * @param {jQuery} $gradeList
+     * @callback gradeCallback
+     * @param {group_t[]} currentWeek
      */
-    loader.grades = function ($gradeList) {
+    /**
+     * @param {gradeCallback} cb
+     */
+    loader.grades = function (cb) {
         menu.getJSON('grade/list', function (data) {
-            console.log(arguments[0]);
-
-            $gradeList.html('<option value="0">Выберите курс:</option>'); // Сначала чистим select
-            $.each(data, function (i, gradeInfo) {
-                $gradeList.append(menu.gradeOption(gradeInfo));
-            });
+            cb(data);
         });
     };
 
     /**
-     * @param {number} gradeID
-     * @param {jQuery} $groupList
+     * @callback groupCallback
+     * @param {grade_t[]} gradeList
      */
-    loader.groups = function (gradeID, $groupList) {
+    /**
+     * @param {number} gradeID
+     * @param {groupCallback} cb
+     */
+    loader.groups = function (gradeID, cb) {
         menu.getJSON('group/list/' + gradeID, function (data) {
-            console.log(arguments[0]);
-            $groupList.html('<option value="0">Выберите группу:</option>'); // Сначала чистим select
-            $.each(data, function (i, groupInfo) {
-                $groupList.append(menu.groupOption(groupInfo));
-            });
+            cb(data);
         });
     };
 
 
     /**
      * @callback weekCallback
-     * @param {number} currentWeek
+     * @param {number} groupList
      */
     /**
      * @param {weekCallback} cb

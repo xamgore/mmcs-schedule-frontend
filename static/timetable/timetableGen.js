@@ -3,19 +3,20 @@
  * @param {number} [data.week]
  * @constructor
  */
-var Generator = function(data) {
+var Generator = function (data) {
     this.setWeek(+data.week || 0);
 };
+
 
 /**
  * @param {number} week
  */
-Generator.prototype.setWeek = function(week) {
+Generator.prototype.setWeek = function (week) {
     this.week = week;
     this.weekClass = week ? 'lower_week' : 'upper_week';
 };
 
-Generator.prototype.getWorkspace = function($table) {
+Generator.prototype.getWorkspace = function ($table) {
     var i, j;
     var topBar = [];
     var sideBar = [];
@@ -52,7 +53,7 @@ Generator.prototype.getWorkspace = function($table) {
     };
 };
 
-Generator.prototype.getVertical = function(num) {
+Generator.prototype.getVertical = function (num) {
     var table = $('<table class="table_subgroups" border="0" cellspacing="0" cellpadding="0"><tr class="subgroups"></tr></table>');
     var sub = [];
 
@@ -67,12 +68,12 @@ Generator.prototype.getVertical = function(num) {
     };
 };
 
-Generator.prototype.getHorizontal = function() {
+Generator.prototype.getHorizontal = function () {
 
     var $table = $('<table class="table_horizontal_divider" border="0" cellspacing="0" cellpadding="0"></table>');
     var sub = [];
 
-    ['upper_week', 'lower_week'].forEach(function(elemClass) {
+    ['upper_week', 'lower_week'].forEach(function (elemClass) {
         var $row = $('<tr></tr>').appendTo($table);
         var $cell = $('<td class="' + elemClass + '"></td>').appendTo($row);
         sub.push($cell);
@@ -93,17 +94,17 @@ Generator.prototype.lmap = {
     roomname: 'auditory'
 };
 
-Generator.prototype.fillCell = function(data, $cell) {
+Generator.prototype.fillCell = function (data, $cell) {
     var self = this;
 
-    ['subjectname', 'subjectabbr', 'teachername', 'roomname'].forEach(function(type) {
+    ['subjectname', 'subjectabbr', 'teachername', 'roomname'].forEach(function (type) {
         if (data[type]) {
             $cell.append('<p class="' + self.lmap[type] + '">' + data[type] + '</p>');
         }
     });
 };
 
-Generator.prototype.fillLayoutCell = function(cell, $base) {
+Generator.prototype.fillLayoutCell = function (cell, $base) {
     var split = cell.upper || cell.lower;
     var res = {
         full: $base,
@@ -127,6 +128,6 @@ Generator.prototype.fillLayoutCell = function(cell, $base) {
         }
     }
 
-    return  res;
+    return res;
 };
 

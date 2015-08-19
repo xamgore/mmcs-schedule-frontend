@@ -47,7 +47,13 @@ $(function () {
             return;
         }
 
-        loader.grades($grade);
+        loader.grades(function (data) {
+            'use strict';
+            $grade.html('<option value="0">Выберите курс:</option>'); // Сначала чистим select
+            $.each(data, function (i, gradeInfo) {
+                $grade.append(menu.gradeOption(gradeInfo));
+            });
+        });
         typeVisualization(showList, type);
     });
 
@@ -60,7 +66,13 @@ $(function () {
             return;
         }
 
-        loader.groups($grade.val(), $group);
+        loader.groups($grade.val(), function(data) {
+            'use strict';
+            $group.html('<option value="0">Выберите группу:</option>'); // Сначала чистим select
+            $.each(data, function (i, groupInfo) {
+                $group.append(menu.groupOption(groupInfo));
+            });
+        });
         $group.removeAttr('disabled');
     });
 
