@@ -18,7 +18,7 @@ $(function() {
 			<div class="header_title">\
 				<span>'+title+'</span>\
 			</div>\
-			<div class="header_exit"><img src="lib/window/close.png" id="close" /></div>\
+			<div class="header_exit"><img src="static/window/close.png" id="close" /></div>\
 		</div>\
 		<div class="content">'+content+'</div>');
 	};

@@ -1,12 +1,28 @@
-var generator = {};
+/**
+ * @param {object} data
+ * @param {number} [data.week]
+ * @constructor
+ */
+var Generator = function(data) {
+    this.setWeek(+data.week || 0);
+};
 
-generator.getWorkspace = function($table) {
+/**
+ * @param {number} week
+ */
+Generator.prototype.setWeek = function(week) {
+    this.week = week;
+    this.weekClass = week ? 'lower_week' : 'upper_week';
+};
+
+Generator.prototype.getWorkspace = function($table) {
     var i, j;
     var topBar = [];
     var sideBar = [];
     var cells = [];
+    var $base = $table.find('.timetable').first();
 
-    var $topRow = $('<tr class=".tr_top"><td></td></tr>').appendTo($table);
+    var $topRow = $('<tr class=".tr_top"><td></td></tr>').appendTo($base);
     for (i = 0; i < 6; ++i) {
         var $dayCell = $('<td class="top" width="16%"></td>').appendTo($topRow);
         topBar.push($dayCell);
@@ -25,16 +41,18 @@ generator.getWorkspace = function($table) {
             var cell = $('<td class="subject_cell"></td>').appendTo($row);
             cells[i].push(cell);
         }
-        $table.append($row);
+        $base.append($row);
     }
+
     return {
+        main: $base,
         top: topBar,
         side: sideBar,
         cells: cells
     };
 };
 
-generator.getVertical = function(num) {
+Generator.prototype.getVertical = function(num) {
     var table = $('<table class="table_subgroups" border="0" cellspacing="0" cellpadding="0"><tr class="subgroups"></tr></table>');
     var sub = [];
 
@@ -49,7 +67,7 @@ generator.getVertical = function(num) {
     };
 };
 
-generator.getHorizontal = function() {
+Generator.prototype.getHorizontal = function() {
 
     var $table = $('<table class="table_horizontal_divider" border="0" cellspacing="0" cellpadding="0"></table>');
     var sub = [];
@@ -59,6 +77,8 @@ generator.getHorizontal = function() {
         var $cell = $('<td class="' + elemClass + '"></td>').appendTo($row);
         sub.push($cell);
     });
+    $table.find('.' + this.weekClass).addClass('inactive_week');
+
     return {
         base: $table,
         sub: sub
@@ -66,22 +86,24 @@ generator.getHorizontal = function() {
 };
 
 
-var lmap = {
+Generator.prototype.lmap = {
     subjectname: 'subject',
     subjectabbr: 'subject_short',
     teachername: 'lectuer',
     roomname: 'auditory'
 };
 
-generator.fillCell = function(data, $cell) {
+Generator.prototype.fillCell = function(data, $cell) {
+    var self = this;
+
     ['subjectname', 'subjectabbr', 'teachername', 'roomname'].forEach(function(type) {
         if (data[type]) {
-            $cell.append('<p class="' + lmap[type] + '">' + data[type] + '</p>');
+            $cell.append('<p class="' + self.lmap[type] + '">' + data[type] + '</p>');
         }
     });
 };
 
-generator.fillLayoutCell = function(cell, $base) {
+Generator.prototype.fillLayoutCell = function(cell, $base) {
     var split = cell.upper || cell.lower;
     var res = {
         full: $base,
@@ -90,18 +112,18 @@ generator.fillLayoutCell = function(cell, $base) {
     };
 
     if (split) {
-        var horiz = this.getHorizontal();
-        res.upper = horiz.sub[0];
-        res.lower = horiz.sub[1];
+        var horizontal = this.getHorizontal();
+        res.upper = horizontal.sub[0];
+        res.lower = horizontal.sub[1];
 
         if (cell.full) {
             var vert = this.getVertical(2);
             res.full = vert.sub[0];
-            vert.sub[1].append(horiz.base);
+            vert.sub[1].append(horizontal.base);
 
             $base.append(vert.base);
         } else {
-            $base.append(horiz.base);
+            $base.append(horizontal.base);
         }
     }
 

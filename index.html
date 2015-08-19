@@ -4,11 +4,11 @@
     <title>Интерактивное расписание мехмата ЮФУ</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <link href="static/style.css" rel="stylesheet" type="text/css"/>
-    <link href="static/print-style.css" rel="stylesheet" type="text/css" media="print"/>
+    <link href="static/printer/print-style.css" rel="stylesheet" type="text/css" media="print"/>
 
-    <link href="static/lib/window/window.css" rel="stylesheet" type="text/css"/>
+    <link href="static/window/window.css" rel="stylesheet" type="text/css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="static/lib/window/window.js"></script>
+    <script src="static/window/window.js"></script>
 
     <script src="static/helpers.js"></script>
     <script src="static/schedule/scheduleData.js"></script>
@@ -31,9 +31,9 @@
                     <h1 class="faculty_title">Расписание факультета математики, механики и компьютерных наук [beta]</h1>
                 </a>
 
-                <p class="week_now" />
+                <p class="week_now" ></p>
             </div>
-            <div class="logo"><a href="http://sfedu.ru/" border="0"><img src="img/logo_sfedu_white.png"/></a></div>
+            <div class="logo"><a href="http://sfedu.ru/" border="0"><img src="static/logo_sfedu_white.png"/></a></div>
         </div>
     </div>
     <div class="choice_timetable_wrapper">
@@ -69,16 +69,16 @@
             </select>
 
             <div class="print_schedule" onclick="window.print();"></div>
+            <div class="management_wrapper">
+                <select id="management" class="default_select">
+                    <option value="0" selected="selected">Выберите действие</option>
+                    <option value="1">Добавить преподавателя</option>
+                    <option value="2">Добавить аудиторию</option>
+                    <option value="3">Добавить курс</option>
+                    <option value="4">Добавить группу</option>
+                </select>
+            </div>
         </div>
-    </div>
-    <div class="management_wrapper">
-        <select id="management" class="default_select">
-            <option value="0" selected="selected">Выберите действие</option>
-            <option value="1">Добавить преподавателя</option>
-            <option value="2">Добавить аудиторию</option>
-            <option value="3">Добавить курс</option>
-            <option value="4">Добавить группу</option>
-        </select>
     </div>
     <div id="welcome_wrapper" class="welcome_wrapper">
         <div class="welcome_text">
@@ -90,7 +90,6 @@
         </div>
     </div>
     <div id="timetable_wrapper" class="timetable_wrapper">
-        <div class="type_timetable"></div>
         <table class="timetable" border="1" bordercolor="#d7d7d7" cellspacing="0" cellpadding="0">
         </table>
     </div>

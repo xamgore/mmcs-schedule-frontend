@@ -37,7 +37,7 @@ var parseTimeslot = function(str) {
 };
 
 var localeTime = function(beg) {
-    return beg/45;
+    return beg / 45;
 };
 
 var prepareData = function(data) {

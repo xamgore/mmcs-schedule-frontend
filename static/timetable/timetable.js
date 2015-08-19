@@ -1,25 +1,64 @@
-function Timetable($base) {
-    this.$table = $base;
+/**
+ * @param {Generator}   generator
+ * @param {object}      data
+ *
+ * @param {jQuery}      data.base
+ *
+ * @constructor
+ */
+function Timetable(generator, data) {
+    'use strict';
+
+    this.$base = data.base;
+    this.gen = generator;
+    this.created = false;
 }
 
-Timetable.prototype.erase = function() {
-    this.$table.html(''); // clear workspace
+/**
+ * clear workspace
+ */
+Timetable.prototype.erase = function () {
+    'use strict';
+    delete this.layout;
+    delete this.schedule;
+    this.created = false;
+
+    if (this.$table) {
+        this.show(false);
+        this.$table.html('');
+    }
 };
 
-Timetable.prototype.hide = function() {
-    this.$table.hide();
+
+/**
+ * show/hide timetable/welcome page
+ * @param {bool} state
+ */
+Timetable.prototype.show = function (state) {
+    'use strict';
+    if (!this.$table) {
+        return;
+    }
+    if (state) {
+        $('.welcome_wrapper').hide();
+        this.$base.show();
+        $('.print_schedule').show(); // todo: what this??
+    } else {
+        this.$base.hide();
+        $('.print_schedule').hide();
+        $('.welcome_wrapper').show();
+    }
 };
 
-Timetable.prototype.show = function() {
-    this.$table.show();
-};
 
-Timetable.prototype.create = function() {
-    this.hide();
+Timetable.prototype.create = function () {
+    'use strict';
     this.erase();
+    this.created = true;
 
-    var table = generator.getWorkspace(this.$table);
+    var table = this.gen.getWorkspace(this.$base);
     this.cells = table.cells;
+    this.$table = table.main;
 
     this.bar = {
         top: table.top,
@@ -27,31 +66,38 @@ Timetable.prototype.create = function() {
     };
 };
 
-// type = ('side', 'top')
-Timetable.prototype.fillBar = function(data, type) {
-    var bar = this.bar[type];
-    if (bar && data) {
-        bar.forEach(function (elem, i) {
-            if (!(data[i] || elem)) {
-                return;
-            }
-            elem.html(data[i]);
-        });
+
+/**
+ * fill timetable info bars (time, days, etc)
+ * @param {string} type     possible types: 'side', 'top'
+ * @param {string[]} data
+ */
+Timetable.prototype.fillBar = function (type, data) {
+    'use strict';
+    if (!(data && this.bar && this.bar[type])) {
+        return;
     }
+    var bar = this.bar[type];
+    bar.forEach(function (barCell, i) {
+        //if (!(data[i] || barCell)) {
+        //    return;
+        //}
+        barCell.html(data[i]);
+    });
 };
 
 
-
-Timetable.prototype.gatherMetrics = function(schedule) {
+Timetable.prototype.gatherMetrics = function (schedule) {
+    'use strict';
     var metrics = [];
 
-    $.each(schedule.lessons, function(i, dayStrip) {
+    $.each(schedule.lessons, function (i, dayStrip) {
         var metricDay = metrics[i] = [];
-        dayStrip.forEach(function(lesson) {
+        dayStrip.forEach(function (lesson) {
             var dst = metricDay[lesson.begNum];
             var splitType = lesson.timeslot.split;
             if (!dst) {
-                dst = metricDay[lesson.begNum] = { cnt: 0 };
+                dst = metricDay[lesson.begNum] = {cnt: 0};
             }
             dst[splitType] = Math.max(dst[splitType] || 0, lesson.subcount);
             dst.cnt += 1;
@@ -60,56 +106,62 @@ Timetable.prototype.gatherMetrics = function(schedule) {
     return metrics;
 };
 
-Timetable.prototype.createLayout = function(schedule) {
+Timetable.prototype.createLayout = function (schedule) {
+    'use strict';
     var metrics = this.gatherMetrics(schedule);
     var layout = [];
     var self = this;
 
-    metrics.forEach(function(day, dayNum) {
+    metrics.forEach(function (day, dayNum) {
         layout[dayNum] = [];
-        day.forEach(function(metricCell, lesNum) {
+        day.forEach(function (metricCell, lesNum) {
             var $base = self.cells[dayNum][lesNum];
-            layout[dayNum][lesNum] = generator.fillLayoutCell(metricCell, $base);
+            layout[dayNum][lesNum] = self.gen.fillLayoutCell(metricCell, $base);
         });
     });
     return layout;
 };
 
 
-
-
 Timetable.prototype.createLesson = function (curricula, lesson, $cell) {
+    'use strict';
+    var self = this;
+
     if (!(curricula || lesson)) {
         return;
     }
 
     var table = {sub: [$cell]};
     if (curricula.length > 1) {
-        table = generator.getVertical(lesson.subcount);
+        table = this.gen.getVertical(lesson.subcount);
         $cell.append(table.base);
     }
 
-    curricula.forEach(function(curriculum) {
+    curricula.forEach(function (curriculum) {
         var sgNum = curriculum.subnum - 1;
-        generator.fillCell(curriculum, table.sub[sgNum]);
+        self.gen.fillCell(curriculum, table.sub[sgNum]);
     });
 };
 
-Timetable.prototype.draw = function(schedule) {
+Timetable.prototype.draw = function (schedule) {
+    'use strict';
     this.create();
-    this.fillBar(days, 'top');
-    this.fillBar(timeList, 'side');
+    // todo: hardcode data
+    this.fillBar('top', days);
+    this.fillBar('side', timeList);
 
     var self = this;
     var layout = this.createLayout(schedule);
+    this.layout = layout;
+    this.schedule = schedule;
 
 
     // todo: delete debug info
     console.log(layout);
     console.log(schedule);
 
-    $.each(schedule.lessons, function(dayNum, dayLessons) {
-        dayLessons.forEach(function(lesson) {
+    $.each(schedule.lessons, function (dayNum, dayLessons) {
+        dayLessons.forEach(function (lesson) {
             var curricula = schedule.curricula[lesson.id];
             var splitType = lesson.timeslot.split;
             var $cell = layout[dayNum][lesson.begNum][splitType];
@@ -118,6 +170,26 @@ Timetable.prototype.draw = function(schedule) {
         });
     });
 
-    this.show();
+    this.show(true);
 };
 
+
+Timetable.prototype.optimize = function() {
+    $('.subject_cell').each(function () {
+        if (($(this).children('.table_subgroups').height() < $(this).height()) && ($(this).children('.table_subgroups').height() != null))
+            $(this).children('.table_subgroups').css('height', $(this).height() + 2);
+        if (($(this).children('.table_horizontal_divider').height() < $(this).height()) && ($(this).children('.table_horizontal_divider').height() != null))
+            $(this).children('.table_horizontal_divider').css('height', $(this).height() + 2);
+        if ($(this).find('.subject_short').length)
+            if ($(this).width() < 180) {
+                $(this).find('.subject').css('display', 'none');
+                if ($(this).find('.subject_short').css('display') == 'none')
+                    $(this).find('.subject_short').css('display', 'block');
+            }
+            else {
+                $(this).find('.subject_short').css('display', 'none');
+                if ($(this).find('.subject').css('display') == 'none')
+                    $(this).find('.subject').css('display', 'block');
+            }
+    });
+};
