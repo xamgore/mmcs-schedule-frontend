@@ -102,7 +102,7 @@ $(function () {
                     <select class="select-single input-large room"></select>\
                 </div>\
                 <div class="col-md-3">\
-                    <input type="text" class="input-time">\
+                    <input type="checkbox" class="lesson-window">\
                 </div>\
                 <div class="col-md-3">\
                     <button type="button" class="btn btn-primary btn-del-params"\
@@ -139,7 +139,7 @@ $(function () {
                     <div class="row row-params-head">\
                         <div class="col-md-3">Преподаватель</div>\
                         <div class="col-md-3">Кабинет</div>\
-                        <div class="col-md-3">Другое время</div>\
+                        <div class="col-md-3">Окно</div>\
                         <div class="col-md-3">\
                             <button type="button" class="btn btn-primary btn-del-subject"\
                                     onclick="$.fn.delSubject($(this));">\
@@ -197,17 +197,21 @@ $(function () {
             var subject = subjRow.find('.select-subject').val();
             subjRow.find('.row-params').each(function(j, elem){
                 ++subnum;
-
                 var teacherRow = $(elem);
-                var room = teacherRow.find('.room').val();
-                var teacher = teacherRow.find('.teacher').val();
 
-                data.subjects.push({
-                    subnum: subnum,
-                    subject: subject,
-                    room: room,
-                    teacher: teacher
-                });
+                var isWindow = teacherRow.find('.lesson-window').first().prop("checked");;
+                if ( !isWindow )
+                {
+                    var room = teacherRow.find('.room').val();
+                    var teacher = teacherRow.find('.teacher').val();
+
+                    data.subjects.push({
+                        subnum: subnum,
+                        subject: subject,
+                        room: room,
+                        teacher: teacher
+                    });
+                }
             });
         });
 
