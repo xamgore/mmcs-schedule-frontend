@@ -4,11 +4,13 @@ $(function () {
     var redrawMultiselect = function() {
         $('.select-multiple').multiselect({
             buttonContainer: '<div style="margin: 0 auto;"></div>',
-            buttonWidth: '90%'
+            buttonWidth: '90%',
+            maxHeight: '200px'
         });
         $('.select-single').multiselect({
             buttonContainer: '<div style="margin: 0 auto;"></div>',
             buttonWidth: '90%',
+            maxHeight: '200px',
             enableFiltering: true,
             filterPlaceholder: 'Search for something...'
         });
