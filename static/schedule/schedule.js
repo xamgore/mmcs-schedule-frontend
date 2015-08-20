@@ -32,6 +32,44 @@ $(function () {
     };
 
 
+    var deleteMode = false;
+
+    $management.change(function () {
+        'use strict';
+        var opt = $(this).find('option[value="6"]');
+        var state = opt.attr('class');
+        if (state === 'deleteon') {
+            opt.attr('class', 'deleteoff');
+            opt.html('delete mode off');
+            deleteMode = false;
+            $management.css('border-color', '');
+        } else {
+            opt.attr('class', 'deleteon');
+            opt.html('delete mode on');
+            deleteMode = true;
+            $management.css('border-color', 'red');
+        }
+    });
+    $table.on('click', '.uberCell', function () {
+        'use strict';
+        if (!deleteMode) {
+            return;
+        }
+        var lesID = +$(this).attr('id').replace(/^lesID_/, '');
+        $.ajax({
+            url: $.schedule.backendURL + 'schedule/' + lesID,
+            type: 'DELETE',
+            success: function (result) {
+                //$(this).html('');
+                //if (result.ok) {
+                //
+                //}
+            }
+        });
+        console.log(lesID);
+    });
+
+
     $type.change(function () {
         table.show(false);
         var type = $type.val();

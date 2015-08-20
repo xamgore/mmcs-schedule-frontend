@@ -131,6 +131,9 @@ Timetable.prototype.createLesson = function (curricula, lesson, $cell) {
         return;
     }
 
+    $cell.addClass('uberCell');
+    $cell.attr('id', 'lesID_' + lesson.id);
+
     var table = {sub: [$cell]};
     if (curricula.length > 1) {
         table = this.gen.getVertical(lesson.subcount);
