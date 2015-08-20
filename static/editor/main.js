@@ -5,12 +5,12 @@ $(function () {
         $('.select-multiple').multiselect({
             buttonContainer: '<div style="margin: 0 auto;"></div>',
             buttonWidth: '90%',
-            maxHeight: '200px'
+            maxHeight: 200
         });
         $('.select-single').multiselect({
             buttonContainer: '<div style="margin: 0 auto;"></div>',
             buttonWidth: '90%',
-            maxHeight: '200px',
+            maxHeight: 200,
             enableFiltering: true,
             filterPlaceholder: 'Search for something...'
         });
