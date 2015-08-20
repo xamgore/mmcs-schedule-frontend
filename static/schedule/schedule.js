@@ -163,6 +163,8 @@ $(function () {
         $.ajax({
             url: $.schedule.backendURL + 'teacher',
             type: 'PUT',
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
             data: "name=" + name + "&degree=" + degree,
             success: function (data) {
                 $.fn.close_window();
@@ -177,7 +179,29 @@ $(function () {
         $.ajax({
             url: $.schedule.backendURL + 'room',
             type: 'PUT',
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
             data: "name=" + name,
+            success: function (data) {
+                $.fn.close_window();
+            }
+        });
+    };
+
+    $.fn.manager.putSubject = function () {
+        'use strict';
+        var name = $('#subjectName').val();
+        var abbr = $('#subjectAbbr').val();
+
+        $.ajax({
+            url: $.schedule.backendURL + 'subject',
+            type: 'PUT',
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
+            data: {
+                name: name,
+                abbr: abbr
+            },
             success: function (data) {
                 $.fn.close_window();
             }
@@ -192,6 +216,8 @@ $(function () {
         $.ajax({
             url: $.schedule.backendURL + 'grade',
             type: 'PUT',
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
             data: "num=" + num + "&degree=" + degree,
             success: function (data) {
                 $.fn.close_window();
@@ -208,6 +234,8 @@ $(function () {
         $.ajax({
             url: $.schedule.backendURL + 'group',
             type: 'PUT',
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
             data: "name=" + name + "&num=" + num + "&gradeID=" + gradeID,
             success: function (data) {
                 $.fn.close_window();
@@ -263,6 +291,18 @@ $(function () {
                         select.append('<option value="' + data[i].id + '">' + data[i].degree + ' ' + data[i].num + '</option>');
                     });
                 });
+
+                break;
+
+            case '5':
+                location.replace('editor');
+                break;
+
+            case 'addSubject':
+                var form = '<input id="subjectName" type="text" value="" placeholder="Название"><br\>\
+                <input id="subjectAbbr" type="text" value="" placeholder="Аббревиатура"><br\>\
+                <input type="button" value="Добавить" onclick="$.fn.manager.putSubject()">';
+                $.fn.open_window('Добавить предмет', form);
 
                 break;
 

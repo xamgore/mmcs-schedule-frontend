@@ -183,10 +183,34 @@ $(function () {
                 beg: rawTimes[$times.val()].beg,
                 end: rawTimes[$times.val()].end,
                 split: $split.val(),
-                subcount: 2
+                subcount: 0
             },
-            groups: $groups.val()
+            groups: $groups.val(),
+            subjects: []
         };
+
+        var subnum = 0;
+        $('.container-control > :not(.row-btn-add)').each(function(i, subjelem) {
+            var subjRow = $(subjelem);
+            var subject = subjRow.find('.select-subject').val();
+            subjRow.find('.row-params').each(function(j, elem){
+                ++subnum;
+
+                var teacherRow = $(elem);
+                var room = teacherRow.find('.room').val();
+                var teacher = teacherRow.find('.teacher').val();
+
+                data.subjects.push({
+                    subnum: subnum,
+                    subject: subject,
+                    room: room,
+                    teacher: teacher
+                });
+            });
+        });
+
+        data.lesson.subcount = subnum;
+        data.curricula = JSON.stringify(data.subjects);
 
         $.ajax({
             url: $.schedule.backendURL + 'schedule/lesson',
