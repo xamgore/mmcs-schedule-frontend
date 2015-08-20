@@ -94,12 +94,26 @@ Generator.prototype.lmap = {
     roomname: 'auditory'
 };
 
+Generator.prototype.abbrName = function(name) {
+    var n = name.split(' ');
+    if ( n.length === 3 )
+        return n[0] + ' ' + n[1][0] + '.' + n[2][0] + '.';
+    else
+        return name;
+};
+
 Generator.prototype.fillCell = function (data, $cell) {
     var self = this;
 
     ['subjectname', 'subjectabbr', 'teachername', 'roomname'].forEach(function (type) {
-        if (data[type]) {
-            $cell.append('<p class="' + self.lmap[type] + '">' + data[type] + '</p>');
+        if (data[type] && $cell) {
+            if ( type === 'teachername' )
+                $cell.append('<p class="' + self.lmap[type] + '"><abbr title="' + data[type] + '">' + Generator.prototype.abbrName(data[type]) + '</abbr></p>');
+            else
+                $cell.append('<p class="' + self.lmap[type] + '">' + data[type] + '</p>');
+        } else {
+            // todo: kill debug
+            console.log('undefined cell', $cell);
         }
     });
 };

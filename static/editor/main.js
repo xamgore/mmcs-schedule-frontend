@@ -187,6 +187,11 @@ $(function () {
     //#######################################
 
     $.fn.saveCurriculum = function() {
+        var groups = $groups.val();
+        if (groups.length == undefined) {
+            groups = [groups];
+        }
+
         var data = {
             lesson: {
                 day: $day.val(),
@@ -195,7 +200,7 @@ $(function () {
                 split: $split.val(),
                 subcount: 0
             },
-            groups: $groups.val(),
+            groups: groups,
             subjects: []
         };
 

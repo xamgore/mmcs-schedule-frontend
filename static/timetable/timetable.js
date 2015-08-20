@@ -127,7 +127,7 @@ Timetable.prototype.createLesson = function (curricula, lesson, $cell) {
     'use strict';
     var self = this;
 
-    if (!(curricula || lesson)) {
+    if (!(curricula && lesson)) {
         return;
     }
 
@@ -135,7 +135,7 @@ Timetable.prototype.createLesson = function (curricula, lesson, $cell) {
     $cell.attr('id', 'lesID_' + lesson.id);
 
     var table = {sub: [$cell]};
-    if (curricula.length > 1) {
+    if (lesson.subcount > 1) {
         table = this.gen.getVertical(lesson.subcount);
         $cell.append(table.base);
     }

@@ -36,6 +36,9 @@ $(function () {
 
     $management.change(function () {
         'use strict';
+        if ($(this).val() != 6) {
+            return;
+        }
         var opt = $(this).find('option[value="6"]');
         var state = opt.attr('class');
         if (state === 'deleteon') {
@@ -59,8 +62,10 @@ $(function () {
         $.ajax({
             url: $.schedule.backendURL + 'schedule/' + lesID,
             type: 'DELETE',
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
             success: function (result) {
-                //$(this).html('');
+                $(this).html('');
                 //if (result.ok) {
                 //
                 //}
