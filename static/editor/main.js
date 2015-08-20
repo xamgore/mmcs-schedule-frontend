@@ -5,14 +5,22 @@ $(function () {
         $('.select-multiple').multiselect({
             buttonContainer: '<div style="margin: 0 auto;"></div>',
             buttonWidth: '90%',
-            maxHeight: 200
+            maxHeight: 200,
+            enableCaseInsensitiveFiltering: true,
+            onDropdownShown: function(even) {
+                this.$filter.find('.multiselect-search').focus();
+            }
         });
         $('.select-single').multiselect({
             buttonContainer: '<div style="margin: 0 auto;"></div>',
             buttonWidth: '90%',
             maxHeight: 200,
             enableFiltering: true,
-            filterPlaceholder: 'Search for something...'
+            filterPlaceholder: 'Search for something...',
+            enableCaseInsensitiveFiltering: true,
+            onDropdownShown: function(even) {
+                this.$filter.find('.multiselect-search').focus();
+            }
         });
     };
 
