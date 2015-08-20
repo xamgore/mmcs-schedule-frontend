@@ -226,6 +226,7 @@ $(function () {
             crossDomain: true,
             success: function (data) {
                 console.log('success');
+                alert('success');
             }
         });
 
