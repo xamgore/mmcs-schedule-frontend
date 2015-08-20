@@ -1,10 +1,5 @@
-// Состояние веб-интерфейса. Возможно, закэшированное.
-var appState = {};
-var backendURL = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
-
 // Версия 1.2.1
 $(function () {
-
     var $group = $("#group");
     var $grade = $("#course");
     var $teacher = $("#teacher");
@@ -21,11 +16,9 @@ $(function () {
         base: $table
     });
 
-
-
     loader.week($('.week_now'), function(week) {
         'use strict';
-        appState.type = week;
+        $.schedule.state.type = week;
     });
     $(window).resize(function () {
         table.optimize();
@@ -100,6 +93,67 @@ $(function () {
      * Часть про редактирование расписания
      */
     $.fn.manager = {};
+    $.schedule.manager = {};
+
+    var managerAuth = $('#management_auth');
+    var managerList = $('#management');
+
+    $.schedule.manager.auth = function() {
+        var login = $('#login').val();
+        var pass = $('#pass').val();
+
+        $.ajax({
+            url: $.schedule.backendURL + 'auth/login',
+            type: 'GET',
+            data: {
+                login: login,
+                pass: pass
+            },
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
+            success: function (data) {
+                $.schedule.manager.redraw();
+                $.fn.close_window();
+            },
+            error: function(jqXHR, status, error) {
+                console.log(status);
+            }
+        });
+    };
+
+    $.schedule.manager.redraw = function() {
+        $.ajax({
+            url: $.schedule.backendURL + 'auth/status',
+            type: 'GET',
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
+            success: function (data) {
+                if (data.status === 'manager')
+                    $.schedule.state.authorize = true;
+                else if (data.status === 'just user')
+                    $.schedule.state.authorize = false;
+
+
+                if ($.schedule.state.authorize) {
+                    managerAuth.css('display', 'none');
+                    managerList.css('display', 'block');
+                }
+                else {
+                    managerAuth.css('display', 'block');
+                    managerList.css('display', 'none');
+                }
+            }
+        });
+    };
+
+    $.schedule.manager.redraw();
+
+    managerAuth.click(function(){
+        var form = '<input id="login" type="text" value="" placeholder="Логин"\><br\>\
+                <input id="pass" type="password" value="" placeholder="Пароль" \>\
+                <input type="button" value="Войти" onclick="$.schedule.manager.auth()">';
+        $.fn.open_window('Авторизация', form);
+    });
 
     $.fn.manager.putTeacher = function () {
         'use strict';
@@ -107,7 +161,7 @@ $(function () {
         var degree = $('#teacherDegree').val();
 
         $.ajax({
-            url: backendURL + 'teacher',
+            url: $.schedule.backendURL + 'teacher',
             type: 'PUT',
             data: "name=" + name + "&degree=" + degree,
             success: function (data) {
@@ -121,7 +175,7 @@ $(function () {
         var name = $('#roomName').val();
 
         $.ajax({
-            url: backendURL + 'room',
+            url: $.schedule.backendURL + 'room',
             type: 'PUT',
             data: "name=" + name,
             success: function (data) {
@@ -136,7 +190,7 @@ $(function () {
         var degree = $('#gradeDegree').val();
 
         $.ajax({
-            url: backendURL + 'grade',
+            url: $.schedule.backendURL + 'grade',
             type: 'PUT',
             data: "num=" + num + "&degree=" + degree,
             success: function (data) {
@@ -152,7 +206,7 @@ $(function () {
         var gradeID = $('#groupGradeID').val();
 
         $.ajax({
-            url: backendURL + 'group',
+            url: $.schedule.backendURL + 'group',
             type: 'PUT',
             data: "name=" + name + "&num=" + num + "&gradeID=" + gradeID,
             success: function (data) {
@@ -197,7 +251,7 @@ $(function () {
 
             case '4':
                 // name str, num int, gradeID int
-                var form = '<input id="groupName" type="text" value="" placeholder="Имя"\><br\>\
+                    var form = '<input id="groupName" type="text" value="" placeholder="Имя"\><br\>\
                 <input id="groupNum" type="text" value="" placeholder="Номер" \>\
                 <select id="groupGradeID"><option>Курс</option></select>\
                 <input type="button" value="Добавить" onclick="$.fn.manager.putGroup()">';
@@ -210,6 +264,18 @@ $(function () {
                     });
                 });
 
+                break;
+
+            case 'logout':
+                $.ajax({
+                    url: $.schedule.backendURL + 'auth/logout',
+                    type: 'GET',
+                    xhrFields: {withCredentials: true},
+                    crossDomain: true,
+                    success: function (data) {
+                        $.schedule.manager.redraw();
+                    }
+                });
                 break;
         }
     }); // !$management.change

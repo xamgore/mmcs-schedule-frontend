@@ -1,4 +1,12 @@
-var host = window.document.location.protocol + '//' + window.document.location.hostname;
+$(function(){
+    // Фигачим неймспейс для всякого своего
+    $.schedule = {};
+    // Состояние веб-интерфейса. Возможно, закэшированное.
+    $.schedule.state = {
+        authorize: false
+    };
+    $.schedule.backendURL = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
+});
 
 function is_object(obj) {
     return (typeof obj == "object");

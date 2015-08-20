@@ -441,3 +441,6 @@ td {
     float: right;
 }
 
+#management {
+    display: none;
+}

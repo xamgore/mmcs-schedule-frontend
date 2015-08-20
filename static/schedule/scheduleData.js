@@ -11,10 +11,8 @@ $(function () {
         specialist: 'Специалитет, '
     };
 
-    var backendURL = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
-
     menu.getJSON = function (route, callback) {
-        $.getJSON(backendURL + route, {}, callback);
+        $.getJSON($.schedule.backendURL + route, {}, callback);
     };
 
 
@@ -221,5 +219,27 @@ $(function () {
         return '<option value="' + group.id + '">' + menu.groupName(group) + '</option>';
     };
 
+    /**
+     * @param {group_t} group
+     * @returns {string}
+     */
+    menu.subjectOption = function (subject) {
+        return '<option value="' + subject.id + '">' + subject.name + '</option>';
+    };
 
+    /**
+     * @param {group_t} group
+     * @returns {string}
+     */
+    menu.teacherOption = function (teacher) {
+        return '<option value="' + teacher.id + '">' + teacher.name + '</option>';
+    };
+
+    /**
+     * @param {group_t} group
+     * @returns {string}
+     */
+    menu.roomOption = function (room) {
+        return '<option value="' + room.id + '">' + room.name + '</option>';
+    };
 });

@@ -4,36 +4,41 @@
 	<meta charset="UTF-8">
 
 	<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" type="text/css">
-
-
 	<link rel="stylesheet" href="../bower_components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css">
+	<link rel="stylesheet" href="../static/editor/main.css" type="text/css">
 
 	<script type="text/javascript" src="../bower_components/jquery/dist/jquery.min.js"></script>
 	<script type="text/javascript" src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="../bower_components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
 
-    <script type="text/javascript" src="/static/schedule/scheduleData.js"></script>
-	<script type="text/javascript" src="/static/editor/main.js"></script>
-    <link rel="stylesheet" href="/static/editor/main.css" type="text/css">
-	<title>Document</title>
+    <!-- ToDo: Ниже есть лишние подключения, но из-за внутренних зависимостей и того, что разбираться лень.. -->
+    <script src="../static/helpers.js"></script>
+    <script src="../static/schedule/scheduleData.js"></script>
+    <script src="../static/timetable/timetableHelp.js"></script>
+    <script src="../static/timetable/timetableGen.js"></script>
+
+    <script src="../static/timetable/timetable.js"></script>
+
+	<script type="text/javascript" src="../static/editor/main.js"></script>
+	<title>Добавление пары в расписание</title>
 </head>
 <body>
-
 
 	<div class="main-wrapper">
 
 		<div class="container container-choice">
 			<div class="row row-choice-head">
 
-				<div class="col-md-3">День</div>
-				<div class="col-md-3">Время</div>
+				<div class="col-md-2">День</div>
+				<div class="col-md-2">Время</div>
+                <div class="col-md-2">Неделя</div>
 				<div class="col-md-3">Курс</div>
 				<div class="col-md-3">Группа</div>
 			</div>
 
 			<div class="row row-choice">
 
-				<div class="col-md-3">
+				<div class="col-md-2">
 					<select class="select-single" id="day">
 						<option value="1">Пн</option>
 						<option value="2">Вт</option>
@@ -44,10 +49,18 @@
 					</select>
 				</div>
 
-				<div class="col-md-3">
+				<div class="col-md-2">
 					<select class="select-single" id="time">
 					</select>
 				</div>
+
+                <div class="col-md-2">
+                    <select class="select-single" id="split">
+                        <option value="upper">Верхняя</option>
+                        <option value="full" selected>Целая</option>
+                        <option value="lower">Нижняя</option>
+                    </select>
+                </div>
 
 				<div class="col-md-3">
 					<select class="select-single" id="grades">
@@ -63,73 +76,9 @@
 
 		<div class="container container-control">
 
-			<!-- ЭТУ СТРОКУ ДОБАВЛЯТЬ ДЛЯ НОВОГО ПРЕДМЕТА -->
-			<div class="row row-control">
-				<div class="col-md-2 col-subject">
-					<div class="row row-subject-head">
-						<div class="col-md-12">Предмет</div>
-					</div>
-
-					<div class="row row-subject">
-						<select class="select-single select-subject input-large">
-							<option value="1">Матан</option>
-							<option value="2">Алгебра</option>
-						</select>
-					</div>
-
-				</div>
-
-				<div class="col-md-10">
-					<div class="row row-params-head">
-						<div class="col-md-3">Преподаватель</div>
-						<div class="col-md-3">Кабинет</div>
-						<div class="col-md-3">Неделя</div>
-						<div class="col-md-3">Другое время</div>
-					</div>
-
-
-					<!-- ЭТУ СТРОКУ ДОБАВЛЯТЬ ДЛЯ НОВЫХ ПАРАМЕТРОВ -->
-					<div class="row row-params">
-						<div class="col-md-3">
-							<select class="select-single input-large">
-								<option value="1">Чалов</option>
-								<option value="2">Левенштам</option>
-							</select>
-						</div>
-						<div class="col-md-3">
-							<select class="select-single input-large">
-								<option value="1">312</option>
-								<option value="2">320</option>
-							</select>
-						</div>
-						<div class="col-md-3">
-							<select class="select-single input-large">
-								<option value="1">Верхняя</option>
-								<option value="2">Нижняя</option>
-								<option value="3" selected>Целая</option>
-							</select>
-						</div>
-						<div class="col-md-3">
-							<input type="text" class="input-time">
-						</div>
-					</div>
-					<!-- ========================================== -->
-
-					<div class="row row-btn-add">
-						<div class="col-md-12">
-							<button type="button" class="btn btn-primary btn-add-params">
-								<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Добавить преподавателя
-							</button>
-						</div>
-					</div>
-
-				</div>
-			</div>
-			<!-- ========================================== -->
-
 			<div class="row row-btn-add">
 				<div class="col-md-12">
-					<button type="button" class="btn btn-primary btn-add-subject">
+					<button type="button" class="btn btn-primary btn-add-subject" onclick="$.fn.addSubject($(this));">
 						<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Добавить ячейку в расписание
 					</button>
 				</div>
@@ -139,7 +88,7 @@
 		<div class="container">
 			<div class="row row-btn-save">
 				<div class="col-md-12">
-					<button type="button" class="btn btn-success btn-save">
+					<button type="button" class="btn btn-success btn-save" onclick="$.fn.saveCurriculum();">
 						<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Сохранить
 					</button>
 				</div>
