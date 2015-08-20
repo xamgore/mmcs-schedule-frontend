@@ -1,7 +1,5 @@
 $(function(){
-    // Фигачим неймспейс для всякого своего
     $.schedule = {};
-    // Состояние веб-интерфейса. Возможно, закэшированное.
     $.schedule.state = {
         authorize: false
     };
@@ -45,7 +43,21 @@ var parseTimeslot = function(str) {
 };
 
 var localeTime = function(beg) {
-    return beg / 45;
+    // todo: Hindu hardcode!
+    if (beg == 8*60)
+        return 0;
+    if (beg == 9*60 + 50)
+        return 1;
+    if (beg == 11*60 + 55)
+        return 2;
+    if (beg == 13*60 + 45)
+        return 3;
+    if (beg == 15*60 + 50)
+        return 4;
+    if (beg == 17*60 + 40)
+        return 5;
+
+    return 0;
 };
 
 var prepareData = function(data) {
