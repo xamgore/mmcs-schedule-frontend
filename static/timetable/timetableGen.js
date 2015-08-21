@@ -13,7 +13,7 @@ var Generator = function (data) {
  */
 Generator.prototype.setWeek = function (week) {
     this.week = week;
-    this.weekClass = week ? 'lower_week' : 'upper_week';
+    this.weekClass = week ? 'upper_week' : 'lower_week';
 };
 
 Generator.prototype.getWorkspace = function ($tableBase) {

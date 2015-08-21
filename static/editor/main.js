@@ -239,7 +239,11 @@ $(function () {
             crossDomain: true,
             success: function (data) {
                 console.log('success');
-                alert('success');
+                alert('Success');
+            },
+            error: function (jqXHR, status, error) {
+                console.log(status, error);
+                alert('Failed');
             }
         });
 

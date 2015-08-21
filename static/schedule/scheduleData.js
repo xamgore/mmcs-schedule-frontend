@@ -150,19 +150,15 @@ $(function () {
 
     /**
      * @callback weekCallback
-     * @param {number} groupList
+     * @param {number} week.type 0 - upper, 1 - lower
      */
     /**
      * @param {weekCallback} cb
-     * @param {jQuery} $week
      */
-    loader.week = function ($week, cb) {
+    loader.week = function (cb) {
         menu.getJSON('schedule/week', function (data) {
-            var actualWeek = data.type ? 'верхняя неделя' : 'нижняя неделя'; // todo: extract
-            $week.text('Сейчас ' + actualWeek);
-
             if (cb) {
-                cb(data.type);
+                cb(+data.type);
             }
         });
     };

@@ -11,13 +11,17 @@ $(function () {
     var $table = $('.timetable_wrapper');
 
 
-    var tableGen = new Generator({week: 0}); // 0 - upper, 1 - lower
+    var tableGen = new Generator({ week: 0 }); // 0 - upper, 1 - lower
     var table = new Timetable(tableGen, { base: $table });
 
-    loader.week($('.week_now'), function (week) {
+    loader.week(function (week) {
         'use strict';
+        var actualWeek = week === 0 ? 'верхняя неделя' : 'нижняя неделя';
+        $('.week_now').text('Сейчас ' + actualWeek);
         $.schedule.state.type = week;
+        tableGen.setWeek(week);
     });
+
     $(window).resize(function () {
         table.optimize();
     });
