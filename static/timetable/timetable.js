@@ -261,6 +261,9 @@ Timetable.prototype.optimizeCell = function ($cell) {
 Timetable.prototype.optimize = function () {
     'use strict';
     var i, j, row;
+    if (!Array.isArray(cells)) {
+        return;
+    }
     for (i = 0; i < this.cells.length; ++i) {
         row = this.cells[i];
         for (j = 0; j < row.length; ++j) {

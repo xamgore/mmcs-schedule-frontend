@@ -106,7 +106,7 @@ Generator.prototype.fillCell = function (curriculum, $cell) {
     var self = this;
     if (!$cell) {
         // todo: debug info
-        console.log('invalid cell!', $cell);
+        console.log('invalid cell!', curriculum);
         return;
     }
 
