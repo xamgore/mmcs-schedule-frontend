@@ -12,11 +12,9 @@ $(function () {
 
 
     var tableGen = new Generator({week: 0}); // 0 - upper, 1 - lower
-    var table = new Timetable(tableGen, {
-        base: $table
-    });
+    var table = new Timetable(tableGen, { base: $table });
 
-    loader.week($('.week_now'), function(week) {
+    loader.week($('.week_now'), function (week) {
         'use strict';
         $.schedule.state.type = week;
     });
@@ -36,10 +34,12 @@ $(function () {
 
     $management.change(function () {
         'use strict';
-        if ($(this).val() != 6) {
+        var deleteModeVal = 6;
+        if ($(this).val() != deleteModeVal) {
             return;
         }
-        var opt = $(this).find('option[value="6"]');
+
+        var opt = $(this).find('option[value="' + deleteModeVal +'"]');
         var state = opt.attr('class');
         if (state === 'deleteon') {
             opt.attr('class', 'deleteoff');
@@ -58,20 +58,24 @@ $(function () {
         if (!deleteMode) {
             return;
         }
-        var lesID = +$(this).attr('id').replace(/^lesID_/, '');
+
+        var $cell = $(this);
+        var lessonID = +$cell.attr('id').replace(/^lesID_/, '');
+        if (!confirm('Удалить урок? (lessonID: '+ lessonID + ')')) {
+            return;
+        }
+
         $.ajax({
-            url: $.schedule.backendURL + 'schedule/' + lesID,
+            url: $.schedule.backendURL + 'schedule/' + lessonID,
             type: 'DELETE',
             xhrFields: {withCredentials: true},
             crossDomain: true,
             success: function (result) {
-                $(this).html('');
-                //if (result.ok) {
-                //
-                //}
+                if (result.ok) {
+                    $cell.html('');
+                }
             }
         });
-        console.log(lesID);
     });
 
 
@@ -139,7 +143,7 @@ $(function () {
     $.schedule.manager = {};
 
     var managerAuth = $('#management_auth');
-    var managerList = $('#management');
+    var managerList = $management;
 
     $.schedule.manager.auth = function() {
         var login = $('#login').val();
