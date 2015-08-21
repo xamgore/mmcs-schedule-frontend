@@ -190,6 +190,7 @@ Timetable.prototype.createLesson = function (curricula, lesson, $lessonCell) {
                     ? this.tableGen.getVertical(+lesson.subcount, $lessonCell)
                     : [ $lessonCell ];
 
+    $lessonCell.addClass('short_force');
     curricula.forEach(function (curriculum) {
         var sgNum = +curriculum.subnum - 1;
         self.tableGen.fillCell(curriculum, table[sgNum]);
@@ -231,6 +232,14 @@ Timetable.prototype.draw = function (schedule, bars) {
     this.show(true);
 };
 
+/**
+ * @param {jQuery} $grouptable
+ */
+Timetable.prototype.optimizeSubgroupsTable = function ($grouptable) {
+    'use strict';
+
+
+}
 
 /**
  * @param {jQuery} $cell
@@ -241,9 +250,21 @@ Timetable.prototype.optimizeCell = function ($cell) {
     var width = $cell.width();
 
     var sg = $cell.children('.table_subgroups');
+    if ( sg.length ) {
+        this.optimizeSubgroupsTable(sg);
+        return;
+    }
+
     var hor = $cell.children('.table_horizontal_divider');
-    var short = $cell.find('.subject_short');
-    var subj = $cell.find('.subject');
+    if ( hor.length ) {
+        hor.find('.upper_week:not(.inactive_week), .lower_week:not(.inactive_week)').forEach(function(elem) {
+            this.optimizeCell(elem);
+        });
+        return;
+    }
+
+    var short = $cell.children('.subject_short');
+    var subj = $cell.children('.subject');
 
     [sg, hor].forEach(function (elem) {
         if (elem.height() < height && elem.height() !== null) {
@@ -252,7 +273,7 @@ Timetable.prototype.optimizeCell = function ($cell) {
     });
 
     if (short.length) {
-        var subjs = (width < 180) ? [short, subj] : [subj, short];
+        var subjs = (width < 180) || $cell.hasClass('short_force') ? [short, subj] : [subj, short];
         subjs[0].show();
         subjs[1].hide();
     }

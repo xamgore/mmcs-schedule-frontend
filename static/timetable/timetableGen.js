@@ -102,7 +102,14 @@ Generator.prototype.abbrName = function(name) {
         return name;
 };
 
-Generator.prototype.fillCell = function (curriculum, $cell) {
+/**
+ * @param {curriculum_t} curriculum
+ * @param {jQuery} $subjectCell
+ * @param {jQuery} $teacherCell
+ */
+Generator.prototype.fillCell = function (curriculum, $subjectCell, $teacherCell) {
+    'use strict';
+
     var self = this;
     if (!$cell) {
         // todo: debug info
@@ -110,15 +117,13 @@ Generator.prototype.fillCell = function (curriculum, $cell) {
         return;
     }
 
-    ['subjectname', 'subjectabbr', 'teachername', 'roomname'].forEach(function (type) {
-        var data = curriculum[type];
-        if (data) {
-            if ( type === 'teachername' )
-                $cell.append('<p class="' + self.lmap[type] + '"><abbr title="' + data + '">' + self.abbrName(data) + '</abbr></p>');
-            else
-                $cell.append('<p class="' + self.lmap[type] + '">' + data + '</p>');
-        }
-    });
+    $subjectCell.append('<p class="' + self.lmap['subjectname'] + '">' + curriculum['subjectname'] + '</p>');
+    $subjectCell.append('<p class="' + self.lmap['subjectabbr'] + '">'
+        + '<abbr title="' + curriculum['subjectabbr'] + '">' + curriculum['subjectname'] + '</abbr></p>');
+
+    $teacherCell.append('<p class="' + self.lmap['teachername'] + '">'
+        + '<abbr title="' + curriculum['teachername'] + '">' + self.abbrName(curriculum['teachername']) + '</abbr></p>');
+    $teacherCell.append('<p class="' + self.lmap['roomname'] + '">' + curriculum['roomname'] + '</p>');
 };
 
 Generator.prototype.fillLayoutCell = function (cell, $base) {
