@@ -220,7 +220,7 @@ $(function () {
     };
 
     /**
-     * @param {group_t} group
+     * @param {subject_t} subject
      * @returns {string}
      */
     menu.subjectOption = function (subject) {
@@ -228,7 +228,7 @@ $(function () {
     };
 
     /**
-     * @param {group_t} group
+     * @param {teacher_t} teacher
      * @returns {string}
      */
     menu.teacherOption = function (teacher) {
@@ -236,7 +236,7 @@ $(function () {
     };
 
     /**
-     * @param {group_t} group
+     * @param {room_t} room
      * @returns {string}
      */
     menu.roomOption = function (room) {

@@ -128,7 +128,10 @@ $(function () {
         // todo: extract to loader
         menu.getJSON('schedule/group/' + group, function (data) {
             prepareData(data);
-            table.draw(data);
+            table.draw(data, {
+                top: days,
+                side: timeList
+            });
             table.show(true);
             table.optimize();
         });

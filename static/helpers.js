@@ -66,7 +66,6 @@ var prepareData = function(data) {
         elem.begNum = localeTime(elem.timeslot.beg);
         elem.day = elem.timeslot.day;
     });
-    data.lessons = groupBy(data.lessons, 'day');
     data.curricula = groupBy(data.curricula, 'lessonid');
 };
 

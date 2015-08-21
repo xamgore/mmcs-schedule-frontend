@@ -16,14 +16,14 @@ Generator.prototype.setWeek = function (week) {
     this.weekClass = week ? 'lower_week' : 'upper_week';
 };
 
-Generator.prototype.getWorkspace = function ($table) {
+Generator.prototype.getWorkspace = function ($tableBase) {
     var i, j;
     var topBar = [];
     var sideBar = [];
     var cells = [];
-    var $base = $table.find('.timetable').first();
+    var $table = $tableBase.find('.timetable').first();
 
-    var $topRow = $('<tr class=".tr_top"><td></td></tr>').appendTo($base);
+    var $topRow = $('<tr class=".tr_top"><td></td></tr>').appendTo($table);
     for (i = 0; i < 6; ++i) {
         var $dayCell = $('<td class="top" width="16%"></td>').appendTo($topRow);
         topBar.push($dayCell);
@@ -42,18 +42,21 @@ Generator.prototype.getWorkspace = function ($table) {
             var cell = $('<td class="subject_cell"></td>').appendTo($row);
             cells[i].push(cell);
         }
-        $base.append($row);
+        $table.append($row);
     }
 
     return {
-        main: $base,
-        top: topBar,
-        side: sideBar,
-        cells: cells
+        table: $table,
+        cells: cells,
+        bars: {
+            top: topBar,
+            side: sideBar
+        }
     };
 };
 
-Generator.prototype.getVertical = function (num) {
+Generator.prototype.getVertical = function (num, $cell) {
+    'use strict';
     var table = $('<table class="table_subgroups" border="0" cellspacing="0" cellpadding="0"><tr class="subgroups"></tr></table>');
     var sub = [];
 
@@ -62,13 +65,12 @@ Generator.prototype.getVertical = function (num) {
         var sg = $('<td></td>').appendTo($row);
         sub.push(sg);
     }
-    return {
-        base: table,
-        sub: sub
-    };
+
+    $cell.append(table);
+    return sub;
 };
 
-Generator.prototype.getHorizontal = function () {
+Generator.prototype.getHorizontal = function ($base) {
 
     var $table = $('<table class="table_horizontal_divider" border="0" cellspacing="0" cellpadding="0"></table>');
     var sub = [];
@@ -79,11 +81,9 @@ Generator.prototype.getHorizontal = function () {
         sub.push($cell);
     });
     $table.find('.' + this.weekClass).addClass('inactive_week');
+    $base.append($table);
 
-    return {
-        base: $table,
-        sub: sub
-    };
+    return sub;
 };
 
 
@@ -102,46 +102,44 @@ Generator.prototype.abbrName = function(name) {
         return name;
 };
 
-Generator.prototype.fillCell = function (data, $cell) {
+Generator.prototype.fillCell = function (curriculum, $cell) {
     var self = this;
+    if (!$cell) {
+        // todo: debug info
+        console.log('invalid cell!', $cell);
+        return;
+    }
 
     ['subjectname', 'subjectabbr', 'teachername', 'roomname'].forEach(function (type) {
-        if (data[type] && $cell) {
+        var data = curriculum[type];
+        if (data) {
             if ( type === 'teachername' )
-                $cell.append('<p class="' + self.lmap[type] + '"><abbr title="' + data[type] + '">' + Generator.prototype.abbrName(data[type]) + '</abbr></p>');
+                $cell.append('<p class="' + self.lmap[type] + '"><abbr title="' + data + '">' + self.abbrName(data) + '</abbr></p>');
             else
-                $cell.append('<p class="' + self.lmap[type] + '">' + data[type] + '</p>');
-        } else {
-            // todo: kill debug
-            console.log('undefined cell', $cell);
+                $cell.append('<p class="' + self.lmap[type] + '">' + data + '</p>');
         }
     });
 };
 
 Generator.prototype.fillLayoutCell = function (cell, $base) {
-    var split = cell.upper || cell.lower;
-    var res = {
-        full: $base,
-        lower: null,
-        upper: null
-    };
-
-    if (split) {
-        var horizontal = this.getHorizontal();
-        res.upper = horizontal.sub[0];
-        res.lower = horizontal.sub[1];
-
-        if (cell.full) {
-            var vert = this.getVertical(2);
-            res.full = vert.sub[0];
-            vert.sub[1].append(horizontal.base);
-
-            $base.append(vert.base);
-        } else {
-            $base.append(horizontal.base);
-        }
+    var res = { full: $base };
+    if (!cell) {
+        return res;
     }
 
+    var split = cell.upper || cell.lower;
+    if (split) {
+        var horBase = $base;
+        if (cell.full) {
+            var vertCell = this.getVertical(2, $base); // full & divided cells
+            res.full = vertCell[0];
+            horBase = vertCell[1];
+        }
+        var horCell = this.getHorizontal(horBase);
+
+        res.upper = horCell[0];
+        res.lower = horCell[1];
+    }
     return res;
 };
 

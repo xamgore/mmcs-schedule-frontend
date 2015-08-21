@@ -1,7 +1,39 @@
 /**
+ * @typedef {object} curriculum_t
+ * @property {number} id
+ * @property {number} lessonid
+ * @property {number} subnum
+ *
+ * @property {number} roomid
+ * @property {string} roomname
+ *
+ * @property {number} subjectid
+ * @property {string} subjectname
+ *
+ * @property {number} teacherid
+ * @property {string} teachername
+ * @property {string} teacherdegree
+ */
+
+/**
+ * @typedef {object} lesson_t
+ * @property {number} id
+ * @property {number} day
+ * @property {number} subcount
+ * @property {number} begNum
+ */
+
+/**
+ * @typedef {object} schedule_t
+ * @property {object[]} lessons
+ * @property {object} curricula
+ * @property {curriculum_t[]} curricula.*
+ */
+
+
+/**
  * @param {Generator}   generator
  * @param {object}      data
- *
  * @param {jQuery}      data.base
  *
  * @constructor
@@ -9,8 +41,9 @@
 function Timetable(generator, data) {
     'use strict';
 
-    this.$base = data.base;
-    this.gen = generator;
+    this.tableBase = data.base;
+    this.tableGen = generator;
+    this.bars = {};
     this.created = false;
 }
 
@@ -23,9 +56,9 @@ Timetable.prototype.erase = function () {
     delete this.schedule;
     this.created = false;
 
-    if (this.$table) {
+    if (this.table) {
         this.show(false);
-        this.$table.html('');
+        this.table.html('');
     }
 };
 
@@ -36,15 +69,15 @@ Timetable.prototype.erase = function () {
  */
 Timetable.prototype.show = function (state) {
     'use strict';
-    if (!this.$table) {
+    if (!this.table) {
         return;
     }
     if (state) {
         $('.welcome_wrapper').hide();
-        this.$base.show();
+        this.tableBase.show();
         $('.print_schedule').show(); // todo: what this??
     } else {
-        this.$base.hide();
+        this.tableBase.hide();
         $('.print_schedule').hide();
         $('.welcome_wrapper').show();
     }
@@ -56,14 +89,10 @@ Timetable.prototype.create = function () {
     this.erase();
     this.created = true;
 
-    var table = this.gen.getWorkspace(this.$base);
+    var table = this.tableGen.getWorkspace(this.tableBase);
     this.cells = table.cells;
-    this.$table = table.main;
-
-    this.bar = {
-        top: table.top,
-        side: table.side
-    };
+    this.table = table.table;
+    this.bars = table.bars;
 };
 
 
@@ -74,38 +103,57 @@ Timetable.prototype.create = function () {
  */
 Timetable.prototype.fillBar = function (type, data) {
     'use strict';
-    if (!(data && this.bar && this.bar[type])) {
-        return;
+    var bar = this.bars[type];
+    if (Array.isArray(data) && Array.isArray(bar)) {
+        var length = Math.min(bar.length, data.length);
+        var i;
+        for (i = 0; i < length; ++i) {
+            bar[i].html(data[i]);
+        }
     }
-    var bar = this.bar[type];
-    bar.forEach(function (barCell, i) {
-        //if (!(data[i] || barCell)) {
-        //    return;
-        //}
-        barCell.html(data[i]);
-    });
 };
 
 
+
+/**
+ * @typedef {object[][]} metric_t
+ * @property {number} [full]
+ * @property {number} [upper]
+ * @property {number} [lower]
+ */
+/**
+ * @param {schedule_t} schedule
+ * @returns {metric_t}
+ */
 Timetable.prototype.gatherMetrics = function (schedule) {
     'use strict';
     var metrics = [];
+    if (schedule && Array.isArray(schedule.lessons)) {
+        schedule.lessons.forEach(function (lesson) {
+            var split = lesson.timeslot.split;
+            var day = lesson.timeslot.day;
+            var beg = lesson.begNum;
 
-    $.each(schedule.lessons, function (i, dayStrip) {
-        var metricDay = metrics[i] = [];
-        dayStrip.forEach(function (lesson) {
-            var dst = metricDay[lesson.begNum];
-            var splitType = lesson.timeslot.split;
-            if (!dst) {
-                dst = metricDay[lesson.begNum] = {cnt: 0};
-            }
-            dst[splitType] = Math.max(dst[splitType] || 0, lesson.subcount);
-            dst.cnt += 1;
+            var metricDay = metrics[day] = metrics[day] || [];
+            var dst = metricDay[beg] = metricDay[beg] || {};
+
+            dst[split] = Math.max(dst[split] || 0, lesson.subcount);
         });
-    });
+    }
     return metrics;
 };
 
+
+/**
+ * @typedef {object[][]} layout_t
+ * @property {jQuery} [full]
+ * @property {jQuery} [upper]
+ * @property {jQuery} [lower]
+ */
+/**
+ * @param {schedule_t} schedule
+ * @returns {layout_t}
+ */
 Timetable.prototype.createLayout = function (schedule) {
     'use strict';
     var metrics = this.gatherMetrics(schedule);
@@ -113,86 +161,110 @@ Timetable.prototype.createLayout = function (schedule) {
     var self = this;
 
     metrics.forEach(function (day, dayNum) {
-        layout[dayNum] = [];
-        day.forEach(function (metricCell, lesNum) {
-            var $base = self.cells[dayNum][lesNum];
-            layout[dayNum][lesNum] = self.gen.fillLayoutCell(metricCell, $base);
+        var layDay = layout[dayNum] = [];
+        day.forEach(function (metric, lesNum) {
+            var $cell = self.cells[dayNum][lesNum];
+            layDay[lesNum] = self.tableGen.fillLayoutCell(metric, $cell);
         });
     });
     return layout;
 };
 
-
-Timetable.prototype.createLesson = function (curricula, lesson, $cell) {
+/**
+ * @param {curriculum_t[]} curricula
+ * @param {lesson_t} lesson
+ * @param {jQuery} $lessonCell
+ */
+Timetable.prototype.createLesson = function (curricula, lesson, $lessonCell) {
     'use strict';
     var self = this;
-
-    if (!(curricula && lesson)) {
+    if (!Array.isArray(curricula) || !lesson || !$lessonCell) {
         return;
     }
 
-    $cell.addClass('uberCell');
-    $cell.attr('id', 'lesID_' + lesson.id);
+    // todo: move to generator
+    $lessonCell.addClass('uberCell');
+    $lessonCell.attr('id', 'lesID_' + lesson.id);
 
-    var table = {sub: [$cell]};
-    if (lesson.subcount > 1) {
-        table = this.gen.getVertical(lesson.subcount);
-        $cell.append(table.base);
-    }
+    var table = (lesson.subcount > 1)
+                    ? this.tableGen.getVertical(+lesson.subcount, $lessonCell)
+                    : [ $lessonCell ];
 
     curricula.forEach(function (curriculum) {
-        var sgNum = curriculum.subnum - 1;
-        self.gen.fillCell(curriculum, table.sub[sgNum]);
+        var sgNum = +curriculum.subnum - 1;
+        self.tableGen.fillCell(curriculum, table[sgNum]);
     });
 };
 
-Timetable.prototype.draw = function (schedule) {
+/**
+ * @param {schedule_t} schedule
+ * @param {object} bars
+ * @param {*[]} bars.*
+ */
+Timetable.prototype.draw = function (schedule, bars) {
     'use strict';
-    this.create();
-    // todo: hardcode data
-    this.fillBar('top', days);
-    this.fillBar('side', timeList);
-
     var self = this;
-    var layout = this.createLayout(schedule);
-    this.layout = layout;
+    this.create();
+    this.layout = this.createLayout(schedule);
     this.schedule = schedule;
 
-
     // todo: delete debug info
-    console.log(layout);
     console.log(schedule);
+    console.log(this.layout);
 
-    $.each(schedule.lessons, function (dayNum, dayLessons) {
-        dayLessons.forEach(function (lesson) {
-            var curricula = schedule.curricula[lesson.id];
-            var splitType = lesson.timeslot.split;
-            var $cell = layout[dayNum][lesson.begNum][splitType];
 
-            self.createLesson(curricula, lesson, $cell);
-        });
+    $.each(bars, function (key, data) {
+        self.fillBar(key, data);
+    });
+    var curricula = schedule.curricula;
+    schedule.lessons.forEach(function (lesson) {
+        var day = lesson.day;
+        var beg = lesson.begNum;
+        var split = lesson.timeslot.split;
+
+        var curriculumSet = curricula[lesson.id]; // list of curricula for lesson
+        var $cell = self.layout[day][beg][split]; // lesson DOM cell
+
+        self.createLesson(curriculumSet, lesson, $cell);
     });
 
     this.show(true);
 };
 
 
-Timetable.prototype.optimize = function() {
-    $('.subject_cell').each(function () {
-        if (($(this).children('.table_subgroups').height() < $(this).height()) && ($(this).children('.table_subgroups').height() != null))
-            $(this).children('.table_subgroups').css('height', $(this).height() + 2);
-        if (($(this).children('.table_horizontal_divider').height() < $(this).height()) && ($(this).children('.table_horizontal_divider').height() != null))
-            $(this).children('.table_horizontal_divider').css('height', $(this).height() + 2);
-        if ($(this).find('.subject_short').length)
-            if ($(this).width() < 180) {
-                $(this).find('.subject').css('display', 'none');
-                if ($(this).find('.subject_short').css('display') == 'none')
-                    $(this).find('.subject_short').css('display', 'block');
-            }
-            else {
-                $(this).find('.subject_short').css('display', 'none');
-                if ($(this).find('.subject').css('display') == 'none')
-                    $(this).find('.subject').css('display', 'block');
-            }
+/**
+ * @param {jQuery} $cell
+ */
+Timetable.prototype.optimizeCell = function ($cell) {
+    'use strict';
+    var height = $cell.height();
+    var width = $cell.width();
+
+    var sg = $cell.children('.table_subgroups');
+    var hor = $cell.children('.table_horizontal_divider');
+    var short = $cell.find('.subject_short');
+    var subj = $cell.find('.subject');
+
+    [sg, hor].forEach(function (elem) {
+        if (elem.height() < height && elem.height() !== null) {
+            elem.css('height', height + 2);
+        }
     });
+
+    if (short.length) {
+        var subjs = (width < 180) ? [short, subj] : [subj, short];
+        subjs[0].show();
+        subjs[1].hide();
+    }
+};
+
+Timetable.prototype.optimize = function () {
+    'use strict';
+    var i, j, row;
+    for (i = 0; i < this.cells.length; ++i) {
+        row = this.cells[i];
+        for (j = 0; j < row.length; ++j) {
+            this.optimizeCell(row[j]);
+        }
+    }
 };
