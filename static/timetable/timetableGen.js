@@ -111,7 +111,7 @@ Generator.prototype.fillCell = function (curriculum, $subjectCell, $teacherCell)
     'use strict';
 
     var self = this;
-    if (!$cell) {
+    if (!$subjectCell || !$teacherCell) {
         // todo: debug info
         console.log('invalid cell!', curriculum);
         return;

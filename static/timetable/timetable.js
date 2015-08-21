@@ -282,7 +282,7 @@ Timetable.prototype.optimizeCell = function ($cell) {
 Timetable.prototype.optimize = function () {
     'use strict';
     var i, j, row;
-    if (!Array.isArray(cells)) {
+    if (!Array.isArray(this.cells)) {
         return;
     }
     for (i = 0; i < this.cells.length; ++i) {
