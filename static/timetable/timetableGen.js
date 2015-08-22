@@ -57,13 +57,18 @@ Generator.prototype.getWorkspace = function ($tableBase) {
 
 Generator.prototype.getVertical = function (num, $cell) {
     'use strict';
-    var table = $('<table class="table_subgroups" border="0" cellspacing="0" cellpadding="0"><tr class="subgroups"></tr></table>');
+    var table = $('<table class="table_subgroups" border="0" cellspacing="0" cellpadding="0">' +
+        '<tr class="subgroups subgroups_subject"></tr>' +
+        '<tr class="subgroups subgroups_teacher"></tr>' +
+        '</table>');
     var sub = [];
 
-    var $row = table.find('tr');
+    var $subject_row = table.find('tr.subgroups_subject');
+    var $teacher_row = table.find('tr.subgroups_teacher');
     for (var i = 0; i < num; ++i) {
-        var sg = $('<td></td>').appendTo($row);
-        sub.push(sg);
+        var sg_subj = $('<td></td>').appendTo($subject_row);
+        var sg_teach = $('<td></td>').appendTo($teacher_row);
+        sub.push( {$subjectCell: sg_subj, $teacherCell: sg_teach} );
     }
 
     $cell.append(table);
@@ -119,7 +124,7 @@ Generator.prototype.fillCell = function (curriculum, $subjectCell, $teacherCell)
 
     $subjectCell.append('<p class="' + self.lmap['subjectname'] + '">' + curriculum['subjectname'] + '</p>');
     $subjectCell.append('<p class="' + self.lmap['subjectabbr'] + '">'
-        + '<abbr title="' + curriculum['subjectabbr'] + '">' + curriculum['subjectname'] + '</abbr></p>');
+        + '<abbr title="' + curriculum['subjectname'] + '">' + curriculum['subjectabbr'] + '</abbr></p>');
 
     $teacherCell.append('<p class="' + self.lmap['teachername'] + '">'
         + '<abbr title="' + curriculum['teachername'] + '">' + self.abbrName(curriculum['teachername']) + '</abbr></p>');

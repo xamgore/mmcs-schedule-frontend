@@ -188,12 +188,12 @@ Timetable.prototype.createLesson = function (curricula, lesson, $lessonCell) {
 
     var table = (lesson.subcount > 1)
                     ? this.tableGen.getVertical(+lesson.subcount, $lessonCell)
-                    : [ $lessonCell ];
+                    : [ {$subjectCell: $lessonCell, $teacherCell: $lessonCell} ];
 
     $lessonCell.addClass('short_force');
     curricula.forEach(function (curriculum) {
         var sgNum = +curriculum.subnum - 1;
-        self.tableGen.fillCell(curriculum, table[sgNum]);
+        self.tableGen.fillCell(curriculum, table[sgNum].$subjectCell, table[sgNum].$teacherCell);
     });
 };
 
@@ -238,6 +238,21 @@ Timetable.prototype.draw = function (schedule, bars) {
 Timetable.prototype.optimizeSubgroupsTable = function ($grouptable) {
     'use strict';
 
+    var $subject_row = $grouptable.find('tr.subgroups_subject');
+    var $subjects = $subject_row.find('td');
+    var cnt = $subjects.length;
+
+    for (var i=0; i < cnt-1; ++i) {
+        var $first = $($subjects[i]);
+        var $second = $($subjects[i+1]);
+        if ( $first.text() !== '' && $first.text() === $second.text() ) {
+            var firstcolspan = +$first.attr('colspan');
+            var secondcolspan = +$second.attr('colspan');
+            var newcolspan = (isNaN(firstcolspan) ? 1 : firstcolspan) + (isNaN(secondcolspan) ? 1 : secondcolspan);
+            $second.attr('colspan', newcolspan);
+            $first.remove();
+        }
+    }
 
 }
 
@@ -257,20 +272,20 @@ Timetable.prototype.optimizeCell = function ($cell) {
 
     var hor = $cell.children('.table_horizontal_divider');
     if ( hor.length ) {
-        hor.find('.upper_week:not(.inactive_week), .lower_week:not(.inactive_week)').forEach(function(elem) {
-            this.optimizeCell(elem);
+        hor.find('.upper_week, .lower_week').each(function() {
+            Timetable.prototype.optimizeCell($(this));
         });
         return;
     }
-
-    var short = $cell.children('.subject_short');
-    var subj = $cell.children('.subject');
 
     [sg, hor].forEach(function (elem) {
         if (elem.height() < height && elem.height() !== null) {
             elem.css('height', height + 2);
         }
     });
+
+    var short = $cell.children('.subject_short');
+    var subj = $cell.children('.subject');
 
     if (short.length) {
         var subjs = (width < 180) || $cell.hasClass('short_force') ? [short, subj] : [subj, short];
