@@ -156,7 +156,7 @@ $(function () {
      * @param {weekCallback} cb
      */
     loader.week = function (cb) {
-        menu.getJSON('schedule/week', function (data) {
+        menu.getJSON('time/week', function (data) {
             if (cb) {
                 cb(+data.type);
             }

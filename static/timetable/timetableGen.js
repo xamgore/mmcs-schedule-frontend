@@ -99,6 +99,10 @@ Generator.prototype.lmap = {
     roomname: 'auditory'
 };
 
+/**
+ * @param string name
+ * @returns string
+ */
 Generator.prototype.abbrName = function(name) {
     var n = name.split(' ');
     if ( n.length === 3 )
