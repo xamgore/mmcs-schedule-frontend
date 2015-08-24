@@ -1,5 +1,8 @@
 // Версия 1.2.1
 $(function () {
+    'use strict';
+
+    var mainTitle = 'Интерактивное расписание мехмата ЮФУ';
     var $group = $("#group");
     var $grade = $("#course");
     var $teacher = $("#teacher");
@@ -8,6 +11,16 @@ $(function () {
     var $type = $('#type');
 
     var $table = $('.timetable_wrapper');
+
+
+    var setTitle = function (name) {
+        var outName = mainTitle;
+        if (name) {
+            outName += ': ' + name;
+        }
+        document.title = outName;
+    };
+    setTitle('');
 
 
     var tableGen = new Generator({ week: 0 }); // 0 - upper, 1 - lower
@@ -37,6 +50,7 @@ $(function () {
 
     $type.change(function () {
         table.show(false);
+        setTitle('');
         var type = $type.val();
         if (!type) {
             invalidate(showList.all);
@@ -65,6 +79,7 @@ $(function () {
 
     $grade.change(function () {
         table.show(false);
+        setTitle('');
         var grade = $grade.val();
         if (!grade) {
             invalidate([$group]);
@@ -86,6 +101,7 @@ $(function () {
     $group.change(function () {
         table.show(false);
         var group = $group.val();
+        setTitle('');
         if (!group) {
             return;
         }
@@ -113,6 +129,7 @@ $(function () {
 
         menu.getJSON('schedule/teacher/' + teacher, function (data) {
             prepareData(data);
+            setTitle($teacher.children('option:selected').text());
             table.drawForTeacher(data, {
                 top: days,
                 side: timeList
