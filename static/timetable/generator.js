@@ -4,6 +4,7 @@
  * @constructor
  */
 var Generator = function (data) {
+    'use strict';
     this.setWeek(+data.week || 0);
 };
 
@@ -12,11 +13,13 @@ var Generator = function (data) {
  * @param {number} week
  */
 Generator.prototype.setWeek = function (week) {
+    'use strict';
     this.week = week;
     this.weekClass = week ? 'upper_week' : 'lower_week';
 };
 
 Generator.prototype.getWorkspace = function ($tableBase) {
+    'use strict';
     var i, j;
     var topBar = [];
     var sideBar = [];
@@ -76,6 +79,7 @@ Generator.prototype.getVertical = function (num, $cell) {
 };
 
 Generator.prototype.getHorizontal = function ($base) {
+    'use strict';
 
     var $table = $('<table class="table_horizontal_divider" border="0" cellspacing="0" cellpadding="0"></table>');
     var sub = [];
@@ -100,15 +104,17 @@ Generator.prototype.lmap = {
 };
 
 /**
- * @param string name
+ * @param {string} name
  * @returns string
  */
-Generator.prototype.abbrName = function(name) {
+Generator.prototype.abbrName = function (name) {
+    'use strict';
     var n = name.split(' ');
-    if ( n.length === 3 )
+    if ( n.length === 3 ) {
         return n[0] + ' ' + n[1][0] + '.' + n[2][0] + '.';
-    else
+    } else {
         return name;
+    }
 };
 
 /**
@@ -135,7 +141,46 @@ Generator.prototype.fillCell = function (curriculum, $subjectCell, $teacherCell)
     $teacherCell.append('<p class="' + self.lmap['roomname'] + '">' + curriculum['roomname'] + '</p>');
 };
 
+
+Generator.prototype.fillCellTeacher = function (curricula, lesson, $cell) {
+    'use strict';
+    var curriculum = curricula[0];
+
+    var self = this;
+    if (!$cell) {
+        // todo: debug info
+        console.log('invalid cell!', curriculum);
+        return;
+    }
+
+    var rooms = '';
+    curricula.forEach (function(curriculum) {
+        if (curriculum.roomname) {
+            rooms += curriculum.roomname + ', ';
+        }
+    });
+    rooms = rooms.replace(/[ ,]+$/, '');
+
+    $cell.append('<p class="' + self.lmap['subjectname'] + '">' + curriculum['subjectname'] + '</p>');
+    $cell.append('<p class="' + self.lmap['subjectabbr'] + '">'
+        + '<abbr title="' + curriculum['subjectname'] + '">' + curriculum['subjectabbr'] + '</abbr></p>');
+
+    if (this.groups && lesson && lesson.uberid && Array.isArray(this.groups[lesson.uberid])) {
+        var groups = '';
+        this.groups[lesson.uberid].forEach(function (group) {
+            groups += group.name + ', ';
+        });
+        groups = groups.replace(/[, ]+$/, '');
+        $cell.append('<p class="groups">' + groups + '</p>');
+    }
+
+    $cell.append('<p class="' + self.lmap['roomname'] + '">' + rooms + '</p>');
+};
+
+
+
 Generator.prototype.fillLayoutCell = function (cell, $base) {
+    'use strict';
     var res = { full: $base };
     if (!cell) {
         return res;

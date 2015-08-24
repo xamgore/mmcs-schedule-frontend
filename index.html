@@ -9,14 +9,18 @@
     <link href="static/window/window.css" rel="stylesheet" type="text/css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="static/window/window.js"></script>
-
+    <script src="static/schedule/menuLoader.js"></script>
     <script src="static/helpers.js"></script>
-    <script src="static/schedule/scheduleData.js"></script>
-    <script src="static/timetable/timetableHelp.js"></script>
-    <script src="static/timetable/timetableGen.js"></script>
 
+    <script src="static/timetable/helper.js"></script>
+    <script src="static/timetable/generator.js"></script>
     <script src="static/timetable/timetable.js"></script>
+
+
     <script src="static/schedule/schedule.js"></script>
+    <script src="static/schedule/deletetion.js"></script>
+    <script src="static/schedule/edit.js"></script>
+
 </head>
 <body>
 <div class="shadow"></div>
@@ -41,7 +45,7 @@
             <select id="type" class="default_select">
                 <option value="0" selected='selected'>Выберите тип расписания:</option>
                 <option value="group">Группа</option>
-                <!--<option value="teacher">Преподаватель</option>-->
+                <option value="teacher">Преподаватель</option>
                 <!--<option value="auditory">Аудитория</option>-->
                 <!--<option value="chair" disabled="disabled">Кафедра</option>-->
                 <!--<option value="session" disabled="disabled">Сессия</option>-->

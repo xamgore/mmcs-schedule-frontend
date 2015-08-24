@@ -190,7 +190,6 @@ Timetable.prototype.createLesson = function (curricula, lesson, $lessonCell) {
                     ? this.tableGen.getVertical(+lesson.subcount, $lessonCell)
                     : [ {$subjectCell: $lessonCell, $teacherCell: $lessonCell} ];
 
-    $lessonCell.addClass('short_force');
     curricula.forEach(function (curriculum) {
         var sgNum = +curriculum.subnum - 1;
         self.tableGen.fillCell(curriculum, table[sgNum].$subjectCell, table[sgNum].$teacherCell);
@@ -253,8 +252,7 @@ Timetable.prototype.optimizeSubgroupsTable = function ($grouptable) {
             $first.remove();
         }
     }
-
-}
+};
 
 /**
  * @param {jQuery} $cell
@@ -288,7 +286,7 @@ Timetable.prototype.optimizeCell = function ($cell) {
     var subj = $cell.children('.subject');
 
     if (short.length) {
-        var subjs = (width < 180) || $cell.hasClass('short_force') ? [short, subj] : [subj, short];
+        var subjs = (width < 180) ? [short, subj] : [subj, short];
         subjs[0].show();
         subjs[1].hide();
     }
@@ -306,4 +304,59 @@ Timetable.prototype.optimize = function () {
             this.optimizeCell(row[j]);
         }
     }
+};
+
+
+
+
+
+
+
+
+// todo: merge
+
+
+Timetable.prototype.createLessonTeacher = function (curricula, lesson, $cell) {
+    'use strict';
+    var self = this;
+    if (!Array.isArray(curricula) || curricula.length <= 0 || !lesson || !$cell) {
+        return;
+    }
+
+    self.tableGen.fillCellTeacher(curricula, lesson, $cell);
+
+
+
+
+};
+
+
+Timetable.prototype.drawForTeacher = function (schedule, bars) {
+    'use strict';
+    var self = this;
+    this.create();
+
+    this.layout = this.createLayout(schedule);
+    this.schedule = schedule;
+    // todo: delete debug info
+    console.log(schedule);
+    this.tableGen.groups = schedule.groups;
+
+
+    $.each(bars, function (key, data) {
+        self.fillBar(key, data);
+    });
+    var curricula = schedule.curricula;
+    schedule.lessons.forEach(function (lesson) {
+        var day = lesson.day;
+        var beg = lesson.begNum;
+        var split = lesson.timeslot.split;
+
+        var curriculumSet = curricula[lesson.id]; // list of curricula for lesson
+        var $cell = self.layout[day][beg][split]; // lesson DOM cell
+
+        self.createLessonTeacher(curriculumSet, lesson, $cell);
+    });
+
+    this.show(true);
 };
