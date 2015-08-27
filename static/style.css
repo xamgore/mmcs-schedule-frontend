@@ -111,14 +111,14 @@ td {
 }
 
 .header_wrapper .header_box .site_title a:hover {
-    text-decoration: none
+    text-decoration: none;
 }
 
 .header_wrapper .header_box .site_title h1.faculty_title {
     margin-top: 10px;
     font-size: 1.4em;
     font-weight: bold;
-    color: #C3DFED
+    color: #c3dfed;
 }
 
 .header_wrapper .header_box .site_title p.week_now {
@@ -213,6 +213,8 @@ td {
 }
 
 .timetable td.subject_cell {
+    color: #363636;
+    margin: 0px 6px;
     /* height: inherit; */
 }
 
@@ -220,37 +222,29 @@ td {
     margin: 0px 4px 5px 4px;
     background-color: #ffff00;
     font-size: 0.75em;
-    font-weight: bold;
-    color: #363636;
 }
 
 .timetable td.subject_cell .attention {
     margin: 0px 4px 5px 4px;
-    background-color: #FF0000;
+    background-color: #f00 !important;
     font-size: 0.75em;
     font-weight: bold;
-    color: #ffffff;
+    color: #fff;
 }
 
 .timetable td.subject_cell .subject {
-    margin: 0px 6px;
     font-size: 0.95em;
     font-weight: bold;
-    color: #363636
 }
 
 .timetable td.subject_cell .subject_short {
     display: none;
-    margin: 0px 6px;
     font-size: 0.95em;
     font-weight: bold;
-    color: #363636
 }
 
 .timetable td.subject_cell .lectuer {
-    margin: 0px 6px;
     font-size: 0.85em;
-    color: #363636
 }
 
 .timetable td.subject_cell .auditory {
@@ -259,7 +253,6 @@ td {
     margin: 0px 4px;
     font-size: 0.75em;
     font-weight: bold;
-    color: #363636
 }
 
 .timetable td.subject_cell .groups {
@@ -267,63 +260,24 @@ td {
     margin: 0 auto;
     font-size: 0.75em;
     font-weight: bold;
-    color: #363636
 }
 
 /**/
+
+.timetable td.subject_cell .inactive_week {
+    color: #8f8f8f !important;
+}
+
 .timetable td.subject_cell .inactive_week .notice {
-    margin: 0px 4px 5px 4px;
-    background-color: #e8e8e8;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #cecece;
+    background-color: #e8e8e8 !important;
+    color: #cecece !important;
 }
 
 .timetable td.subject_cell .inactive_week .attention {
-    margin: 0px 4px 5px 4px;
-    background-color: #aaaaaa;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #ffffff;
+    background-color: #aaa;
+    color: #fff;
 }
 
-.timetable td.subject_cell .inactive_week .subject {
-    margin: 0px 6px;
-    font-size: 0.95em;
-    font-weight: bold;
-    color: #8f8f8f
-}
-
-.timetable td.subject_cell .inactive_week .subject_short {
-    display: none;
-    margin: 0px 6px;
-    font-size: 0.95em;
-    font-weight: bold;
-    color: #8f8f8f
-}
-
-.timetable td.subject_cell .inactive_week .lectuer {
-    margin: 0px 6px;
-    font-size: 0.85em;
-    color: #8f8f8f
-}
-
-.timetable td.subject_cell .inactive_week .auditory {
-    float: right;
-    clear: both;
-    margin: 0px 4px;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #8f8f8f
-}
-
-.timetable td.subject_cell .inactive_week .groups {
-    clear: both;
-    margin: 0 auto;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #8f8f8f
-}
 
 /**/
 .timetable td.subject_cell.no_subgroups {
@@ -357,11 +311,8 @@ td {
     border-collapse: collapse;
 }
 
-.timetable td.subject_cell .table_subgroups .subgroups {
-    height: 100%;
-    width: 100%;
-    border-collapse: collapse;
-}
+/*.timetable td.subject_cell .table_subgroups .subgroups {*/
+/*}*/
 
 .timetable td.subject_cell .table_subgroups .subgroups td {
     padding: 5px 0px 2px 0px
