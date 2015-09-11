@@ -1,1 +1,12 @@
-* {    -webkit-print-color-adjust: exact;}.header_wrapper, .choice_timetable_wrapper, .welcome_wrapper, .footer {    display: none}.timetable_wrapper .type_timetable {    display: block;    margin-bottom: 10px;}
+* {
+    -webkit-print-color-adjust: exact;
+}
+
+.header_wrapper, .choice_timetable_wrapper, .welcome_wrapper, .footer {
+    display: none
+}
+
+.timetable_wrapper .type_timetable {
+    display: block;
+    margin-bottom: 10px;
+}

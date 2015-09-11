@@ -1,204 +1,162 @@
-/**
- * @param {object} data
- * @param {number} [data.week]
- * @constructor
- */
-var Generator = function (data) {
+var Generator = function () {
     'use strict';
-    this.setWeek(+data.week || 0);
 };
 
 
-/**
- * @param {number} week
- */
-Generator.prototype.setWeek = function (week) {
+
+(function () {
     'use strict';
-    this.week = week;
-    this.weekClass = week ? 'upper_week' : 'lower_week';
-};
 
-Generator.prototype.getWorkspace = function ($tableBase) {
-    'use strict';
-    var i, j;
-    var topBar = [];
-    var sideBar = [];
-    var cells = [];
-    var $table = $tableBase.find('.timetable').first();
 
-    var $topRow = $('<tr class=".tr_top"><td></td></tr>').appendTo($table);
-    for (i = 0; i < 6; ++i) {
-        var $dayCell = $('<td class="top" width="16%"></td>').appendTo($topRow);
-        topBar.push($dayCell);
-    }
 
-    for (i = 0; i < 6; ++i) {
-        cells[i] = [];
-    }
+// =================================
+//      layout
+// =================================
 
-    for (j = 0; j < 6; ++j) {
-        var $row = $('<tr></tr>');
-        var $leftElem = $('<td class="time"></td>').appendTo($row);
-        sideBar.push($leftElem);
+    Generator.prototype.createWorkspace = function (data) {
 
+        var table = $(data.base).find('.timetable').first();
+
+        var i, j;
+        var topBar = [];
+        var sideBar = [];
+        var cells = [];
+
+        var $topRow = $('<tr class=".tr_top"><td></td></tr>').appendTo(table);
         for (i = 0; i < 6; ++i) {
-            var cell = $('<td class="subject_cell"></td>').appendTo($row);
-            cells[i].push(cell);
+            var $dayCell = $('<td class="top" width="16%"></td>').appendTo($topRow);
+            topBar.push($dayCell);
+            cells[i] = [];
         }
-        $table.append($row);
-    }
 
-    return {
-        table: $table,
-        cells: cells,
-        bars: {
+        for (j = 0; j < 6; ++j) {
+            var $row = $('<tr></tr>');
+            var $leftElem = $('<td class="time"></td>').appendTo($row);
+            sideBar.push($leftElem);
+
+            for (i = 0; i < 6; ++i) {
+                var cell = $('<td class="subject_cell"></td>').appendTo($row);
+                cells[i].push(cell);
+            }
+            table.append($row);
+        }
+
+        return {
+            table: table,
+            cells: cells,
             top: topBar,
-            side: sideBar
-        }
+            side: sideBar,
+            rows: data.rows,
+            cols: data.cols
+        };
     };
-};
-
-Generator.prototype.getVertical = function (num, $cell) {
-    'use strict';
-    var table = $('<table class="table_subgroups" border="0" cellspacing="0" cellpadding="0">' +
-        '<tr class="subgroups subgroups_subject"></tr>' +
-        '<tr class="subgroups subgroups_teacher"></tr>' +
-        '</table>');
-    var sub = [];
-
-    var $subject_row = table.find('tr.subgroups_subject');
-    var $teacher_row = table.find('tr.subgroups_teacher');
-    for (var i = 0; i < num; ++i) {
-        var sg_subj = $('<td></td>').appendTo($subject_row);
-        var sg_teach = $('<td></td>').appendTo($teacher_row);
-        sub.push( {$subjectCell: sg_subj, $teacherCell: sg_teach} );
-    }
-
-    $cell.append(table);
-    return sub;
-};
-
-Generator.prototype.getHorizontal = function ($base) {
-    'use strict';
-
-    var $table = $('<table class="table_horizontal_divider" border="0" cellspacing="0" cellpadding="0"></table>');
-    var sub = [];
-
-    ['upper_week', 'lower_week'].forEach(function (elemClass) {
-        var $row = $('<tr></tr>').appendTo($table);
-        var $cell = $('<td class="' + elemClass + '"></td>').appendTo($row);
-        sub.push($cell);
-    });
-    $table.find('.' + this.weekClass).addClass('inactive_week');
-    $base.append($table);
-
-    return sub;
-};
 
 
-Generator.prototype.lmap = {
-    subjectname: 'subject',
-    subjectabbr: 'subject_short',
-    teachername: 'lectuer',
-    roomname: 'auditory'
-};
+    Generator.prototype.getVertical = function (num, $cell) {
+        var table = $('<table class="table_subgroups" border="0" cellspacing="0" cellpadding="0"><tr class="subgroups"></tr></table>');
+        var sub = [];
 
-/**
- * @param {string} name
- * @returns string
- */
-Generator.prototype.abbrName = function (name) {
-    'use strict';
-    var n = name.split(' ');
-    if ( n.length === 3 ) {
-        return n[0] + ' ' + n[1][0] + '.' + n[2][0] + '.';
-    } else {
-        return name;
-    }
-};
-
-/**
- * @param {curriculum_t} curriculum
- * @param {jQuery} $subjectCell
- * @param {jQuery} $teacherCell
- */
-Generator.prototype.fillCell = function (curriculum, $subjectCell, $teacherCell) {
-    'use strict';
-
-    var self = this;
-    if (!$subjectCell || !$teacherCell) {
-        // todo: debug info
-        console.log('invalid cell!', curriculum);
-        return;
-    }
-
-    $subjectCell.append('<p class="' + self.lmap['subjectname'] + '">' + curriculum['subjectname'] + '</p>');
-    $subjectCell.append('<p class="' + self.lmap['subjectabbr'] + '">'
-        + '<abbr title="' + curriculum['subjectname'] + '">' + curriculum['subjectabbr'] + '</abbr></p>');
-
-    $teacherCell.append('<p class="' + self.lmap['teachername'] + '">'
-        + '<abbr title="' + curriculum['teachername'] + '">' + self.abbrName(curriculum['teachername']) + '</abbr></p>');
-    $teacherCell.append('<p class="' + self.lmap['roomname'] + '">' + curriculum['roomname'] + '</p>');
-};
-
-
-Generator.prototype.fillCellTeacher = function (curricula, lesson, $cell) {
-    'use strict';
-    var curriculum = curricula[0];
-
-    var self = this;
-    if (!$cell) {
-        // todo: debug info
-        console.log('invalid cell!', curriculum);
-        return;
-    }
-
-    var rooms = '';
-    curricula.forEach (function(curriculum) {
-        if (curriculum.roomname) {
-            rooms += curriculum.roomname + ', ';
+        var $row = table.find('tr');
+        for (var i = 0; i < num; ++i) {
+            var sg = $('<td></td>').appendTo($row);
+            sub.push(sg);
         }
-    });
-    rooms = rooms.replace(/[ ,]+$/, '');
 
-    $cell.append('<p class="' + self.lmap['subjectname'] + '">' + curriculum['subjectname'] + '</p>');
-    $cell.append('<p class="' + self.lmap['subjectabbr'] + '">'
-        + '<abbr title="' + curriculum['subjectname'] + '">' + curriculum['subjectabbr'] + '</abbr></p>');
+        $cell.append(table);
+        return sub;
+    };
 
-    if (this.groups && lesson && lesson.uberid && Array.isArray(this.groups[lesson.uberid])) {
-        var groups = '';
-        this.groups[lesson.uberid].forEach(function (group) {
-            groups += group.name + ', ';
+    Generator.prototype.splitHorizontal = function (base) {
+        var $table = $('<table class="table_horizontal_divider" border="0" cellspacing="0" cellpadding="0"></table>');
+        var sub = [];
+
+        ['upper_week', 'lower_week'].forEach(function (elemClass) {
+            var $row = $('<tr></tr>').appendTo($table);
+            var $cell = $('<td class="' + elemClass + '"></td>').appendTo($row);
+            sub.push($cell);
         });
-        groups = groups.replace(/[, ]+$/, '');
-        $cell.append('<p class="groups">' + groups + '</p>');
-    }
+        $table.find('.' + this.weekClass).addClass('inactive_week');
 
-    $cell.append('<p class="' + self.lmap['roomname'] + '">' + rooms + '</p>');
-};
+        base.append($table);
+        return sub;
+    };
 
+    /**
+     * @param {int} rows
+     * @param {int} cols
+     * @param {jQuery} base
+     * @param {integer[]=} fullSubgroups
+     * @returns {jQuery[][]}
+     */
+    Generator.prototype.createTable = function (rows, cols, base, fullSubgroups) {
+        var table = $('<table class="cell_grid" cellspacing="0" cellpadding="0"></table>');
+        var sub = [];
 
+        for (var i = 0; i < rows; ++i) {
+            var rowCells = sub[i] = [];
+            var row = $('<tr></tr>').appendTo(table);
 
-Generator.prototype.fillLayoutCell = function (cell, $base) {
-    'use strict';
-    var res = { full: $base };
-    if (!cell) {
-        return res;
-    }
-
-    var split = cell.upper || cell.lower;
-    if (split) {
-        var horBase = $base;
-        if (cell.full) {
-            var vertCell = this.getVertical(2, $base); // full & divided cells
-            res.full = vertCell[0];
-            horBase = vertCell[1];
+            for (var j = 0; j < cols; ++j) {
+                rowCells[j] = $('<td></td>').appendTo(row);
+            }
         }
-        var horCell = this.getHorizontal(horBase);
 
-        res.upper = horCell[0];
-        res.lower = horCell[1];
-    }
-    return res;
-};
+        if (Array.isArray(fullSubgroups) || rows > 1) {
+            fullSubgroups.forEach(function (sgNum) {
+                sub[0][sgNum].prop('rowspan', rows);
+                for (var i = 1; i < rows; ++i) {
+                    sub[i][sgNum].remove();
+                }
+            });
+        }
 
+        base.append(table);
+        return sub;
+    };
+
+
+
+
+
+
+// =================================
+//      curriculum cell
+// =================================
+
+    Generator.prototype.lmap = {
+        subjectname: 'subject',
+        subjectabbr: 'subject_short',
+        teachername: 'lectuer',
+        roomname: 'auditory'
+    };
+
+    Generator.prototype.abbrName = function(name) {
+        var n = name.split(' ');
+        if ( n.length === 3 )
+            return n[0] + ' ' + n[1][0] + '.' + n[2][0] + '.';
+        else
+            return name;
+    };
+
+
+    Generator.prototype.fillCell = function (curriculum, $cell) {
+        var self = this;
+        if (!$cell) {
+            // todo: debug info
+            console.log('invalid cell!', curriculum);
+            return;
+        }
+
+        ['subjectname', 'subjectabbr', 'teachername', 'roomname'].forEach(function (type) {
+            var data = curriculum[type];
+            if (data) {
+                if ( type === 'teachername' )
+                    $cell.append('<p class="' + self.lmap[type] + '"><abbr title="' + data + '">' + self.abbrName(data) + '</abbr></p>');
+                else
+                    $cell.append('<p class="' + self.lmap[type] + '">' + data + '</p>');
+            }
+        });
+    };
+
+
+} ());

@@ -7,23 +7,98 @@ $(function () {
     $.schedule.backendURL = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
 });
 
-var is_object = Object.isObject; // replace
 
 
-var groupBy = function (arr, key) {
+var dataHelper = {};
+
+(function () {
     'use strict';
-    var out = {};
 
-    arr.forEach(function (elem) {
-        var keyVal = elem[key];
-        if (out[keyVal] !== undefined) {
-            out[keyVal].push(elem);
-        } else {
-            out[keyVal] = [elem];
+    /**
+     * @param {object} src
+     * @param {object} dst
+     */
+    dataHelper.append = function (src, dst) {
+        $.each(src, function (key, val) {
+            dst[key] = val;
+        });
+    };
+
+    /**
+     * @param {*[]} arr
+     * @param {*}   key
+     * @returns {object}
+     */
+    dataHelper.groupBy = function (arr, key) {
+        var out = {};
+
+        arr.forEach(function (elem) {
+            var keyVal = elem[key];
+            if (out[keyVal] !== undefined) {
+                out[keyVal].push(elem);
+            } else {
+                out[keyVal] = [elem];
+            }
+        });
+        return out;
+    };
+
+    dataHelper.groupUnique = function (arr, key) {
+        var out = {};
+        arr.forEach(function (elem) {
+            var keyVal = elem[key];
+            out[keyVal] = elem;
+        });
+    };
+
+
+    dataHelper.uniqueSort = function(arr, comparator) {
+        arr.sort(comparator);
+        var ret = [arr[0]];
+        for (var i = 1; i < arr.length; ++i) { // start loop at 1 as element 0 can never be a duplicate
+            if ( comparator(arr[i-1], arr[i]) !== 0) {
+                ret.push(arr[i]);
+            }
         }
-    });
-    return out;
-};
+        return ret;
+    };
+
+
+    /**
+     * Performs a binary search on the host array. This method can either be
+     * injected into Array.prototype or called with a specified scope like this:
+     * binaryIndexOf.call(someArray, searchElement);
+     */
+    var searchBinary = function (arr, elem, comp) {
+        var minIndex = 0;
+        var maxIndex = arr.length - 1;
+        var currentIndex;
+        var currentElement;
+        var resultIndex;
+
+        while (minIndex <= maxIndex) {
+            resultIndex = currentIndex = (minIndex + maxIndex) / 2 | 0;
+            currentElement = arr[currentIndex];
+
+            var compResult = comp(currentElement, elem);
+
+            if (compResult < 0) {
+                minIndex = currentIndex + 1;
+            } else if (compResult > 0) {
+                maxIndex = currentIndex - 1;
+            } else {
+                return currentIndex;
+            }
+        }
+
+        return ~maxIndex;
+    };
+
+
+
+}()); // ! dataHelper closure
+
+
 
 var timeRegExp = /([0-9]+):([0-9]+)/;
 
@@ -45,25 +120,7 @@ var parseTimeslot = function (str) {
     };
 };
 
-var localeTime = function (beg) {
-    'use strict';
-    // todo: Hindu hardcode!
-    switch (beg) {
-    case 8 * 60:
-        return 0;
-    case 9 * 60 + 50:
-        return 1;
-    case 11 * 60 + 55:
-        return 2;
-    case 13 * 60 + 45:
-        return 3;
-    case 15 * 60 + 50:
-        return 4;
-    case 17 * 60 + 40:
-        return 5;
-    }
-    return 0;
-};
+
 
 var prepareData = function (data) {
     'use strict';

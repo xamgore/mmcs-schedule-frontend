@@ -395,3 +395,27 @@ td {
 #management {
     display: none;
 }
+
+
+
+
+
+.cell_grid {
+    height: 100%;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cell_grid tr:not(:last-child) {
+    border-bottom: 1px solid #d7d7d7;
+}
+
+.cell_grid td, .cell_grid th {
+    padding: 5px 0px 2px 0px;
+    min-width: 40px;
+    width: 50%;
+}
+
+.cell_grid td:not(:last-child), .cell_grid th:not(:last-child) {
+    border-right: 1px solid #d7d7d7;
+}
