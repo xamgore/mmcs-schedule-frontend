@@ -7,6 +7,21 @@ var Generator = function () {
 (function () {
     'use strict';
 
+    Generator.prototype.tune = function (data) {
+        this.data = data;
+        switch (data.type) {
+        case 'group':
+            Generator.prototype.fillCell = Generator.prototype.fillGroupCell;
+            break;
+        case 'teacher':
+            Generator.prototype.fillCell = Generator.prototype.fillTeacherCell;
+            break;
+        }
+    };
+
+    Generator.prototype.setLesson = function (lesson) {
+        this.lesson = lesson;
+    };
 
 
 // =================================
@@ -139,7 +154,14 @@ var Generator = function () {
     };
 
 
-    Generator.prototype.fillCell = function (curriculum, $cell) {
+
+
+// =================================
+//      fill modes
+// =================================
+
+
+    Generator.prototype.fillGroupCell = function (curriculum, $cell) {
         var self = this;
         if (!$cell) {
             // todo: debug info
@@ -158,5 +180,38 @@ var Generator = function () {
         });
     };
 
+
+
+    Generator.prototype.getGroupList = function() {
+        var groups = '';
+        var lesson = this.lesson;
+
+        this.data.groups[lesson.uberid].forEach(function (sgroup) {
+            groups += (sgroup.degree === 'master' ? 'M' : '' ) + sgroup.name + ', ';
+        });
+        return groups.replace(/[, ]+$/, '');
+    };
+
+    Generator.prototype.fillTeacherCell = function (curriculum, $cell) {
+        var self = this;
+
+        if (!$cell) {
+            // todo: debug info
+            console.log('invalid cell!', curriculum);
+            return;
+        }
+
+        ['subjectname', 'subjectabbr', 'roomname'].forEach(function (type) {
+            var data = curriculum[type];
+            if (data) {
+                $cell.append('<p class="' + self.lmap[type] + '">' + data + '</p>');
+            }
+        });
+
+        // todo: check
+        var groups = this.getGroupList();
+        $cell.append('<p class="groups">' + groups + '</p>');
+
+    };
 
 } ());

@@ -68,7 +68,59 @@ function Timetable(data) {
         this.data = {};
     };
 
+    var localeTime = function (beg) {
+        // todo: Hindu hardcode!
+        switch (beg) {
+            case 8 * 60:
+                return 0;
+            case 9 * 60 + 50:
+                return 1;
+            case 11 * 60 + 55:
+                return 2;
+            case 13 * 60 + 45:
+                return 3;
+            case 15 * 60 + 50:
+                return 4;
+            case 17 * 60 + 40:
+                return 5;
+        }
+        return -1;
+    };
 
+    var prepareLessons = function (lessons) {
+        if (!lessons) {
+            throw new Error('Empty lessons!');
+        }
+
+        lessons.forEach(function (lesson) {
+            lesson.timeslot = parseTimeslot(lesson.timeslot);
+            lesson.begNum = localeTime(lesson.timeslot.beg);
+        });
+    };
+
+    var setGroupName = function (group) {
+        var name = group.gradenum + '.' + group.groupnum;
+        if (group.name != 'NULL') {
+            name += '(' + group.name + ')';
+        }
+        group.name = name;
+    };
+
+    Timetable.prototype.prepareData = function () {
+        var data = this.data;
+
+        // todo: error handling
+        prepareLessons(data.lessons);
+        data.curricula = dataHelper.groupBy(data.curricula, 'lessonid');
+
+        if (data.groups) {
+            data.groups.forEach(setGroupName);
+            data.groups = dataHelper.groupBy(data.groups, 'uberid');
+        }
+
+        this.checkLessons();
+        this.gen.tune(this.data);
+    };
 
 
 // =================================
@@ -115,35 +167,6 @@ function Timetable(data) {
         });
     };
 
-    var localeTime = function (beg) {
-        // todo: Hindu hardcode!
-        switch (beg) {
-        case 8 * 60:
-            return 0;
-        case 9 * 60 + 50:
-            return 1;
-        case 11 * 60 + 55:
-            return 2;
-        case 13 * 60 + 45:
-            return 3;
-        case 15 * 60 + 50:
-            return 4;
-        case 17 * 60 + 40:
-            return 5;
-        }
-        return -1;
-    };
-
-    var prepareLessons = function (lessons) {
-        if (!lessons) {
-            throw new Error('Empty lessons!');
-        }
-
-        lessons.forEach(function (lesson) {
-            lesson.timeslot = parseTimeslot(lesson.timeslot);
-            lesson.begNum = localeTime(lesson.timeslot.beg);
-        });
-    };
 
 
 
@@ -267,6 +290,7 @@ function Timetable(data) {
         var base = this.gen.createTable(rows, cols, cell.base, sgs);
 
         cell.lessons.forEach(function (lesson) {
+            self.gen.setLesson(lesson);
             var splitNum = splitMap[lesson.timeslot.split];
             self.fillLesson(lesson, base[splitNum]);
         });
@@ -277,6 +301,7 @@ function Timetable(data) {
         var hors = (cell.metric.split) ? this.gen.splitHorizontal(cell.base) : [cell.base];
 
         cell.lessons.forEach(function (lesson) {
+            self.gen.setLesson(lesson);
             var splitIndex = splitMap[lesson.timeslot.split];
             var base = hors[splitIndex];
             var cells = (+lesson.subcount === 1)
@@ -314,7 +339,7 @@ function Timetable(data) {
 
         // todo: use map
         fillBar(workspace.side, data.times);
-        if (data.type === 'group') {
+        if (data.type === 'group' || data.type === 'teacher') {
             fillBar(workspace.top, data.days);
         }
 
@@ -323,16 +348,30 @@ function Timetable(data) {
         // console.log('times', times);
     };
 
+
+    Timetable.prototype.drawLessons = function () {
+        var self = this;
+        var arrangement = this.arrangeLessons();
+
+        arrangement.forEach(function (cell) {
+            var metric = cell.metric = getMetrics(cell);
+            if (metric.split && !metric.same && metric.full) {
+                console.log('alias!', cell.lessons);
+                return;
+            }
+
+            if (metric.same && metric.count > 1 && metric.split) {
+                self.fillCellAdvanced(cell);
+            } else {
+                self.fillCell(cell);
+            }
+        });
+    };
+
     Timetable.prototype.draw = function () {
         this.show(false);
         this.clearScreen();
-        var self = this;
-        var data = this.data;
-
-        // todo: error handling
-        prepareLessons(data.lessons);
-        data.curricula = dataHelper.groupBy(data.curricula, 'lessonid');
-        this.checkLessons();
+        this.prepareData();
 
         // todo: hardcoded table size
         this.workspace = this.gen.createWorkspace({
@@ -341,16 +380,7 @@ function Timetable(data) {
             cols: 6
         });
 
-        var arrangement = this.arrangeLessons();
-        arrangement.forEach(function (cell) {
-            var metric = cell.metric = getMetrics(cell);
-            if (metric.same && metric.count > 1 && metric.split) {
-                self.fillCellAdvanced(cell);
-            } else {
-                self.fillCell(cell);
-            }
-        });
-
+        this.drawLessons();
         this.drawMeta();
     };
 

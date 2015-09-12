@@ -121,26 +121,30 @@ $(function () {
         });
         $('.type_timetable').html($teacher.children('option:selected').text());
     });
+    
+    $teacher.change(function () {
+        table.show(false);
+        var teacher = $teacher.val();
+        if (!teacher) {
+            return;
+        }
 
-    // not implemented
-    //$teacher.change(function () {
-    //    table.show(false);
-    //    var teacher = $teacher.val();
-    //    if (!teacher) {
-    //        return;
-    //    }
-    //
-    //    menu.getJSON('schedule/teacher/' + teacher, function (data) {
-    //        prepareData(data);
-    //        setTitle($teacher.children('option:selected').text());
-    //        table.drawForTeacher(data, {
-    //            top: days,
-    //            side: timeList
-    //        });
-    //        table.show(true);
-    //        table.optimize();
-    //    });
-    //});
+        menu.getJSON('schedule/teacher/' + teacher, function (data) {
+            table.show(false);
+            setTitle($teacher.children('option:selected').text());
+
+            table.set({
+                type: 'teacher',
+                lessons: data.lessons,
+                curricula: data.curricula,
+                groups: data.groups
+            });
+            $('.welcome_wrapper').hide();
+            $('.print_schedule').show();
+            table.draw();
+            table.show(true);
+        });
+    });
 
 
 });
