@@ -51,7 +51,7 @@ $(function () {
 
 
     $type.change(function () {
-        table.show(false);
+        $('.timetable_wrapper').hide()
         setTitle('');
         var type = $type.val();
         if (!type) {
@@ -78,7 +78,7 @@ $(function () {
 
 
     $grade.change(function () {
-        table.show(false);
+        $('.timetable_wrapper').hide();
         setTitle('');
         var grade = $grade.val();
         if (!grade) {
@@ -98,7 +98,7 @@ $(function () {
 
     // Группа -> Курс -> Выбор группы [Вывод расписания]
     $group.change(function () {
-        table.show(false);
+        $('.timetable_wrapper').hide();
         var group = $group.val();
         setTitle('');
         if (!group) {
@@ -107,7 +107,7 @@ $(function () {
 
         // todo: extract to loader
         menu.getJSON('schedule/group/' + group, function (data) {
-            table.show(false);
+            $('.timetable_wrapper').hide();
 
             table.set({
                 type: 'group',
@@ -116,21 +116,21 @@ $(function () {
             });
             $('.welcome_wrapper').hide();
             $('.print_schedule').show();
+            $('.timetable_wrapper').show();
             table.draw();
-            table.show(true);
         });
         $('.type_timetable').html($teacher.children('option:selected').text());
     });
-    
+
     $teacher.change(function () {
-        table.show(false);
+        $('.timetable_wrapper').hide();
         var teacher = $teacher.val();
         if (!teacher) {
             return;
         }
 
         menu.getJSON('schedule/teacher/' + teacher, function (data) {
-            table.show(false);
+            $('.timetable_wrapper').hide();
             setTitle($teacher.children('option:selected').text());
 
             table.set({
@@ -141,8 +141,8 @@ $(function () {
             });
             $('.welcome_wrapper').hide();
             $('.print_schedule').show();
+            $('.timetable_wrapper').show();
             table.draw();
-            table.show(true);
         });
     });
 

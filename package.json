@@ -3,7 +3,9 @@
     "version": "1.0.0",
     "private": true,
     "dependencies": {
-        "bower": "^1.4.1",
+        "bower": "^1.4.1"
+    },
+    "devDependencies": {
         "gulp": "^3.9.0",
         "gulp-autoprefixer": "^2.3.1",
         "gulp-changed": "^1.2.1",

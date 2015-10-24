@@ -1,28 +1,32 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Интерактивное расписание мехмата ЮФУ</title>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <link href="static/style.css" rel="stylesheet" type="text/css"/>
-    <link href="static/printer/print-style.css" rel="stylesheet" type="text/css" media="print"/>
 
-    <link href="static/window/window.css" rel="stylesheet" type="text/css"/>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="static/window/window.js"></script>
-    <script src="static/schedule/menuLoader.js"></script>
-    <script src="static/helpers.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <script src="static/timetable/helper.js"></script>
-    <script src="static/timetable/generator.js"></script>
-    <script src="static/timetable/timetable.js"></script>
+<title>Интерактивное расписание мехмата ЮФУ</title>
 
+<link href="static/style.css" rel="stylesheet" type="text/css">
+<link href="static/printer/print-style.css" rel="stylesheet" type="text/css" media="print">
 
-    <script src="static/schedule/schedule.js"></script>
-    <script src="static/schedule/deletetion.js"></script>
-    <script src="static/schedule/edit.js"></script>
+<link href="static/window/window.css" rel="stylesheet" type="text/css">
+<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>-->
+<script src="static/jquery-1.11.3.js"></script>
+<script src="static/window/window.js"></script>
+<script src="static/schedule/menuLoader.js"></script>
+<script src="static/helpers.js"></script>
 
-</head>
-<body>
+<script src="static/xmath/xmath.js"></script>
+<script src="static/timetable/table.js"></script>
+
+<script src="static/timetable/helper.js"></script>
+<script src="static/timetable/generator.js"></script>
+<script src="static/timetable/timetable.js"></script>
+
+<script src="static/schedule/schedule.js"></script>
+<script src="static/schedule/deletetion.js"></script>
+<script src="static/schedule/edit.js"></script>
+
 <div class="shadow"></div>
 <div class="window_block">
     <div class="window"></div>
@@ -34,36 +38,39 @@
                 <a href="http://mmcs.sfedu.ru/" title="Факультет математики, механики и компьютерных наук ЮФУ">
                     <h1 class="faculty_title">Расписание факультета математики, механики и компьютерных наук [beta]</h1>
                 </a>
-
-                <p class="week_now" ></p>
+                <p class="week_now"></p>
             </div>
-            <div class="logo"><a href="http://sfedu.ru/" border="0"><img src="static/logo_sfedu_white.png"/></a></div>
+            <div class="logo">
+                <a href="http://sfedu.ru/" border="0">
+                    <img src="static/logo_sfedu_white.png">
+                </a>
+            </div>
         </div>
     </div>
     <div class="choice_timetable_wrapper">
         <div class="choice_timetable">
             <select id="type" class="default_select">
-                <option value="0" selected='selected'>Выберите тип расписания:</option>
+                <option value="0" selected style="display: none">Выберите тип расписания:</option>
                 <option value="group">Группа</option>
                 <option value="teacher">Преподаватель</option>
-                <!--<option value="auditory">Аудитория</option>-->
-                <!--<option value="chair" disabled="disabled">Кафедра</option>-->
-                <!--<option value="session" disabled="disabled">Сессия</option>-->
+                <option value="auditory" disabled style="display: none">Аудитория</option>
+                <option value="chair" disabled style="display: none">Кафедра</option>
+                <option value="session" disabled style="display: none">Сессия</option>
             </select>
-            <select id="course" class="default_select" disabled="disabled">
-                <option value="0">Выберите курс:</option>
+            <select id="course" class="default_select" disabled>
+                <option value="0" style="display: none">Выберите курс:</option>
             </select>
-            <select id="group" class="default_select" disabled="disabled">
-                <option value="0">Выберите группу:</option>
+            <select id="group" class="default_select" disabled>
+                <option value="0" style="display: none">Выберите группу:</option>
             </select>
             <select id="teacher" class="default_select" style="display: none">
-                <option value="0">Выберите преподавателя:</option>
+                <option value="0" style="display: none">Выберите преподавателя:</option>
             </select>
             <select id="auditory" class="default_select" style="display: none">
-                <option value="0">Выберите аудиторию:</option>
+                <option value="0" style="display: none">Выберите аудиторию:</option>
             </select>
-            <select id="day" class="default_select" style="display: none" disabled="disabled">
-                <option value="0" selected='selected'>Выберите день:</option>
+            <select id="day" class="default_select" style="display: none" disabled>
+                <option value="0" selected style="display: none">Выберите день:</option>
                 <option value="1">Понедельник</option>
                 <option value="2">Вторник</option>
                 <option value="3">Среда</option>
@@ -76,7 +83,7 @@
             <div class="management_wrapper">
                 <span id="management_auth">Авторизация</span>
                 <select id="management" class="default_select">
-                    <option value="0" selected="selected">Выберите действие</option>
+                    <option value="0" selected style="display: none">Выберите действие</option>
                     <option value="1">Добавить преподавателя</option>
                     <option value="2">Добавить аудиторию</option>
                     <option value="3">Добавить курс</option>
@@ -100,8 +107,7 @@
         </div>
     </div>
     <div id="timetable_wrapper" class="timetable_wrapper">
-        <table class="timetable" border="1" bordercolor="#d7d7d7" cellspacing="0" cellpadding="0">
-        </table>
+        <table class="timetable"></table>
     </div>
     <div class="footer">
         <div class="footer_menu">
@@ -113,5 +119,3 @@
         </div>
     </div>
 </div>
-</body>
-</html>

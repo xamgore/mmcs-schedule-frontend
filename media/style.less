@@ -170,8 +170,9 @@ td {
 .timetable_wrapper {
     display: none;
     width: 100%;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    box-sizing: border-box;
+    min-width: 1000px;
+    padding: 20px 15px;
 
     overflow-x: auto; /* Полоска, если сжать окно */
 }
@@ -181,165 +182,73 @@ td {
 }
 
 .timetable {
-    width: 98%;
-    margin: 0 auto;
-    border-collapse: collapse;
-    border: 1px solid #d7d7d7;
-}
+    width: 100%;
 
-.timetable td {
+	table-layout: fixed;
+	border-collapse: collapse;
+
+	background: #fff;
+
     text-align: center;
+    vertical-align: middle;
+
+    .title,
+    .time {
+        background-color: #f1f1f1;
+
+        font-size: 0.75em;
+        font-weight: bold;
+    }
+
+    .service td {
+        border: 0;
+        padding: 0;
+    }
+
+    td {
+        border: 1px solid #d7d7d7;
+        padding: 5px;
+    }
+
+    .sub-cell-title {
+        border-bottom: 0;
+        padding-bottom: 0;
+        vertical-align: bottom;
+        &.multi {
+            padding-bottom: 5px;
+            vertical-align: middle;
+        }
+    }
+
+    .sub-cell-content {
+        border-top: 0;
+        padding-top: 0;
+        vertical-align: top;
+        &.multi {
+            padding-top: 5px;
+            vertical-align: middle;
+        }
+    }
+
+    span {
+        display: block;
+    }
+
+    .subject {
+        font-size: 0.95em;
+        font-weight: bold;
+    }
+
+    .teacher {
+        font-size: 0.95em;
+    }
+
+    .room {
+        font-size: 0.75em;
+        font-weight: bold;
+        text-align: right;
+    }
 }
-
-.timetable td.top {
-    background-color: #f1f1f1;
-    padding: 5px 0;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #000000;
-}
-
-.timetable td.time {
-    background-color: #f1f1f1;
-    max-width: 70px;
-    padding: 5px 4px;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #000000;
-}
-
-.timetable td.special_training {
-    padding: 0px 4px 5px 4px;
-}
-
-.timetable td.subject_cell {
-    color: #363636;
-    margin: 0px 6px;
-    /* height: inherit; */
-}
-
-.timetable td.subject_cell .notice {
-    margin: 0px 4px 5px 4px;
-    background-color: #ffff00;
-    font-size: 0.75em;
-}
-
-.timetable td.subject_cell .attention {
-    margin: 0px 4px 5px 4px;
-    background-color: #f00 !important;
-    font-size: 0.75em;
-    font-weight: bold;
-    color: #fff;
-}
-
-.timetable td.subject_cell .subject {
-    font-size: 0.95em;
-    font-weight: bold;
-}
-
-.timetable td.subject_cell .subject_short {
-    display: none;
-    font-size: 0.95em;
-    font-weight: bold;
-}
-
-.timetable td.subject_cell .lectuer {
-    font-size: 0.85em;
-}
-
-.timetable td.subject_cell .auditory {
-    float: right;
-    clear: both;
-    margin: 0px 4px;
-    font-size: 0.75em;
-    font-weight: bold;
-}
-
-.timetable td.subject_cell .groups {
-    clear: both;
-    margin: 0 auto;
-    font-size: 0.75em;
-    font-weight: bold;
-}
-
-/**/
-
-.timetable td.subject_cell .inactive_week {
-    color: #8f8f8f !important;
-}
-
-.timetable td.subject_cell .inactive_week .notice {
-    background-color: #e8e8e8 !important;
-    color: #cecece !important;
-}
-
-.timetable td.subject_cell .inactive_week .attention {
-    background-color: #aaa;
-    color: #fff;
-}
-
-
-/**/
-.timetable td.subject_cell.no_subgroups {
-    padding: 5px 0px 2px 0px
-}
-
-/* Разделение недели (верхняя/нижняя) */
-.timetable td.subject_cell .table_horizontal_divider {
-    height: 100%;
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.timetable td.subject_cell .table_horizontal_divider td {
-    height: 50px;
-    padding: 5px 0px 2px 0px
-}
-
-.timetable td.subject_cell .upper_week {
-    height: 50%;
-    border-bottom: 1px solid #d7d7d7;
-}
-
-.timetable td.subject_cell .lower_week {
-    height: 50%
-}
-
-.timetable td.subject_cell .table_subgroups {
-    height: 100%;
-    width: 100%;
-    border-collapse: collapse;
-}
-
-/*.timetable td.subject_cell .table_subgroups .subgroups {*/
-/*}*/
-
-.timetable td.subject_cell .table_subgroups .subgroups td {
-    padding: 5px 0px 2px 0px
-}
-
-.timetable td.subject_cell .table_subgroups .subgroups td {
-    min-width: 40px;
-    width: 50%;
-    border-right: 1px solid #d7d7d7;
-}
-
-/*.timetable td.subject_cell .table_subgroups .subgroups td:first-child {*/
-    /*min-width: 40px;*/
-    /*width: 50%;*/
-    /*border-right: 1px solid #d7d7d7;*/
-/*}*/
-/*.timetable td.subject_cell .table_subgroups .subgroups td:not(:first-child):not(:last-child) {*/
-    /*min-width: 40px;*/
-    /*width: 50%;*/
-    /*border-left: 1px solid #d7d7d7;*/
-    /*border-right: 1px solid #d7d7d7;*/
-/*}*/
-/*.timetable td.subject_cell .table_subgroups .subgroups td:last-child {*/
-    /*min-width: 40px;*/
-    /*width: 33%;*/
-    /*border-left: 1px solid #d7d7d7;*/
-/*}*/
 
 .footer {
     border-top: 2px solid #d7d7d7;

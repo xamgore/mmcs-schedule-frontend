@@ -64,10 +64,6 @@ function Timetable(data) {
         }
     };
 
-    Timetable.prototype.clear = function () {
-        this.data = {};
-    };
-
     var localeTime = function (beg) {
         // todo: Hindu hardcode!
         switch (beg) {
@@ -106,6 +102,14 @@ function Timetable(data) {
         group.name = name;
     };
 
+    var abbrName = function(name) {
+        var n = name.split(' ');
+        if ( n.length === 3 )
+            return n[0] + ' ' + n[1][0] + '.' + n[2][0] + '.';
+        else
+            return name;
+    };
+
     Timetable.prototype.prepareData = function () {
         var data = this.data;
 
@@ -124,138 +128,8 @@ function Timetable(data) {
 
 
 // =================================
-//      visualization control
-// =================================
-
-    /**
-     * show/hide timetable
-     * @param {bool} state   true - show, false - hide
-     */
-    Timetable.prototype.show = function (state) {
-        var _state = Boolean(state);
-        if (!this.base || this.showState === _state) {
-            return;
-        }
-        this.showState = _state;
-        if (state) {
-            this.base.show();
-        } else {
-            this.base.hide();
-        }
-    };
-
-    Timetable.prototype.clearScreen = function () {
-        this.base.find('.timetable').html('');
-    };
-
-
-
-// =================================
-//          time management
-// =================================
-
-    var gatherTimes = function (lessons) {
-        if (!Array.isArray(lessons)) {
-            return;
-        }
-        var times = [];
-        lessons.forEach(function (lesson) {
-            times.push(lesson.timeslot);
-        });
-        return dataHelper.uniqueSort(times, function (a, b) {
-            return a.beg - b.beg;
-        });
-    };
-
-
-
-
-// =================================
-//          layout/arrangement
-// =================================
-
-    Timetable.prototype.getCellIndex = function (col, row) {
-        var cols = this.workspace.cols;
-        return (row * cols) + col;
-    };
-
-    Timetable.prototype.initArrangeCell = function (lesson) {
-        var day = lesson.timeslot.day;
-        var time = lesson.begNum;
-        return {
-            lessons: [],
-            base: this.workspace.cells[day][time]
-        };
-    };
-
-    // todo: table cells union
-    Timetable.prototype.arrangeLessons = function () {
-        // todo: error handling
-        // todo: teacher\group render specific
-        var self = this;
-        var res = [];
-
-        this.data.lessons.forEach(function (lesson) {
-            if (lesson === undefined) {
-                return;
-            }
-            var day = lesson.timeslot.day;
-            var resNum = self.getCellIndex(lesson.begNum, day);
-
-            res[resNum] = res[resNum] || self.initArrangeCell(lesson);
-            res[resNum].lessons.push(lesson);
-        });
-
-        return res;
-    };
-
-
-
-// =================================
 //          lessons
 // =================================
-
-    var splitMap = {
-        full: 0,
-        upper: 0,
-        lower: 1
-    };
-
-    var getMetrics = function (cell) {
-        var isSplit = false;
-        var fullExist = false;
-        var isSame = true;
-        var sgCnt = cell.lessons[0].subcount;
-
-        cell.lessons.forEach(function (lesson) {
-            var split = lesson.timeslot.split;
-            isSplit |= (split !== 'full');
-            fullExist |= (split === 'full');
-            isSame &= (sgCnt === lesson.subcount);
-        });
-        return {
-            same: isSame, // all lessons have same subgroup count
-            full: fullExist, // splitted lesson existence
-            split: isSplit, // fulltime lesson existence
-            count: sgCnt // subgroup count from random lesson. Use if same is true!
-        };
-    };
-
-    Timetable.prototype.gatherFullSubgroups = function (cell) {
-        var self = this;
-        var sgs = [];
-
-        cell.lessons.forEach(function (lesson) {
-            var lessonID = lesson.id;
-            if (lesson.timeslot.split !== 'full') {
-                return;
-            }
-            self.data.curricula[lessonID].forEach(function (curriculum) {
-                sgs.push(curriculum.subnum - 1);
-            });
-        });
-        return sgs;
-    };
 
     /** skip lessons with empty curricula list */
     Timetable.prototype.checkLessons = function () {
@@ -270,118 +144,143 @@ function Timetable(data) {
         });
     };
 
-    Timetable.prototype.fillLesson = function (lesson, cells) {
-        var self = this;
-        var lessonID = lesson.id;
+    var generateWeek = function (week, lessons, subcount) {
+        var countPadding = week.length;
 
-        this.data.curricula[lessonID].forEach(function (curriculum) {
-            var curriculumNum = curriculum.subnum - 1;
-            self.gen.fillCell(curriculum, cells[curriculumNum]);
-        });
-    };
-
-
-    Timetable.prototype.fillCellAdvanced = function (cell) {
-        var self = this;
-        var metric = cell.metric;
-        var rows = (metric.split) ? 2 : 1;
-        var cols = cell.lessons[0].subcount;
-        var sgs = this.gatherFullSubgroups(cell);
-        var base = this.gen.createTable(rows, cols, cell.base, sgs);
-
-        cell.lessons.forEach(function (lesson) {
-            self.gen.setLesson(lesson);
-            var splitNum = splitMap[lesson.timeslot.split];
-            self.fillLesson(lesson, base[splitNum]);
-        });
-    };
-
-    Timetable.prototype.fillCell = function (cell) {
-        var self = this;
-        var hors = (cell.metric.split) ? this.gen.splitHorizontal(cell.base) : [cell.base];
-
-        cell.lessons.forEach(function (lesson) {
-            self.gen.setLesson(lesson);
-            var splitIndex = splitMap[lesson.timeslot.split];
-            var base = hors[splitIndex];
-            var cells = (+lesson.subcount === 1)
-                ? [base]
-                : self.gen.getVertical(lesson.subcount, base);
-
-            self.fillLesson(lesson, cells);
-        });
-    };
-
-
-// =================================
-//          drawing
-// =================================
-
-    /**
-     * fill timetable info bars (time, days, etc)
-     * @param {jQuery[]} bar
-     * @param {string[]} data
-     */
-    var fillBar = function (bar, data) {
-        if (Array.isArray(data) && Array.isArray(bar)) {
-            var length = Math.min(bar.length, data.length);
-            var i;
-            for (i = 0; i < length; ++i) {
-                bar[i].html(data[i]);
-            }
-        }
-    };
-
-
-    Timetable.prototype.drawMeta = function () {
-        var data = this.data;
-        var workspace = this.workspace;
-
-        // todo: use map
-        fillBar(workspace.side, data.times);
-        if (data.type === 'group' || data.type === 'teacher') {
-            fillBar(workspace.top, data.days);
+        var weekLastId = countPadding + subcount - 1;
+        if (!week[weekLastId]) {
+            week[weekLastId] = null;
         }
 
-        // todo: debug data
-        // var times = gatherTimes(data.lessons);
-        // console.log('times', times);
-    };
+        lessons.forEach(function (lesson) {
+            var title = '<span class="subject"><abbr title="' + lesson.subjectname + '">' + lesson.subjectabbr + '</abbr></span>';
+            var subCell = '<span class="teacher"><abbr title="' + lesson.teachername + '">' + abbrName(lesson.teachername) + '</abbr></span><span class="room">' + lesson.roomname + '</span>';
 
-
-    Timetable.prototype.drawLessons = function () {
-        var self = this;
-        var arrangement = this.arrangeLessons();
-
-        arrangement.forEach(function (cell) {
-            var metric = cell.metric = getMetrics(cell);
-            if (metric.split && !metric.same && metric.full) {
-                console.log('alias!', cell.lessons);
-                return;
-            }
-
-            if (metric.same && metric.count > 1 && metric.split) {
-                self.fillCellAdvanced(cell);
-            } else {
-                self.fillCell(cell);
+            week[countPadding + lesson.subnum - 1] = {
+                title: title,
+                contents: [ subCell ]
             }
         });
-    };
+    }
+
+    var syncWeeks = function (weeks) {
+        var weekLastId = Math.max(weeks.upper.length, weeks.lower.length) - 1;
+        if (!weeks.upper[weekLastId]) {
+            weeks.upper[weekLastId] = null;
+        }
+        if (!weeks.lower[weekLastId]) {
+            weeks.lower[weekLastId] = null;
+        }
+    }
+
+    var mergeLessons = function (week) {
+        for (var i = 0; i < week.length; i++) {
+            while (week[i] && week[i + 1] && week[i].title === week[i + 1].title) {
+                week[i].contents.push(week[i + 1].contents[0]);
+                week.splice(i + 1, 1);
+            }
+        }
+    }
+
+    var mergeRooms = function (week) {
+        week.forEach(function (group) {
+            if (group) {
+                var contents = group.contents;
+                for (var i = 0; i < contents.length; i++) {
+                    var $current = $(contents[i]);
+                    var $next = $(contents[i + 1]);
+                    while (contents[i + 1] && $current.first().html() === $next.first().html()) {
+                        if ($current.last().html() !== $next.last().html()) {
+                            $current.last().html($current.last().html() + ', ' + $next.last().html());
+                            contents[i] = $current.get(0).outerHTML + $current.get(1).outerHTML;
+                        }
+                        contents.splice(i + 1, 1);
+                        $next = $(contents[i + 1]);
+                    }
+                }
+            }
+        });
+    }
 
     Timetable.prototype.draw = function () {
-        this.show(false);
-        this.clearScreen();
         this.prepareData();
 
-        // todo: hardcoded table size
-        this.workspace = this.gen.createWorkspace({
-            base: this.base,
-            rows: 6,
-            cols: 6
+        var self = this;
+        var res = new Array(6);
+        for (var i = 0; i < res.length; i++) {
+            res[i] = new Array(6);
+        }
+
+        this.data.lessons.forEach(function (lesson) {
+            if (!lesson) {
+                return;
+            }
+            var i = localeTime(lesson.timeslot.beg);
+            var j = lesson.timeslot.day;
+            if (!res[i][j]) {
+                res[i][j] = [];
+            }
+            res[i][j].push(lesson);
         });
 
-        this.drawLessons();
-        this.drawMeta();
+        res.forEach(function (line) {
+            line.forEach(function (cell, cellId) {
+                var weeks = {
+                    upper: [],
+                    lower: [],
+                    hasFull: false
+                }
+
+                var twoWeeks = false;
+                cell.forEach(function(lesson) {
+                    var split = lesson.timeslot.split;
+
+                    switch (split) {
+                        case "full":
+                            generateWeek(weeks.upper, self.data.curricula[lesson.id], lesson.subcount);
+                            generateWeek(weeks.lower, self.data.curricula[lesson.id], lesson.subcount);
+                            weeks.hasFull = true;
+                            break;
+                        case "upper":
+                            generateWeek(weeks.upper, self.data.curricula[lesson.id], lesson.subcount);
+                            twoWeeks = true;
+                            if (weeks.hasFull) {
+                                syncWeeks(weeks);
+                            }
+                            break;
+                        case "lower":
+                            generateWeek(weeks.lower, self.data.curricula[lesson.id], lesson.subcount);
+                            twoWeeks = true;
+                            if (weeks.hasFull) {
+                                syncWeeks(weeks);
+                            }
+                            break;
+                    }
+                });
+
+                mergeLessons(weeks.upper);
+                mergeLessons(weeks.lower);
+
+                mergeRooms(weeks.upper);
+                mergeRooms(weeks.lower);
+
+                if (!weeks.upper.length) {
+                    weeks.upper = null;
+                }
+
+                if (!weeks.lower.length) {
+                    weeks.lower = null;
+                }
+
+                if (twoWeeks) {
+                    cell = line[cellId] = [ weeks.upper, weeks.lower ];
+                } else {
+                    cell = line[cellId] = [ weeks.upper ];
+                }
+            });
+        });
+
+        new Table($('.timetable'), res, this.data.times, this.data.days);
     };
 
-}()); // !Timetable closure
+})();
