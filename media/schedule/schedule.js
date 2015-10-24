@@ -22,10 +22,7 @@ $(function () {
     };
     setTitle('');
 
-
-    var tableGen = new Generator();
     var table = new Timetable({
-        generator: tableGen,
         base: $table
     });
     table.set({

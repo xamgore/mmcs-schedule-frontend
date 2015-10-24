@@ -1,48 +1,7 @@
-/**
- * @typedef {object} curriculum_t
- * @property {number} id
- * @property {number} lessonid
- * @property {number} subnum
- *
- * @property {number} roomid
- * @property {string} roomname
- *
- * @property {number} subjectid
- * @property {string} subjectname
- *
- * @property {number} teacherid
- * @property {string} teachername
- * @property {string} teacherdegree
- */
-
-/**
- * @typedef {object} lesson_t
- * @property {number} id
- * @property {number} day
- * @property {number} subcount
- * @property {number} begNum
- */
-
-/**
- * @typedef {object} schedule_t
- * @property {object[]} lessons
- * @property {object} curricula
- * @property {curriculum_t[]} curricula.*
- */
-
-/**
- * @param {object}      data
- * @param {jQuery}      data.base
- * @param {Generator}   data.generator
- *
- * @constructor
- */
-
 function Timetable(data) {
     'use strict';
 
     this.data = {};
-    this.gen = data.generator || new Generator();
     this.base = $(data.base);
 }
 
@@ -123,7 +82,6 @@ function Timetable(data) {
         }
 
         this.checkLessons();
-        this.gen.tune(this.data);
     };
 
 
@@ -144,7 +102,7 @@ function Timetable(data) {
         });
     };
 
-    var generateWeek = function (week, lessons, subcount) {
+    var generateSubjectWeek = function (week, lessons, subcount) {
         var countPadding = week.length;
 
         var weekLastId = countPadding + subcount - 1;
@@ -153,8 +111,18 @@ function Timetable(data) {
         }
 
         lessons.forEach(function (lesson) {
-            var title = '<span class="subject"><abbr title="' + lesson.subjectname + '">' + lesson.subjectabbr + '</abbr></span>';
-            var subCell = '<span class="teacher"><abbr title="' + lesson.teachername + '">' + abbrName(lesson.teachername) + '</abbr></span><span class="room">' + lesson.roomname + '</span>';
+            var title = '<span class="lesson-titie">' +
+                '<span class="subject full">' + lesson.subjectname + '</span>' +
+                '<span class="subject short">' +
+                    '<abbr title="' + lesson.subjectname + '">' + lesson.subjectabbr + '</abbr>' +
+                '</span>' +
+            '</span>';
+            var subCell = '<span class="lesson-content">' +
+                '<span class="teacherabbr">' +
+                    '<abbr title="' + lesson.teachername + '">' + abbrName(lesson.teachername) + '</abbr>' +
+                '</span>' +
+                '<span class="room">' + lesson.roomname + '</span>' +
+            '</span>';
 
             week[countPadding + lesson.subnum - 1] = {
                 title: title,
@@ -189,11 +157,15 @@ function Timetable(data) {
                 for (var i = 0; i < contents.length; i++) {
                     var $current = $(contents[i]);
                     var $next = $(contents[i + 1]);
-                    while (contents[i + 1] && $current.first().html() === $next.first().html()) {
-                        if ($current.last().html() !== $next.last().html()) {
-                            $current.last().html($current.last().html() + ', ' + $next.last().html());
-                            contents[i] = $current.get(0).outerHTML + $current.get(1).outerHTML;
+
+                    while (contents[i + 1] && $current.children().first().html() === $next.children().first().html()) {
+                        var roomCurrent = $current.children().last().html();
+                        var roomNext = $next.children().last().html()
+                        if (roomCurrent !== roomNext) {
+                            $current.children().last().html(roomCurrent + ', ' + roomNext);
+                            contents[i] = $current.get(0).outerHTML;
                         }
+
                         contents.splice(i + 1, 1);
                         $next = $(contents[i + 1]);
                     }
@@ -237,19 +209,19 @@ function Timetable(data) {
 
                     switch (split) {
                         case "full":
-                            generateWeek(weeks.upper, self.data.curricula[lesson.id], lesson.subcount);
-                            generateWeek(weeks.lower, self.data.curricula[lesson.id], lesson.subcount);
+                            generateSubjectWeek(weeks.upper, self.data.curricula[lesson.id], lesson.subcount);
+                            generateSubjectWeek(weeks.lower, self.data.curricula[lesson.id], lesson.subcount);
                             weeks.hasFull = true;
                             break;
                         case "upper":
-                            generateWeek(weeks.upper, self.data.curricula[lesson.id], lesson.subcount);
+                            generateSubjectWeek(weeks.upper, self.data.curricula[lesson.id], lesson.subcount);
                             twoWeeks = true;
                             if (weeks.hasFull) {
                                 syncWeeks(weeks);
                             }
                             break;
                         case "lower":
-                            generateWeek(weeks.lower, self.data.curricula[lesson.id], lesson.subcount);
+                            generateSubjectWeek(weeks.lower, self.data.curricula[lesson.id], lesson.subcount);
                             twoWeeks = true;
                             if (weeks.hasFull) {
                                 syncWeeks(weeks);

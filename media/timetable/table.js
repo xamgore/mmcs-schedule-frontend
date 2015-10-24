@@ -118,23 +118,23 @@ var Table = (function() {
     var buildTable = function ($block, data, times, title, rows, cols) {
         // Создание заголовка таблицы
         var createHeader = function ($block, title, cols) {
-            var $title = $('<thead></thead>').appendTo($block);
+            var $header = $('<thead></thead>').appendTo($block);
 
-            var $colSizes = $('<tr class="service"></tr>').appendTo($title);
-            var timeWidth = 42;
-            $('<td></td>').appendTo($colSizes).width(timeWidth);
-            var colMaxWidth = $block.width() - timeWidth;
+            var $colSizes = $('<tr class="service"></tr>').prependTo($header);
+            $('<td></td>').appendTo($colSizes);
             cols.forEach(function (col) {
-                var width = colMaxWidth * col.width / col.length;
                 for (var i = 0; i < col.length; i++) {
-                    $('<td></td>').appendTo($colSizes).width(width);
+                    $('<td></td>').appendTo($colSizes);
                 }
             });
+            var $control = $colSizes.children();
 
-            var $titleLine = $('<tr><td></td></tr>').appendTo($title);
+            var $headerLine = $('<tr><td></td></tr>').appendTo($header);
             title.forEach(function (columnTitle, i) {
-                $('<td colspan=' + cols[i].length + ' class="title">' + columnTitle + '</td>').appendTo($titleLine);
+                $('<td colspan=' + cols[i].length + ' class="title">' + columnTitle + '</td>').appendTo($headerLine);
             });
+
+            return $control;
         };
 
         // Создание тела таблицы
@@ -222,7 +222,7 @@ var Table = (function() {
         $block.html('');
 
         // Создание заголовка таблицы
-        createHeader($block, title, cols);
+        var $control = createHeader($block, title, cols);
 
         // Создание tbody
         var $table = createBody($block);
@@ -230,14 +230,47 @@ var Table = (function() {
         // Заполнение таблицы
         fillTable($table, data, times, cols, rows);
 
-        return $table;
+        return {
+            $block: $block,
+            $control: $control,
+            $table: $table
+        }
+    }
+
+    var beautify = function (table, cols) {
+        var timeWidth = 42;
+        table.$control.first().width(timeWidth);
+        var colMaxWidth = table.$block.width() - timeWidth;
+        var c = 1;
+        cols.forEach(function (col) {
+            var width = colMaxWidth * col.width / col.length;
+            for (var i = 0; i < col.length; i++, c++) {
+                table.$control.eq(c).width(width);
+            }
+        });
+
+        table.$table.find('td').each(function () {
+            var $cell = $(this);
+            var $full = $cell.find('.full');
+            var $short = $cell.find('.short');
+
+            if ($cell.width() >= 180) {
+                $full.show();
+                $short.hide();
+            } else {
+                $full.hide();
+                $short.show();
+            }
+        });
     }
 
     var Table = function($block, data, times, title) {
         var rows = getRowsInfo(data);
         var cols = getColsInfo(data);
 
-        buildTable($block, data, times, title, rows, cols);
+        var table = buildTable($block, data, times, title, rows, cols);
+
+        beautify(table, cols);
     };
 
     return Table;
