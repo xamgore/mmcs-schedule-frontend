@@ -24,6 +24,14 @@ var xMath = (function () {
                 a += b;
             };
             return a;
+        },
+        sum: function (/* ... */) {
+            var arr = arguments;
+            var a = arr[0];
+            for (var i = 1; i < arr.length; i++) {
+                a += arr[i];
+            };
+            return a;
         }
     }
 

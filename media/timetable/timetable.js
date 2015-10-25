@@ -252,7 +252,9 @@ function Timetable(data) {
             });
         });
 
-        new Table($('.timetable'), res, this.data.times, this.data.days);
+        var table = new Table($('.timetable'), res, this.data.times, this.data.days);
+
+        table.draw();
     };
 
 })();

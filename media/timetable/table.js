@@ -1,277 +1,303 @@
-var Table = (function() {
+var Table = (function () {
     'use strict';
 
-    // Получение параметров строк
-    var getRowsInfo = function (data) {
-        // Получение размеров строки
-        var countRowRows = function (data, pos) {
-            var row = [];
-
-            for (var i = 0; i < data[pos].length; i++) {
-                var cell = data[pos][i];
-
-                if (cell && cell.length) {
-                    row.push(cell.length);
-                }
-            }
-
-            return row;
-        };
-
-        // Получение списка размеров строк
-        var countRows = function (data) {
-            var rows = new Array(data.length);
-
-            for (var i = 0; i < rows.length; i++) {
-                rows[i] = countRowRows(data, i)
-            }
-
-            return rows;
-        };
-
-        return countRows(data).map(function (row) {
-            var length = row.length ? xMath.lcm.apply(xMath, row) * 2 : 2;
-            var count = row.length ? Math.max.apply(Math, row) : 1;
-
-            return {
-                length: length,
-                count: count
-            };
-        });
+    /**
+     * Класс отрисовщика таблицы занятий
+     * @param {jQuery} $block  объект таблицы
+     * @param {array}  data    матрица с занятиями
+     * @param {array}  numbers левая колоннка таблицы
+     * @param {array}  headers шапка таблицы
+     */
+    var Table = function ($block, data, numbers, headers) {
+        this.$block = $block;
+        this.numbers = numbers;
+        this.headers = headers;
+        this.setData(data);
     };
 
-    // Подсчет сколонок в строке недели
-    var countWeekCols = function (week) {
-        if (!(week && week.length)) {
-            return 0;
-        }
+    /**
+     * Применение матрицы с занятиями
+     * @param {array} data матрица с занятиями
+     */
+    Table.prototype.setData = function (data) {
+        this.data = data;
+        this.prepareData();
+        this.setRows();
+        this.setCols();
+    }
 
-        var count = 0;
-        for (var i = 0; i < week.length; i++) {
-            var group = week[i];
-
-            count += group ? group.contents.length : 1;
-        }
-
-        return count;
-    };
-
-    // Получение параметров колонок
-    var getColsInfo = function (data) {
-        // Получение размеров колонки
-        var countColCols = function (data, pos) {
-            var col = [];
-
-            for (var i = 0; i < data.length; i++) {
-                var cell = data[i][pos];
+    /**
+     * Заполненение необъявленных ключей data для корректной работы forEach
+     */
+    Table.prototype.prepareData = function () {
+        this.data.forEach(function (line) {
+            for (var lineKey = 0, lineLength = line.length; lineKey < lineLength; lineKey++) {
+                var cell = line[lineKey];
 
                 if (!cell) {
+                    line[lineKey] = null;
                     continue;
                 }
 
-                for (var j = 0; j < cell.length; j++) {
-                    var count = countWeekCols(cell[j]);
-                    if (count) {
-                        col.push(count);
+                for (var cellKey = 0, cellLength = cell.length; cellKey < cellLength; cellKey++) {
+                    var week = cell[cellKey];
+
+                    if (!week) {
+                        cell[cellKey] = null;
+                        continue;
+                    }
+
+                    for (var weekKey = 0, weekLength = week.length; weekKey < weekLength; weekKey++) {
+                        var group = week[weekKey];
+
+                        if (!group) {
+                            week[weekKey] = null;
+                            continue;
+                        }
                     }
                 }
             }
-
-            return col;
-        };
-
-        // Получение списка размеров колонок
-        var countCols = function (data) {
-            var cols = new Array(data[0].length);
-
-            for (var i = 0; i < cols.length; i++) {
-                cols[i] = countColCols(data, i);
-            }
-
-            return cols;
-        };
-
-        var fullWidth = 0;
-
-        var cols = countCols(data).map(function (col) {
-            var length = col.length ? xMath.lcm.apply(xMath, col) : 1;
-            var count = col.length ? Math.max.apply(Math, col) : 1;
-            var width = col.length ? Math.sqrt(count) : 0.5;
-
-            fullWidth += width;
-
-            return {
-                length: length,
-                count: count,
-                width: width
-            };
         });
-
-        cols.forEach(function (col) {
-            col.width /= fullWidth;
-        });
-
-        return cols;
     };
 
-    // Построение таблицы
-    var buildTable = function ($block, data, times, title, rows, cols) {
-        // Создание заголовка таблицы
-        var createHeader = function ($block, title, cols) {
-            var $header = $('<thead></thead>').appendTo($block);
-
-            var $colSizes = $('<tr class="service"></tr>').prependTo($header);
-            $('<td></td>').appendTo($colSizes);
-            cols.forEach(function (col) {
-                for (var i = 0; i < col.length; i++) {
-                    $('<td></td>').appendTo($colSizes);
-                }
-            });
-            var $control = $colSizes.children();
-
-            var $headerLine = $('<tr><td></td></tr>').appendTo($header);
-            title.forEach(function (columnTitle, i) {
-                $('<td colspan=' + cols[i].length + ' class="title">' + columnTitle + '</td>').appendTo($headerLine);
-            });
-
-            return $control;
-        };
-
-        // Создание тела таблицы
-        var createBody = function ($block) {
-            var $table = $('<tbody></tbody>').appendTo($block);
-            return $table;
-        };
-
-        /**
-         * Создание строк таблицы
-         * @return [jQuery]
-         */
-        var createRowLines = function ($table, i, rowInfo, times) {
-            var lines = new Array(rowInfo.length);
-            for (var j = 0; j < lines.length; j++) {
-                lines[j] = $('<tr></tr>').appendTo($table);
-            }
-
-            $('<td rowspan=' + rowInfo.length + ' class="time">' + times[i] + '</td>').appendTo(lines[0]);
-
-            return lines;
-        };
-
-        // Заполнение группы
-        var fillGroup = function (lines, group, rowSize, colSize, weekId) {
-            if (!group) {
-                $('<td rowspan=' + rowSize + ' colspan=' + colSize + '></td>').appendTo(lines[weekId * rowSize]);
-                return;
-            }
-
-            if (group.contents.length === 1) {
-                $('<td rowspan=' + rowSize / 2 + ' colspan=' + colSize * group.contents.length + ' class="sub-cell-title">' + group.title + '</td>').appendTo(lines[weekId * rowSize]);
-                var subCell = group.contents[0];
-                $('<td rowspan=' + rowSize / 2 + ' colspan=' + colSize + ' class="sub-cell-content">' + subCell + '</td>').appendTo(lines[weekId * rowSize + rowSize / 2]);
-            } else {
-                $('<td colspan=' + colSize * group.contents.length + ' class="sub-cell-title multi">' + group.title + '</td>').appendTo(lines[weekId * rowSize]);
-                for (var i = 0; i < group.contents.length; i++) {
-                    var subCell = group.contents[i];
-
-                    $('<td rowspan=' + (rowSize - 1) + ' colspan=' + colSize + ' class="sub-cell-content multi">' + subCell + '</td>').appendTo(lines[weekId * rowSize + 1]);
-                }
-            }
+    /**
+     * Заполнение массива строк
+     */
+    Table.prototype.setRows = function () {
+        this.rows = new Array(this.data.length);
+        for (var rowsKey = 0, rowsLength = this.rows.length; rowsKey < rowsLength; rowsKey++) {
+            this.rows[rowsKey] = new TableRow(this.data[rowsKey], this, rowsKey);
         }
+    };
 
-        // Заполенние ячейки
-        var fillCell = function (lines, cell, rowInfo, colInfo) {
-            if (!cell) {
-                $('<td rowspan=' + rowInfo.length + ' colspan=' + colInfo.length + '></td>').appendTo(lines[0]);
-                return;
-            }
-
-            var rowSize = rowInfo.length / cell.length;
-
-            for (var i = 0; i < cell.length; i++) {
-                var week = cell[i];
-
-                if (!week) {
-                    $('<td rowspan=' + rowSize + ' colspan=' + colInfo.length + '></td>').appendTo(lines[i * rowSize]);
-                    continue;
-                }
-
-                var colSize = colInfo.length / countWeekCols(week);
-
-                for (var j = 0; j < week.length; j++) {
-                    fillGroup(lines, week[j], rowSize, colSize, i);
-                }
-            }
+    /**
+     * Заполнение массива строк
+     */
+    Table.prototype.setCols = function () {
+        this.cols = new Array(this.rows[0].cells.length);
+        for (var colsKey = 0, colsLength = this.cols.length; colsKey < colsLength; colsKey++) {
+            this.cols[colsKey] = new TableCol((function (rows, key) {
+                return rows.map(function (row) {
+                    return row.cells[key];
+                });
+            })(this.rows, colsKey), this);
         }
+    };
 
-        // Заполнение таблицы
-        var fillTable = function ($table, data, times, cols, rows) {
-            for (var i = 0; i < data.length; i++) {
-                var rowInfo = rows[i];
+    /**
+     * Отрисовка таблицы
+     */
+    Table.prototype.draw = function () {
+        this.$block.html('');
 
-                // Добавление строк
-                var lines = createRowLines($table, i, rowInfo, times);
+        var $headerLine = $('<tr><td></td></tr>').appendTo($('<thead></thead>').appendTo(this.$block));
+        this.headers.forEach(function (columnTitle, i) {
+            $('<td colspan=' + this.cols[i].length + ' class="title">' + columnTitle + '</td>').appendTo($headerLine);
+        }, this);
 
-                for (var j = 0; j < data[i].length; j++) {
-                    fillCell(lines, data[i][j], rowInfo, cols[j]);
-                }
-            }
-        };
+        this.$body = $('<tbody></tbody>').appendTo(this.$block);
 
-        // Оистка таблицы
-        $block.html('');
-
-        // Создание заголовка таблицы
-        var $control = createHeader($block, title, cols);
-
-        // Создание tbody
-        var $table = createBody($block);
-
-        // Заполнение таблицы
-        fillTable($table, data, times, cols, rows);
-
-        return {
-            $block: $block,
-            $control: $control,
-            $table: $table
-        }
-    }
-
-    var beautify = function (table, cols) {
-        var timeWidth = 42;
-        table.$control.first().width(timeWidth);
-        var colMaxWidth = table.$block.width() - timeWidth;
-        var c = 1;
-        cols.forEach(function (col) {
-            var width = colMaxWidth * col.width / col.length;
-            for (var i = 0; i < col.length; i++, c++) {
-                table.$control.eq(c).width(width);
-            }
-        });
-
-        table.$table.find('td').each(function () {
-            var $cell = $(this);
-            var $full = $cell.find('.full');
-            var $short = $cell.find('.short');
-
-            if ($cell.width() >= 180) {
-                $full.show();
-                $short.hide();
-            } else {
-                $full.hide();
-                $short.show();
-            }
+        this.rows.forEach(function (row) {
+            row.draw();
         });
     }
 
-    var Table = function($block, data, times, title) {
-        var rows = getRowsInfo(data);
-        var cols = getColsInfo(data);
 
-        var table = buildTable($block, data, times, title, rows, cols);
+    /**
+     * Класс строки
+     * @param {array|object} cellsRaw массив ячеек
+     * @param {object}       table    таблица
+     * @param {integer}      pos      номер строки
+     */
+    var TableRow = function (cellsRaw, table, pos) {
+        this.table = table;
+        this.pos = pos;
 
-        beautify(table, cols);
-    };
+        this.cells = cellsRaw.map(function (cellRaw) {
+            return new TableCell(cellRaw, this, null);
+        }, this);
+        this.length = xMath.lcm.apply(xMath, this.cells.map(function (cell) {
+            return cell.vLength;
+        }));
+    }
+
+    /**
+     * Отрисовка строки таблицы
+     */
+    TableRow.prototype.draw = function () {
+        this.lines = new Array(this.length);
+        for (var linesKey = 0, linesLength = this.lines.length; linesKey < linesLength; linesKey++) {
+            this.lines[linesKey] = $('<tr></tr>').appendTo(this.table.$body);
+        }
+
+        $('<td rowspan=' + this.length + ' class="time">' + this.table.numbers[this.pos] + '</td>').appendTo(this.lines[0]);
+
+        this.cells.forEach(function (cell) {
+            cell.draw();
+        });
+    }
+
+
+    /**
+     * Класс колонки
+     * @param {array|object} cellsRaw массив ячеек
+     * @param {object}       table    таблица
+     * @param {integer}      pos      номер колонки
+     */
+    var TableCol = function (cellsRaw, table, pos) {
+        this.table = table;
+        this.pos = pos;
+
+        this.cells = cellsRaw.map(function (cellRaw) {
+            return new TableCell(cellRaw, null, this);
+        }, this);
+        this.length = xMath.lcm.apply(xMath, this.cells.map(function (cell) {
+            return cell.hLength;
+        }));
+    }
+
+
+    /**
+     * Класс ячейки
+     * @param {array}  cellRaw ячейка
+     * @param {object} row     строка
+     * @param {object} col     колонка
+     */
+    var TableCell = function (cellRaw, row, col) {
+        // Проверка на созданность объекта
+        if (cellRaw instanceof TableCell) {
+            if (row) {
+                cellRaw.row = row;
+            }
+            if (col) {
+                cellRaw.col = col;
+            }
+            return cellRaw;
+        }
+
+        this.row = row;
+        this.col = col;
+
+        if (!cellRaw) {
+            this.empty = true;
+            this.vLength = 2;
+            this.hLength = 1;
+
+            return;
+        }
+
+        this.weeks = cellRaw.map(function (weekRaw, pos) {
+            return new TableWeek(weekRaw, this, pos);
+        }, this);
+        this.vLength = this.weeks.length * 2;
+        this.hLength = xMath.lcm.apply(xMath, this.weeks.map(function (week) {
+            return week.length;
+        }));
+    }
+
+    /**
+     * Отрисовка ячейки
+     */
+    TableCell.prototype.draw = function () {
+        if (this.empty) {
+            $('<td rowspan=' + this.row.length + ' colspan=' + this.col.length + '></td>').appendTo(this.row.lines[0]);
+            return;
+        }
+
+        this.weeks.forEach(function (week) {
+            week.draw();
+        });
+    }
+
+
+    /**
+     * Класс недели
+     * @param {array}   weekRaw неделя
+     * @param {object}  cell    ячейка
+     * @param {integer} pos     номер недели
+     */
+    var TableWeek = function (weekRaw, cell, pos) {
+        this.cell = cell;
+        this.pos = pos;
+
+        if (!weekRaw) {
+            this.empty = true;
+            this.length = 1;
+
+            return;
+        }
+
+        this.groups = weekRaw.map(function (groupRaw) {
+            return new TableGroup(groupRaw, this);
+        }, this);
+        this.length = xMath.sum.apply(xMath, this.groups.map(function (group) {
+            return group.length;
+        }));
+    }
+
+    /**
+     * Отрисовка недели
+     */
+    TableWeek.prototype.draw = function () {
+        if (this.empty) {
+            var rowSize = this.cell.row.length / this.cell.vLength * 2;
+            var colLength = this.cell.col.length;
+            var lines = this.cell.row.lines;
+            $('<td rowspan=' + rowSize + ' colspan=' + colLength + '></td>').appendTo(lines[this.pos * rowSize]);
+            return;
+        }
+
+        this.groups.forEach(function (group) {
+            group.draw();
+        });
+    }
+
+
+    /**
+     * Класс группы занятий
+     * @param {object} groupRaw группа занятий
+     * @param {object} week     неделя
+     */
+    var TableGroup = function (groupRaw, week) {
+        this.week = week;
+
+        if (!groupRaw) {
+            this.empty = true;
+            this.length = 1;
+
+            return;
+        }
+
+        this.title = groupRaw.title;
+        this.length = groupRaw.contents.length;
+        this.contents = groupRaw.contents;
+    }
+
+    /**
+     * Отрисвка группы предметов
+     */
+    TableGroup.prototype.draw = function () {
+        var rowSize = this.week.cell.row.length / this.week.cell.vLength * 2;
+        var colSize = this.week.cell.col.length / this.week.length;
+        var lines = this.week.cell.row.lines;
+        var pos = this.week.pos * rowSize;
+
+        if (this.empty) {
+            $('<td rowspan=' + rowSize + ' colspan=' + colSize * this.length + '></td>').appendTo(lines[pos]);
+            return;
+        }
+
+        if (this.length > 1) {
+            $('<td colspan=' + colSize * this.length + ' class="sub-cell-title multi">' + this.title + '</td>').appendTo(lines[pos]);
+            this.contents.forEach(function (content) {
+                $('<td rowspan=' + (rowSize - 1) + ' colspan=' + colSize + ' class="sub-cell-content multi">' + content + '</td>').appendTo(lines[pos + 1]);
+            });
+        } else {
+            $('<td rowspan=' + rowSize / 2 + ' colspan=' + colSize * this.length + ' class="sub-cell-title">' + this.title + '</td>').appendTo(lines[pos]);
+            var content = this.contents[0];
+            $('<td rowspan=' + rowSize / 2 + ' colspan=' + colSize + ' class="sub-cell-content">' + content + '</td>').appendTo(lines[pos + rowSize / 2]);
+        }
+    }
 
     return Table;
 })();
