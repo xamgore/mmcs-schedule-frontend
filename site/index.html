@@ -6,12 +6,17 @@
 
 <title>Интерактивное расписание мехмата ЮФУ</title>
 
-<link href="static/style.css" rel="stylesheet" type="text/css">
-<link href="static/printer/print-style.css" rel="stylesheet" type="text/css" media="print">
+<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+if (!window.jQuery) {
+    document.write(unescape("%3Cscript src='http://users.mmcs.sfedu.ru/~cdn/jquery-2.1.4.min.js'%3E%3C/script%3E"));
+}
+</script>
 
-<link href="static/window/window.css" rel="stylesheet" type="text/css">
-<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>-->
-<script src="static/jquery-1.11.3.js"></script>
+<link href="static/style.css" rel="stylesheet">
+<link href="static/printer/print-style.css" rel="stylesheet" media="print">
+
+<link href="static/window/window.css" rel="stylesheet">
 <script src="static/window/window.js"></script>
 <script src="static/schedule/menuLoader.js"></script>
 <script src="static/helpers.js"></script>
@@ -49,7 +54,7 @@
     <div class="choice_timetable_wrapper">
         <div class="choice_timetable">
             <select id="type" class="default_select">
-                <option value="0" selected style="display: none">Выберите тип расписания:</option>
+                <option value="0" selected>Выберите тип расписания:</option>
                 <option value="group">Группа</option>
                 <option value="teacher">Преподаватель</option>
                 <option value="auditory" disabled style="display: none">Аудитория</option>
@@ -57,19 +62,19 @@
                 <option value="session" disabled style="display: none">Сессия</option>
             </select>
             <select id="course" class="default_select" disabled>
-                <option value="0" style="display: none">Выберите курс:</option>
+                <option value="0">Выберите курс:</option>
             </select>
             <select id="group" class="default_select" disabled>
-                <option value="0" style="display: none">Выберите группу:</option>
+                <option value="0">Выберите группу:</option>
             </select>
             <select id="teacher" class="default_select" style="display: none">
-                <option value="0" style="display: none">Выберите преподавателя:</option>
+                <option value="0">Выберите преподавателя:</option>
             </select>
             <select id="auditory" class="default_select" style="display: none">
-                <option value="0" style="display: none">Выберите аудиторию:</option>
+                <option value="0">Выберите аудиторию:</option>
             </select>
             <select id="day" class="default_select" style="display: none" disabled>
-                <option value="0" selected style="display: none">Выберите день:</option>
+                <option value="0" selected>Выберите день:</option>
                 <option value="1">Понедельник</option>
                 <option value="2">Вторник</option>
                 <option value="3">Среда</option>
@@ -82,7 +87,7 @@
             <div class="management_wrapper">
                 <span id="management_auth">Авторизация</span>
                 <select id="management" class="default_select">
-                    <option value="0" selected style="display: none">Выберите действие</option>
+                    <option value="0" selected>Выберите действие</option>
                     <option value="1">Добавить преподавателя</option>
                     <option value="2">Добавить аудиторию</option>
                     <option value="3">Добавить курс</option>
@@ -99,9 +104,7 @@
     <div id="welcome_wrapper" class="welcome_wrapper">
         <div class="welcome_text">
             <p>Добро пожаловать в раздел интерактивого расписания!</p>
-
             <p>Последовательно выберите тип расписания, затем курс/группу, аудиторию или преподавателя.</p>
-
             <p>При следующем посещении этой страницы отобразится последнее выбранное Вами расписание.</p>
         </div>
     </div>
