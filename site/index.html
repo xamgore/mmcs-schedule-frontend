@@ -9,15 +9,16 @@
 <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script>
 if (!window.jQuery) {
-    document.write(unescape("%3Cscript src='http://users.mmcs.sfedu.ru/~cdn/jquery-2.1.4.min.js'%3E%3C/script%3E"));
+    document.write(unescape('%3Cscript src="http://users.mmcs.sfedu.ru/~cdn/jquery-2.1.4.min.js"%3E%3C/script%3E'));
 }
 </script>
 
 <link href="static/style.css" rel="stylesheet">
 <link href="static/printer/print-style.css" rel="stylesheet" media="print">
 
-<link href="static/window/window.css" rel="stylesheet">
-<script src="static/window/window.js"></script>
+<link href="static/modalWindow/modalWindow.css" rel="stylesheet">
+<script src="static/modalWindow/modalWindow.js"></script>
+
 <script src="static/schedule/menuLoader.js"></script>
 <script src="static/helpers.js"></script>
 
@@ -31,10 +32,6 @@ if (!window.jQuery) {
 <script src="static/schedule/deletetion.js"></script>
 <script src="static/schedule/edit.js"></script>
 
-<div class="shadow"></div>
-<div class="window_block">
-    <div class="window"></div>
-</div>
 <div class="page_body">
     <div class="header_wrapper">
         <div class="header_box">
@@ -82,8 +79,6 @@ if (!window.jQuery) {
                 <option value="5">Пятница</option>
                 <option value="6">Суббота</option>
             </select>
-
-            <div class="print_schedule" onclick="window.print();"></div>
             <div class="management_wrapper">
                 <span id="management_auth">Авторизация</span>
                 <select id="management" class="default_select">
@@ -94,7 +89,6 @@ if (!window.jQuery) {
                     <option value="4">Добавить группу</option>
                     <option value="5">Добавить пару</option>
                     <option value="addSubject">Добавить предмет</option>
-
                     <option value="6" class="deleteoff">delete mode off</option>
                     <option value="logout">Выйти</option>
                 </select>

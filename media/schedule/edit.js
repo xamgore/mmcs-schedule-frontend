@@ -25,7 +25,7 @@ $(function () {
             crossDomain: true,
             success: function (data) {
                 $.schedule.manager.redraw();
-                $.fn.close_window();
+                modalWindow.close();
             },
             error: function (jqXHR, status, error) {
                 console.log(status);
@@ -60,10 +60,12 @@ $(function () {
     $.schedule.manager.redraw();
 
     managerAuth.click(function () {
-        var form = '<input id="login" type="text" value="" placeholder="Логин"\><br\>\
-                <input id="pass" type="password" value="" placeholder="Пароль" \>\
-                <input type="button" value="Войти" onclick="$.schedule.manager.auth()">';
-        $.fn.open_window('Авторизация', form);
+        modalWindow.open({
+            title: 'Авторизация',
+            content: '<input id="login" type="text" value="" placeholder="Логин"><br>' +
+                '<input id="pass" type="password" value="" placeholder="Пароль">' +
+                '<input type="button" value="Войти" onclick="$.schedule.manager.auth()">'
+        });
     });
 
     $.fn.manager.putTeacher = function () {
@@ -77,7 +79,7 @@ $(function () {
             crossDomain: true,
             data: "name=" + name + "&degree=" + degree,
             success: function (data) {
-                $.fn.close_window();
+                modalWindow.close();
             }
         });
     };
@@ -92,7 +94,7 @@ $(function () {
             crossDomain: true,
             data: "name=" + name,
             success: function (data) {
-                $.fn.close_window();
+                modalWindow.close();
             }
         });
     };
@@ -111,7 +113,7 @@ $(function () {
                 abbr: abbr
             },
             success: function (data) {
-                $.fn.close_window();
+                modalWindow.close();
             }
         });
     };
@@ -127,7 +129,7 @@ $(function () {
             crossDomain: true,
             data: "num=" + num + "&degree=" + degree,
             success: function (data) {
-                $.fn.close_window();
+                modalWindow.close();
             }
         });
     };
@@ -144,7 +146,7 @@ $(function () {
             crossDomain: true,
             data: "name=" + name + "&num=" + num + "&gradeID=" + gradeID,
             success: function (data) {
-                $.fn.close_window();
+                modalWindow.close();
             }
         });
     };
@@ -155,40 +157,44 @@ $(function () {
 
         switch (action) {
             case '1':
-                var form = '<input id="teacherName" type="text" value="" placeholder="Имя"><br\>\
-                <input id="teacherDegree" type="text" value="" placeholder="Степень"><br\>\
-                <input type="button" value="Добавить" onclick="$.fn.manager.putTeacher()">';
-                $.fn.open_window('Добавить преподавателя', form);
-
+                modalWindow.open({
+                    title: 'Добавить преподавателя',
+                    content: '<input id="teacherName" type="text" value="" placeholder="Имя"><br>' +
+                        '<input id="teacherDegree" type="text" value="" placeholder="Степень"><br>' +
+                        '<input type="button" value="Добавить" onclick="$.fn.manager.putTeacher()">'
+                });
                 break;
 
             case '2':
-                var form = '<input id="roomName" type="text" value="" placeholder="Имя"><br\>\
-                <input type="button" value="Добавить" onclick="$.fn.manager.putRoom()">';
-                $.fn.open_window('Добавить аудиторию', form);
-
+                modalWindow.open({
+                    title: 'Добавить аудиторию',
+                    content: '<input id="roomName" type="text" value="" placeholder="Имя"><br>' +
+                        '<input type="button" value="Добавить" onclick="$.fn.manager.putRoom()">'
+                });
                 break;
 
             case '3':
-                var form = '<input id="gradeNum" type="text" value="" placeholder="Номер курса" \><br\>\
-                <select id="gradeDegree">\
-                <option>Степень обучения</option>\
-                <option value="bachelor">bachelor</option> \
-                <option value="master">master</option> \
-                <option value="specialist">specialist</option> \
-                </select><br\>\
-                <input type="button" value="Добавить" onclick="$.fn.manager.putGrade()">';
-                $.fn.open_window('Добавить курс', form);
-
+                modalWindow.open({
+                    title: 'Добавить курс',
+                    content: '<input id="gradeNum" type="text" value="" placeholder="Номер курса"><br>' +
+                        '<select id="gradeDegree">' +
+                            '<option>Степень обучения</option>' +
+                            '<option value="bachelor">bachelor</option>' +
+                            '<option value="master">master</option>' +
+                            '<option value="specialist">specialist</option>' +
+                        '</select><br>' +
+                        '<input type="button" value="Добавить" onclick="$.fn.manager.putGrade()">'
+                });
                 break;
 
             case '4':
-                // name str, num int, gradeID int
-                var form = '<input id="groupName" type="text" value="" placeholder="Имя"\><br\>\
-                <input id="groupNum" type="text" value="" placeholder="Номер" \>\
-                <select id="groupGradeID"><option>Курс</option></select>\
-                <input type="button" value="Добавить" onclick="$.fn.manager.putGroup()">';
-                $.fn.open_window('Добавить группу', form);
+                modalWindow.open({
+                    title: 'Добавить группу',
+                    content: '<input id="groupName" type="text" value="" placeholder="Имя"><br>' +
+                        '<input id="groupNum" type="text" value="" placeholder="Номер">' +
+                        '<select id="groupGradeID"><option>Курс</option></select>' +
+                        '<input type="button" value="Добавить" onclick="$.fn.manager.putGroup()">'
+                });
 
                 menu.getJSON('grade/list', function (data) {
                     var select = $('#groupGradeID');
@@ -204,11 +210,12 @@ $(function () {
                 break;
 
             case 'addSubject':
-                var form = '<input id="subjectName" type="text" value="" placeholder="Название"><br\>\
-                <input id="subjectAbbr" type="text" value="" placeholder="Аббревиатура"><br\>\
-                <input type="button" value="Добавить" onclick="$.fn.manager.putSubject()">';
-                $.fn.open_window('Добавить предмет', form);
-
+                modalWindow.open({
+                    title: 'Добавить предмет',
+                    content: '<input id="subjectName" type="text" value="" placeholder="Название"><br>' +
+                        '<input id="subjectAbbr" type="text" value="" placeholder="Аббревиатура"><br>' +
+                        '<input type="button" value="Добавить" onclick="$.fn.manager.putSubject()">'
+                });
                 break;
 
             case 'logout':
@@ -223,6 +230,5 @@ $(function () {
                 });
                 break;
         }
-    }); // !managerList.change
-
+    });
 });
