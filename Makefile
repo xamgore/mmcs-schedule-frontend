@@ -4,6 +4,7 @@ default:
 
 install:
 	npm install
+	npm install --global gulp
 
 release:
 	gulp --force --release
