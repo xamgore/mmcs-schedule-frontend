@@ -5,6 +5,7 @@ $(function () {
         authorize: false
     };
     $.schedule.backendURL = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
+    $.schedule.backendURL = 'http://users.mmcs.sfedu.ru:3000/';
 });
 
 
