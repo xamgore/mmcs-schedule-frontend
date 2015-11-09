@@ -1,147 +1,456 @@
-// Версия 1.2.1
-$(function () {
+/* global helpers, Table, system */
+(function () {
     'use strict';
 
-    var mainTitle = 'Интерактивное расписание мехмата ЮФУ';
-    var $group = $("#group");
-    var $grade = $("#course");
-    var $teacher = $("#teacher");
-    var $day = $("#day");
-    var $room = $("#auditory");
-    var $type = $('#type');
+    /**
+     * Конструктор класса Schedule
+     * @param {jQuery} $table блок таблицы
+     * @param {string} type   тип расписания
+     * @param {[type]} data   [description]
+     */
+    var Schedule = window.Schedule = function ($table, type, data) {
+        this.$table = $table;
+        this.type = type;
 
-    var $table = $('.timetable_wrapper');
-
-
-    var setTitle = function (name) {
-        var outName = mainTitle;
-        if (name) {
-            outName += ': ' + name;
-        }
-        document.title = outName;
-    };
-    setTitle('');
-
-    var table = new Timetable({
-        base: $table
-    });
-    table.set({
-        days: days,
-        times: timeList
-    });
-
-    loader.week(function (week) {
-        var actualWeek = week === 0 ? 'верхняя неделя' : 'нижняя неделя';
-        $('.week_now').text('Сейчас ' + actualWeek);
-        $.schedule.state.type = week;
-        table.set({week: week});
-    });
-
-    var showList = {
-        all: [$grade, $group, $teacher, $room, $day],
-        group: [$grade, $group],
-        teacher: [$teacher],
-        auditory: [$room]
+        this.buildTimes(system.times);
+        this.buildHeader();
+        this.buildLessons(data.lessons, data.curricula, data.groups || [], system.times);
+        this.buildData();
     };
 
+    /**
+     * Подготовка времени пар
+     * @param  {array}    times массив времен
+     * @return {Schedule} this
+     */
+    Schedule.prototype.buildTimes = function (times) {
+        this.times = times.map(function (time) {
+            return helpers.time.getString(time.cbeg) + '<br>-<br>' + helpers.time.getString(time.cend);
+        });
 
+        return this;
+    };
 
-
-    $type.change(function () {
-        $('.timetable_wrapper').hide()
-        setTitle('');
-        var type = $type.val();
-        if (!type) {
-            invalidate(showList.all);
-            return;
+    /**
+     * Построение шапки
+     * @return {Schedule} this
+     */
+    Schedule.prototype.buildHeader = function () {
+        switch (this.type) {
+            case 'group':
+            case 'teacher':
+                this.header = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+                break;
         }
-        if (type === 'group') {
-            loader.grades(function (data) {
-                $grade.html('<option value="0">Выберите курс:</option>'); // Сначала чистим select
-                $.each(data, function (i, gradeInfo) {
-                    $grade.append(menu.gradeOption(gradeInfo));
+
+        return this;
+    };
+
+    /**
+     * Построение занятий
+     * @param  {array}    lessons   занятия
+     * @param  {array}    curricula дисциплины
+     * @param  {array}    groups    группы
+     * @param  {array}    times     массив времен
+     * @return {Schedule}           this
+     */
+    Schedule.prototype.buildLessons = function (lessons, curricula, groups, times) {
+        if (!lessons) {
+            throw new Error('Empty lessons');
+        }
+
+        curricula = helpers.array.groupBy(curricula, 'lessonid');
+
+        groups.forEach(function (group) {
+            var name = group.gradenum + '.' + group.groupnum;
+            if (group.name !== 'NULL') {
+                name += '(' + group.name + ')';
+            }
+            group.name = name;
+        });
+        groups = helpers.array.groupBy(groups, 'uberid');
+
+        times = times.map(function (time) {
+            return {
+                begin: helpers.time.getStamp(time.cbeg),
+                end: helpers.time.getStamp(time.cend)
+            };
+        });
+
+        var titles = [];
+        switch (this.type) {
+            case 'group':
+            case 'teacher':
+                titles = [0, 1, 2, 3, 4, 5];
+                break;
+        }
+
+        this.lessons = [];
+        lessons.forEach(function (lesson) {
+            try {
+                this.lessons.push(new ScheduleLesson(
+                    this.type,
+                    lesson, curricula[lesson.id], groups[lesson.uberid],
+                    times, titles
+                ));
+            } catch (error) {
+                console.log(error, lesson);
+            }
+        }, this);
+
+        return this;
+    };
+
+    /**
+     * Построение данных о занятиях
+     * @return {Schedule} this
+     */
+    Schedule.prototype.buildData = function () {
+        this.data = new Array(this.times.length);
+        for (var i = 0, sz = this.data.length; i < sz; i++) {
+            this.data[i] = new Array(this.header.length);
+            helpers.array.fill(this.data[i], null);
+        }
+
+        this.lessons.forEach(function (lesson) {
+            var row = lesson.pos.row;
+            var col = lesson.pos.col;
+            if (this.data[row][col]) {
+                this.data[row][col].push(lesson);
+            } else {
+                this.data[row][col] = [lesson];
+            }
+
+        }, this);
+
+        this.data = this.data.map(function (row) {
+            return row.map(function (cell) {
+                return new ScheduleCell(this.type, cell).toArray();
+            }, this);
+        }, this);
+
+        return this;
+    };
+
+    /**
+     * Отрисовка расписания
+     * @return {Schedule} this
+     */
+    Schedule.prototype.draw = function () {
+        this.table = new Table(this.$table, this.data, this.times, this.header);
+        this.table.draw();
+
+        return this;
+    };
+
+    /**
+     * Деструктор класса Schedule
+     */
+    Schedule.prototype.destruct = function () {
+        this.table.destruct();
+    };
+
+
+    /**
+     * Конструктор класса ScheduleLesson
+     * @param {string} type      тип расписания
+     * @param {object} lesson    информация о занятии
+     * @param {array}  curricula дисциплины занятия
+     * @param {array}  groups    группы занятия
+     * @param {array}  times     массив времен
+     * @param {array}  titles    массив заголовков
+     */
+    var ScheduleLesson = function (type, lesson, curricula, groups, times, titles) {
+        this.type = type;
+
+        this.build(lesson, curricula, groups || [], times, titles);
+    };
+
+    /**
+     * Построение занятия
+     * @param  {object}         lesson    информация о занятии
+     * @param  {array}          curricula дисциплины занятия
+     * @param  {array}          groups    группы занятия
+     * @param  {array}          times     массив времен
+     * @param  {array}          titles    массив заголовков
+     * @return {ScheduleLesson}           this
+     */
+    ScheduleLesson.prototype.build = function (lesson, curriculaRaw, groups, times, titles) {
+        if (!curriculaRaw) {
+            throw new Error('Lesson has empty curricula');
+        }
+
+        this.setTimeAndPos(lesson.timeslot, times, titles);
+
+        var curricula = new Array(lesson.subcount);
+        helpers.array.fill(curricula, null);
+        var groupName = groups.map(function (group) {
+            return group.name;
+        }).join(', ');
+        curriculaRaw.forEach(function (curriculum) {
+            curricula[curriculum.subnum - 1] = {
+                subject: {
+                    name: curriculum.subjectname,
+                    abbr: curriculum.subjectabbr
+                },
+                teacher: {
+                    name: curriculum.teachername,
+                    abbr: helpers.abbrName(curriculum.teachername),
+                    degree: curriculum.teacherdegree
+                },
+                room: {
+                    name: curriculum.roomname
+                },
+                group: {
+                    name: groupName
+                }
+            };
+        }, this);
+
+        this.mergeCurricula(curricula);
+
+        return this;
+    };
+
+    /**
+     * Устновка времени и позиции занятия
+     * @param  {object}         timeslot timeslot занятия
+     * @param  {array}          times    массив времен
+     * @param  {array}          titles   массив заголовков
+     * @return {ScheduleLesson}          this
+     */
+    ScheduleLesson.prototype.setTimeAndPos = function (timeslot, times, titles) {
+        var time = timeslot.replace(/[\(\)]/g, '').split(',');
+
+        this.time = {
+            begin: helpers.time.getStamp(helpers.time.parse(time[1])),
+            end: helpers.time.getStamp(helpers.time.parse(time[2]))
+        };
+
+        var row;
+        times.some(function (time, index) {
+            if (helpers.compare(time, this.time)) {
+                row = index;
+                return true;
+            }
+        }, this);
+        if (row == null) {
+            throw new Error('Сan not find lesson row');
+        }
+
+        var col;
+        titles.some(function (title, index) {
+            if (title === Number(time[0])) {
+                col = index;
+                return true;
+            }
+        }, this);
+        if (col == null) {
+            throw new Error('Сan not find lesson column');
+        }
+
+        this.pos = {
+            row: row,
+            col: col,
+            week: time[3]
+        };
+
+        return this;
+    };
+
+    ScheduleLesson.prototype.mergeCurricula = function (curricula) {
+        this.groups = [];
+
+        curricula.forEach(function (curriculum) {
+            if (!curriculum) {
+                this.groups.push(null);
+                return;
+            }
+
+            var lastGroup = helpers.array.last(this.groups);
+            if (lastGroup && helpers.compare(lastGroup.subject, curriculum.subject)) {
+                lastGroup.curricula.push(curriculum);
+            } else {
+                this.groups.push({
+                    subject: curriculum.subject,
+                    curricula: [curriculum]
                 });
-            });
-        } else if (type === 'teacher') {
-            loader.teachers(function (data) {
-                $teacher.html('<option value="0">Выберите преподавателя:</option>');
-                data.forEach(function (teacher) {
-                    $teacher.append(menu.teacherOption(teacher));
+            }
+        },this);
+
+        switch (this.type) {
+            case 'group':
+            case 'teacher':
+                this.groups = this.groups.map(function (group) {
+                    if (!group) {
+                        return null;
+                    }
+
+                    var newCurricula = [];
+
+                    group.curricula.forEach(function (curriculum) {
+                        if (!curriculum) {
+                            newCurricula.push(null);
+                            return;
+                        }
+
+                        var lastCurriculum = helpers.array.last(newCurricula);
+                        if (
+                            lastCurriculum &&
+                            helpers.compare(lastCurriculum.teacher, curriculum.teacher) &&
+                            helpers.compare(lastCurriculum.group, curriculum.group)
+                        ) {
+                            lastCurriculum.room.name += ', ' + curriculum.room.name;
+                        } else {
+                            newCurricula.push(curriculum);
+                        }
+                    });
+
+                    return {
+                        subject: group.subject,
+                        curricula: newCurricula
+                    };
                 });
-            });
         }
-        typeVisualization(showList, type);
-    });
+    };
 
 
-    $grade.change(function () {
-        $('.timetable_wrapper').hide();
-        setTitle('');
-        var grade = $grade.val();
-        if (!grade) {
-            invalidate([$group]);
-            return;
+    /**
+     * Конструктор ScheduleCell
+     * @param {string} type    тип расписания
+     * @param {array}  lessons занятия
+     */
+    var ScheduleCell = function(type, lessons) {
+        this.type = type;
+
+        if (lessons) {
+            this.build(lessons);
+        } else {
+            this.data = null;
         }
+    };
 
-        loader.groups($grade.val(), function(data) {
-            $group.html('<option value="0">Выберите группу:</option>'); // Сначала чистим select
-            $.each(data, function (i, groupInfo) {
-                $group.append(menu.groupOption(groupInfo));
-            });
+    ScheduleCell.prototype.build = function (lessons) {
+        var upper = [];
+        var lower = [];
+        var hasFull = false;
+        var hasNotFull = false;
+
+        lessons.forEach(function (lesson) {
+            switch (lesson.pos.week) {
+                case 'full':
+                    helpers.array.setLength(upper, Math.max(upper.length, lower.length));
+                    helpers.array.setLength(lower, Math.max(upper.length, lower.length));
+                    upper = upper.concat(lesson.groups);
+                    lower = lower.concat(lesson.groups);
+
+                    hasFull = true;
+
+                    break;
+
+                case 'upper':
+                    upper = upper.concat(lesson.groups);
+
+                    if (hasFull) {
+                        helpers.array.setLength(lower, upper.length);
+                    }
+
+                    hasNotFull = true;
+
+                    break;
+
+                case 'lower':
+                    lower = lower.concat(lesson.groups);
+
+                    if (hasFull) {
+                        helpers.array.setLength(upper, upper.length);
+                    }
+
+                    hasNotFull = true;
+
+                    break;
+            }
         });
-        $group.removeAttr('disabled');
-    });
 
+        upper = this.buildLesson(upper);
+        lower = this.buildLesson(lower);
 
-    // Группа -> Курс -> Выбор группы [Вывод расписания]
-    $group.change(function () {
-        $('.timetable_wrapper').hide();
-        var group = $group.val();
-        setTitle('');
-        if (!group) {
-            return;
+        if (!upper.length) {
+            upper = null;
         }
 
-        // todo: extract to loader
-        menu.getJSON('schedule/group/' + group, function (data) {
-            $('.timetable_wrapper').hide();
-
-            table.set({
-                type: 'group',
-                lessons: data.lessons,
-                curricula: data.curricula
-            });
-            $('.welcome_wrapper').hide();
-            $('.print_schedule').show();
-            $('.timetable_wrapper').show();
-            table.draw();
-        });
-        $('.type_timetable').html($teacher.children('option:selected').text());
-    });
-
-    $teacher.change(function () {
-        $('.timetable_wrapper').hide();
-        var teacher = $teacher.val();
-        if (!teacher) {
-            return;
+        if (!lower.length) {
+            lower = null;
         }
 
-        menu.getJSON('schedule/teacher/' + teacher, function (data) {
-            $('.timetable_wrapper').hide();
-            setTitle($teacher.children('option:selected').text());
+        if (hasNotFull) {
+            this.data = [ upper, lower ];
+        } else {
+            this.data = [ upper ];
+        }
 
-            table.set({
-                type: 'teacher',
-                lessons: data.lessons,
-                curricula: data.curricula,
-                groups: data.groups
-            });
-            $('.welcome_wrapper').hide();
-            $('.print_schedule').show();
-            $('.timetable_wrapper').show();
-            table.draw();
-        });
-    });
+        return this;
+    };
 
+    ScheduleCell.prototype.buildLesson = function (week) {
+        switch (this.type) {
+            case 'group':
+                return week.map(function (group) {
+                    if (!group) {
+                        return null;
+                    }
 
-});
+                    var title = '<span class="lesson-titie">' +
+                        '<span class="subject full">' + group.subject.name + '</span>' +
+                        '<span class="subject short">' +
+                            '<abbr title="' + group.subject.name + '">' + group.subject.abbr + '</abbr>' +
+                        '</span>' +
+                    '</span>';
+
+                    var contents = group.curricula.map(function (curriculum) {
+                        return '<span class="lesson-content">' +
+                            '<span class="teacher">' +
+                                '<abbr title="' + curriculum.teacher.name + '">' + curriculum.teacher.abbr + '</abbr>' +
+                            '</span>' +
+                            '<span class="room">' + curriculum.room.name + '</span>' +
+                        '</span>';
+                    });
+
+                    return {
+                        title: title,
+                        contents: contents
+                    };
+                });
+
+            case 'teacher':
+                return week.map(function (group) {
+                    if (!group) {
+                        return null;
+                    }
+
+                    var title = '<span class="lesson-titie">' +
+                        '<span class="subject full">' + group.subject.name + '</span>' +
+                        '<span class="subject short">' +
+                            '<abbr title="' + group.subject.name + '">' + group.subject.abbr + '</abbr>' +
+                        '</span>' +
+                    '</span>';
+
+                    var contents = group.curricula.map(function (curriculum) {
+                        return '<span class="lesson-content">' +
+                            '<span class="group">' + curriculum.group.name + '</span>' +
+                            '<span class="room">' + curriculum.room.name + '</span>' +
+                        '</span>';
+                    });
+
+                    return {
+                        title: title,
+                        contents: contents
+                    };
+                });
+        }
+    };
+
+    ScheduleCell.prototype.toArray = function () {
+        return this.data;
+    };
+})();

@@ -1,30 +1,23 @@
-var Table = (function () {
+/* globals xMath */
+(function () {
     'use strict';
 
     /**
-     * Класс отрисовщика таблицы занятий
+     * Конструктор класса Table
      * @param {jQuery} $block  объект таблицы
      * @param {array}  data    матрица с занятиями
-     * @param {array}  numbers левая колоннка таблицы
-     * @param {array}  headers шапка таблицы
+     * @param {array}  times левая колоннка таблицы
+     * @param {array}  header шапка таблицы
      */
-    var Table = function ($block, data, numbers, headers) {
+    var Table = window.Table = function ($block, data, times, header) {
         this.$block = $block;
-        this.numbers = numbers;
-        this.headers = headers;
-        this.setData(data);
-    };
-
-    /**
-     * Применение матрицы с занятиями
-     * @param {array} data матрица с занятиями
-     */
-    Table.prototype.setData = function (data) {
+        this.times = times;
+        this.header = header;
         this.data = data;
-        this.prepareData();
+
         this.setRows();
         this.setCols();
-    }
+    };
 
     /**
      * Заполненение необъявленных ключей data для корректной работы forEach
@@ -76,11 +69,9 @@ var Table = (function () {
     Table.prototype.setCols = function () {
         this.cols = new Array(this.rows[0].cells.length);
         for (var colsKey = 0, colsLength = this.cols.length; colsKey < colsLength; colsKey++) {
-            this.cols[colsKey] = new TableCol((function (rows, key) {
-                return rows.map(function (row) {
-                    return row.cells[key];
-                });
-            })(this.rows, colsKey), this);
+            this.cols[colsKey] = new TableCol(this.rows.map(function (row) {
+                return row.cells[colsKey];
+            }), this, colsKey);
         }
     };
 
@@ -91,7 +82,7 @@ var Table = (function () {
         this.$block.html('');
 
         var $headerLine = $('<tr><td></td></tr>').appendTo($('<thead></thead>').appendTo(this.$block));
-        this.headers.forEach(function (columnTitle, i) {
+        this.header.forEach(function (columnTitle, i) {
             $('<td colspan=' + this.cols[i].length + ' class="title">' + columnTitle + '</td>').appendTo($headerLine);
         }, this);
 
@@ -100,11 +91,16 @@ var Table = (function () {
         this.rows.forEach(function (row) {
             row.draw();
         });
-    }
+    };
+
+    /**
+     * Деструктор класса Table
+     */
+    Table.prototype.destruct = function () {};
 
 
     /**
-     * Класс строки
+     * Конструктор класса TableRow
      * @param {array|object} cellsRaw массив ячеек
      * @param {object}       table    таблица
      * @param {integer}      pos      номер строки
@@ -119,7 +115,7 @@ var Table = (function () {
         this.length = xMath.lcm.apply(xMath, this.cells.map(function (cell) {
             return cell.vLength;
         }));
-    }
+    };
 
     /**
      * Отрисовка строки таблицы
@@ -130,16 +126,16 @@ var Table = (function () {
             this.lines[linesKey] = $('<tr></tr>').appendTo(this.table.$body);
         }
 
-        $('<td rowspan=' + this.length + ' class="time">' + this.table.numbers[this.pos] + '</td>').appendTo(this.lines[0]);
+        $('<td rowspan=' + this.length + ' class="time">' + this.table.times[this.pos] + '</td>').appendTo(this.lines[0]);
 
         this.cells.forEach(function (cell) {
             cell.draw();
         });
-    }
+    };
 
 
     /**
-     * Класс колонки
+     * Конструктор класса TableCol
      * @param {array|object} cellsRaw массив ячеек
      * @param {object}       table    таблица
      * @param {integer}      pos      номер колонки
@@ -154,11 +150,11 @@ var Table = (function () {
         this.length = xMath.lcm.apply(xMath, this.cells.map(function (cell) {
             return cell.hLength;
         }));
-    }
+    };
 
 
     /**
-     * Класс ячейки
+     * Конструктор класса TableCell
      * @param {array}  cellRaw ячейка
      * @param {object} row     строка
      * @param {object} col     колонка
@@ -193,7 +189,7 @@ var Table = (function () {
         this.hLength = xMath.lcm.apply(xMath, this.weeks.map(function (week) {
             return week.length;
         }));
-    }
+    };
 
     /**
      * Отрисовка ячейки
@@ -207,11 +203,11 @@ var Table = (function () {
         this.weeks.forEach(function (week) {
             week.draw();
         });
-    }
+    };
 
 
     /**
-     * Класс недели
+     * Конструктор класса TableWeek
      * @param {array}   weekRaw неделя
      * @param {object}  cell    ячейка
      * @param {integer} pos     номер недели
@@ -233,7 +229,7 @@ var Table = (function () {
         this.length = xMath.sum.apply(xMath, this.groups.map(function (group) {
             return group.length;
         }));
-    }
+    };
 
     /**
      * Отрисовка недели
@@ -250,11 +246,11 @@ var Table = (function () {
         this.groups.forEach(function (group) {
             group.draw();
         });
-    }
+    };
 
 
     /**
-     * Класс группы занятий
+     * Конструкотор класса TableGroup
      * @param {object} groupRaw группа занятий
      * @param {object} week     неделя
      */
@@ -271,7 +267,7 @@ var Table = (function () {
         this.title = groupRaw.title;
         this.length = groupRaw.contents.length;
         this.contents = groupRaw.contents;
-    }
+    };
 
     /**
      * Отрисвка группы предметов
@@ -297,7 +293,5 @@ var Table = (function () {
             var content = this.contents[0];
             $('<td rowspan=' + rowSize / 2 + ' colspan=' + colSize + ' class="sub-cell-content">' + content + '</td>').appendTo(lines[pos + rowSize / 2]);
         }
-    }
-
-    return Table;
+    };
 })();

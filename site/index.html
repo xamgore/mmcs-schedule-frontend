@@ -6,16 +6,37 @@
 
 <title>Интерактивное расписание мехмата ЮФУ</title>
 
-<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+<link href="static/style/main.css" rel="stylesheet">
+<link href="static/style/page.css" rel="stylesheet">
+<link href="static/style/icons/icons.css" rel="stylesheet">
+
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 <script>
 if (!window.jQuery) {
-    document.write(unescape('%3Cscript src="http://users.mmcs.sfedu.ru/~cdn/jquery-2.1.4.min.js"%3E%3C/script%3E'));
+    document.write(unescape('%3Cscript src="//users.mmcs.sfedu.ru/~cdn/jquery-2.1.4.min.js"%3E%3C/script%3E'));
 }
 </script>
 
-<link href="static/style.css" rel="stylesheet">
-<link href="static/printer/print-style.css" rel="stylesheet" media="print">
+<script src="static/helpers/helpers.js"></script>
 
+<script src="static/xmath/xmath.js"></script>
+
+<script src="static/system/system.js"></script>
+
+<script src="static/api/api.js"></script>
+
+<script src="static/page/page.js"></script>
+
+<script src="static/switcher/switcher.js"></script>
+
+<script src="static/schedule/schedule.js"></script>
+
+<script src="static/table/table.js"></script>
+<link href="static/table/table.css" rel="stylesheet">
+
+<script src="static/init/init.js"></script>
+
+<!--
 <link href="static/modalWindow/modalWindow.css" rel="stylesheet">
 <script src="static/modalWindow/modalWindow.js"></script>
 
@@ -31,87 +52,51 @@ if (!window.jQuery) {
 <script src="static/schedule/schedule.js"></script>
 <script src="static/schedule/deletetion.js"></script>
 <script src="static/schedule/edit.js"></script>
+-->
 
-<div class="page_body">
-    <div class="header_wrapper">
-        <div class="header_box">
-            <div class="site_title">
-                <a href="http://mmcs.sfedu.ru/" title="Факультет математики, механики и компьютерных наук ЮФУ">
-                    <h1 class="faculty_title">Расписание факультета математики, механики и компьютерных наук [beta]</h1>
-                </a>
-                <p class="week_now"></p>
-            </div>
-            <div class="logo">
-                <a href="http://sfedu.ru/" border="0">
-                    <img src="static/logo_sfedu_white.png">
-                </a>
-            </div>
+<div class="page" id="page">
+    <div class="header clearfix">
+        <div class="left">
+            <span class="title">Интерактивное расписание мехмата ЮФУ</span>
+            <span class="week" id="week"></span>
+        </div>
+        <div class="right">
+            <a class="logo" href="http://sfedu.ru/"></a>
         </div>
     </div>
-    <div class="choice_timetable_wrapper">
-        <div class="choice_timetable">
-            <select id="type" class="default_select">
-                <option value="0" selected>Выберите тип расписания:</option>
-                <option value="group">Группа</option>
-                <option value="teacher">Преподаватель</option>
-                <option value="auditory" disabled style="display: none">Аудитория</option>
-                <option value="chair" disabled style="display: none">Кафедра</option>
-                <option value="session" disabled style="display: none">Сессия</option>
-            </select>
-            <select id="course" class="default_select" disabled>
-                <option value="0">Выберите курс:</option>
-            </select>
-            <select id="group" class="default_select" disabled>
-                <option value="0">Выберите группу:</option>
-            </select>
-            <select id="teacher" class="default_select" style="display: none">
-                <option value="0">Выберите преподавателя:</option>
-            </select>
-            <select id="auditory" class="default_select" style="display: none">
-                <option value="0">Выберите аудиторию:</option>
-            </select>
-            <select id="day" class="default_select" style="display: none" disabled>
-                <option value="0" selected>Выберите день:</option>
-                <option value="1">Понедельник</option>
-                <option value="2">Вторник</option>
-                <option value="3">Среда</option>
-                <option value="4">Четверг</option>
-                <option value="5">Пятница</option>
-                <option value="6">Суббота</option>
-            </select>
-            <div class="management_wrapper">
-                <span id="management_auth">Авторизация</span>
-                <select id="management" class="default_select">
-                    <option value="0" selected>Выберите действие</option>
-                    <option value="1">Добавить преподавателя</option>
-                    <option value="2">Добавить аудиторию</option>
-                    <option value="3">Добавить курс</option>
-                    <option value="4">Добавить группу</option>
-                    <option value="5">Добавить пару</option>
-                    <option value="addSubject">Добавить предмет</option>
-                    <option value="6" class="deleteoff">delete mode off</option>
-                    <option value="logout">Выйти</option>
-                </select>
-            </div>
+    <div class="nav clearfix">
+        <div class="left">
+            <div class="switch clearfix" id="switch"></div>
+        </div>
+        <div class="right clearfix">
+            <span class="button icon-32 icon-32_printer dev_hidden" id="print" title="Распечатать"></span>
+            <span class="button icon-32 icon-32_profile dev_hidden" id="auth" title="Авторизация"></span>
         </div>
     </div>
-    <div id="welcome_wrapper" class="welcome_wrapper">
-        <div class="welcome_text">
-            <p>Добро пожаловать в раздел интерактивого расписания!</p>
-            <p>Последовательно выберите тип расписания, затем курс/группу, аудиторию или преподавателя.</p>
-            <p>При следующем посещении этой страницы отобразится последнее выбранное Вами расписание.</p>
+    <div class="content" id="content">
+        <div class="intro" id="intro">
+            <p>Добро пожаловать в раздел интерактивого расписания!
+            <p>Выберите тип расписания, затем курс и группу, аудиторию или преподавателя.
         </div>
-    </div>
-    <div id="timetable_wrapper" class="timetable_wrapper">
-        <table class="timetable"></table>
+        <div class="schedule" id="schedule"></div>
     </div>
     <div class="footer">
-        <div class="footer_menu">
-            <a href="#" class="about" style="display: none">О сайте</a>
-            <a href="#" class="settings" style="display: none">Индивидуальные настройки</a>
-        </div>
-        <div class="copyright">
-            <a href="http://vk.com/public67527475">IT-лаборатория мехмата ЮФУ</a> <span>© 2015</span>
+        <div class="center">
+            <span class="copyright"><a href="http://vk.com/public67527475">IT-лаборатория мехмата ЮФУ</a> © 2015</span>
         </div>
     </div>
+</div>
+<div class="management_wrapper dev_hidden">
+    <span id="management_auth">Авторизация</span>
+    <select id="management" class="default_select">
+        <option value="0" selected>Выберите действие</option>
+        <option value="1">Добавить преподавателя</option>
+        <option value="2">Добавить аудиторию</option>
+        <option value="3">Добавить курс</option>
+        <option value="4">Добавить группу</option>
+        <option value="5">Добавить пару</option>
+        <option value="addSubject">Добавить предмет</option>
+        <option value="6" class="deleteoff">delete mode off</option>
+        <option value="logout">Выйти</option>
+    </select>
 </div>

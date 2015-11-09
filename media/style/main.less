@@ -1,0 +1,82 @@
+@font-face {
+	font-family: PTSans;
+	src: url(PTSans.woff);
+	font-style: normal;
+	font-weight: normal;
+}
+@font-face {
+	font-family: PTSans;
+	src: url(PTSans_bold.woff);
+	font-style: normal;
+	font-weight: bold;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+}
+
+html {
+    font: 16px/20px PTSans, sans-serif;
+}
+
+img {
+    display: block;
+}
+
+div {
+    height: auto; // todo: delete
+    overflow: hidden; // todo: delete
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+// Clear fix
+.clearfix:after {
+    content: '';
+    display: table;
+    clear: both;
+}
+
+.button {
+    display: block;
+    box-sizing: border-box;
+
+    height: 32px;
+}
+
+.select {
+    display: block;
+    box-sizing: border-box;
+
+    height: 32px;
+    padding-left: 5px;
+    border: 1px solid #ccc;
+
+    background-color: #fff;
+
+    &:disabled {
+        background-color: #f9f9f9;
+
+        cursor: not-allowed;
+    }
+
+    option[value=""] {
+        display: none;
+    }
+}
+
+.dev_hidden {
+    display: none;
+}

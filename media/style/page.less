@@ -1,0 +1,123 @@
+// modalWindow scroll fix
+html {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+body {
+    overflow: auto;
+    width: 100%;
+    height: 100%;
+}
+
+
+.page {
+    min-width: 1000px;
+
+    // Шапка
+    .header {
+        padding: 10px 15px;
+
+        background-color: #47a;
+
+        .left {
+            float: left;
+
+            padding: 10px 0;
+
+            .title {
+                display: block;
+
+                font-size: 24px;
+                line-height: 25px;
+
+                color: #fff;
+            }
+
+            .week {
+                display: block;
+
+                padding-top: 10px;
+
+                color: #f9f9f9;
+            }
+        }
+
+        .right {
+            float: right;
+
+            .logo {
+                display: block;
+
+                width: 86px;
+                height: 75px;
+
+                background-image: url(logo_sfedu_white.png);
+            }
+        }
+    }
+
+    // Селекторы расписаний, кнопки печати и авторизации
+    .nav {
+        padding: 10px 15px;
+
+        background-color: #f3f3f3;
+
+        .left {
+            float: left;
+
+            .switch {
+                .select {
+                    float: left;
+
+                    min-width: 280px;
+                    margin-right: 10px;
+                }
+            }
+        }
+
+        .right {
+            float: right;
+
+            .button {
+                float: left;
+
+                margin-left: 10px;
+
+                cursor: pointer;
+            }
+        }
+    }
+
+    // "Приветственный" текст и расписание
+    .content {
+        position: relative;
+
+        margin: 20px;
+
+        .intro {
+            p {
+                font-size: 30px;
+                line-height: 40px;
+                text-align: center;
+            }
+        }
+
+        .schedule {
+            display: none;
+        }
+    }
+
+    // Подвал
+    .footer {
+        padding: 12px 15px;
+
+        background-color: #f3f3f3;
+
+        color: #333;
+
+        .center {
+            text-align: center;
+        }
+    }
+}

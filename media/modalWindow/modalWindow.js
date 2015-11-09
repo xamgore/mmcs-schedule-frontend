@@ -2,7 +2,7 @@ var modalWindow = (function () {
     'use strict';
 
     var modalWindow = {
-        open: function (settings, data) {
+        open: function (settings) {
             windows.push({});
 
             // Создание блока окна
@@ -120,7 +120,8 @@ var modalWindow = (function () {
         var $block = windows[windows.length - 1].$block;
 
         $block.click(function (event) {
-            if ($(event.target).is('#window-close') ||
+            if (
+                $(event.target).is('#window-close') ||
                 $(event.target).is($block) || $(event.target).is($block.children())
             ) {
                 modalWindow.close(true);

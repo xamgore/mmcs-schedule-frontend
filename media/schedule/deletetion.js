@@ -29,7 +29,6 @@ $(function () {
 
 
     $table.on('click', '.uberCell', function () {
-        'use strict';
         if (!deleteMode) {
             return;
         }
@@ -52,6 +51,4 @@ $(function () {
             }
         });
     });
-
-
 });
