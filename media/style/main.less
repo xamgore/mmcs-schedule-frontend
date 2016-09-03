@@ -1,17 +1,18 @@
 @font-face {
-	font-family: PTSans;
-	src: url(PTSans.woff);
-	font-style: normal;
-	font-weight: normal;
+    font-family: PTSans;
+    src: url(PTSans.woff);
+    font-style: normal;
+    font-weight: normal;
 }
 @font-face {
-	font-family: PTSans;
-	src: url(PTSans_bold.woff);
-	font-style: normal;
-	font-weight: bold;
+    font-family: PTSans;
+    src: url(PTSans_bold.woff);
+    font-style: normal;
+    font-weight: bold;
 }
 
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
     border: 0;
@@ -43,10 +44,14 @@ a {
 }
 
 // Clear fix
-.clearfix:after {
-    content: '';
-    display: table;
-    clear: both;
+.clearfix {
+    position: relative;
+
+    &:after {
+        content: '';
+        display: table;
+        clear: both;
+    }
 }
 
 .button {

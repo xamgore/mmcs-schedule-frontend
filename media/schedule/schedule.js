@@ -300,7 +300,7 @@
                             helpers.compare(lastCurriculum.teacher, curriculum.teacher) &&
                             helpers.compare(lastCurriculum.group, curriculum.group)
                         ) {
-                            lastCurriculum.room.name += ', ' + curriculum.room.name;
+                            lastCurriculum.room.name.split(', ');
                         } else {
                             newCurricula.push(curriculum);
                         }
@@ -308,7 +308,8 @@
 
                     return {
                         subject: group.subject,
-                        curricula: newCurricula
+                        curricula: newCurricula,
+                        length: group.curricula.length
                     };
                 });
         }
@@ -330,6 +331,11 @@
         }
     };
 
+    /**
+     * Построение данных ячейки
+     * @param  {array}        lessons занятия
+     * @return {ScheduleCell}         this
+     */
     ScheduleCell.prototype.build = function (lessons) {
         var upper = [];
         var lower = [];
@@ -392,6 +398,11 @@
         return this;
     };
 
+    /**
+     * [buildLesson description]
+     * @param  {array}        week дисциплины
+     * @return {ScheduleCell}      this
+     */
     ScheduleCell.prototype.buildLesson = function (week) {
         switch (this.type) {
             case 'group':
