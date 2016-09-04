@@ -1,5 +1,6 @@
-.schedule {
+.schedule table {
     width: 100%;
+    margin-bottom: 20px;
 
 	table-layout: fixed;
 	border-collapse: collapse;
@@ -9,6 +10,10 @@
     line-height: 100%;
     text-align: center;
     vertical-align: middle;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
 
     .title,
     .time {
@@ -26,24 +31,29 @@
     td {
         border: 1px solid #d7d7d7;
         padding: 5px;
+
+        * {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 
-    .sub-cell-title {
+    .cell-title {
         border-bottom: 0;
-        vertical-align: bottom;
-        &.multi {
-            vertical-align: middle;
-        }
+        vertical-align: middle;
     }
 
-    .sub-cell-content {
+    .cell-content {
         border-top: 0;
-        padding-top: 0;
-        vertical-align: top;
-        &.multi {
-            padding-top: 5px;
-            vertical-align: middle;
-        }
+        padding-top: 5px;
+        vertical-align: middle;
+    }
+
+    .cell-empty:before {
+        content: '';
+        display: block;
+        height: 40px;
     }
 
     span {

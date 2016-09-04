@@ -1,4 +1,4 @@
-/* global helpers, Table, system */
+/* global helpers, Table, TableTweaker, system */
 (function () {
     'use strict';
 
@@ -6,22 +6,25 @@
      * Конструктор класса Schedule
      * @param {jQuery} $table блок таблицы
      * @param {string} type   тип расписания
-     * @param {[type]} data   [description]
+     * @param {object} data   данные о занятиях
      */
     var Schedule = window.Schedule = function ($table, type, data) {
-        this.$table = $table;
+        $table.html('');
+
+        this.$table = $('<table></table>').appendTo($table);
         this.type = type;
 
         this.buildTimes(system.times);
         this.buildHeader();
         this.buildLessons(data.lessons, data.curricula, data.groups || [], system.times);
         this.buildData();
+        this.buildTweaksList();
     };
 
     /**
      * Подготовка времени пар
      * @param  {array}    times массив времен
-     * @return {Schedule} this
+     * @return {Schedule}       this
      */
     Schedule.prototype.buildTimes = function (times) {
         this.times = times.map(function (time) {
@@ -133,12 +136,30 @@
     };
 
     /**
+     * Построение списка твиков
+     * @return {Schedule} this
+     */
+    Schedule.prototype.buildTweaksList = function () {
+        switch (this.type) {
+            case 'group':
+            case 'teacher':
+                this.tweaksList = ['setData', 'mergeVertical', 'fixWidth'];
+                break;
+        }
+
+        return this;
+    };
+
+    /**
      * Отрисовка расписания
      * @return {Schedule} this
      */
     Schedule.prototype.draw = function () {
         this.table = new Table(this.$table, this.data, this.times, this.header);
         this.table.draw();
+
+        var tweaker = new TableTweaker(this.$table, this.tweaksList);
+        tweaker.apply();
 
         return this;
     };
@@ -258,6 +279,11 @@
         return this;
     };
 
+    /**
+     * [description]
+     * @param  {[type]}         curricula [description]
+     * @return {ScheduleLesson}           this
+     */
     ScheduleLesson.prototype.mergeCurricula = function (curricula) {
         this.groups = [];
 
@@ -399,7 +425,7 @@
     };
 
     /**
-     * [buildLesson description]
+     * Построение ячейки дисциплины
      * @param  {array}        week дисциплины
      * @return {ScheduleCell}      this
      */
@@ -461,6 +487,10 @@
         }
     };
 
+    /**
+     * Преобразование в массив
+     * @return {array} [description]
+     */
     ScheduleCell.prototype.toArray = function () {
         return this.data;
     };

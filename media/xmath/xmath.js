@@ -37,4 +37,19 @@
         }
         return a;
     };
+
+    xMath.range = function (first, last) {
+        var size = last - first + 1;
+        var arr = new Array(size);
+        for (var i = 0; i < size; i++) {
+            arr[i] = i + first;
+        }
+        return arr;
+    };
+
+    xMath.getRangeByLcm = function(first, result) {
+        var last;
+        for (last = first; result % last === 0; last++) {}
+        return last - 1;
+    };
 })();

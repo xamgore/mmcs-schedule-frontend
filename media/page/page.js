@@ -9,11 +9,11 @@
 
         var heightDiff = system.$body.get(0).clientHeight - system.$page.height();
         if (heightDiff > 0) {
-            system.$content.css('min-height', system.$content.height() + heightDiff);
+            system.$content.css('min-height', system.$content.outerHeight() + heightDiff);
         }
 
         if (system.$intro.is(':visible')) {
-            system.$intro.css('margin-top', system.$content.height() / 2 - system.$intro.height() / 2);
+            system.$intro.css('margin-top', (system.$content.height() - system.$intro.height()) / 2);
         }
     };
 

@@ -4,9 +4,9 @@
 
     /**
      * Конструктор класса Table
-     * @param {jQuery} $block  объект таблицы
-     * @param {array}  data    матрица с занятиями
-     * @param {array}  times левая колоннка таблицы
+     * @param {jQuery} $block объект таблицы
+     * @param {array}  data   матрица с занятиями
+     * @param {array}  times  левая колоннка таблицы
      * @param {array}  header шапка таблицы
      */
     var Table = window.Table = function ($block, data, times, header) {
@@ -23,12 +23,12 @@
      * Заполненение необъявленных ключей data для корректной работы forEach
      */
     Table.prototype.prepareData = function () {
-        this.data.forEach(function (line) {
-            for (var lineKey = 0, lineLength = line.length; lineKey < lineLength; lineKey++) {
-                var cell = line[lineKey];
+        this.data.forEach(function (row) {
+            for (var rowKey = 0, rowLength = row.length; rowKey < rowLength; rowKey++) {
+                var cell = row[rowKey];
 
                 if (!cell) {
-                    line[lineKey] = null;
+                    row[rowKey] = null;
                     continue;
                 }
 
@@ -81,13 +81,13 @@
     Table.prototype.draw = function () {
         this.$block.html('');
 
-        var $headerLine = $('<tr><td></td></tr>').appendTo($('<thead></thead>').appendTo(this.$block));
+        var $header = $('<thead></thead>').appendTo(this.$block);
+        var $headerRow = $('<tr><td></td></tr>').appendTo($header);
         this.header.forEach(function (columnTitle, i) {
-            $('<td colspan=' + this.cols[i].length + ' class="title">' + columnTitle + '</td>').appendTo($headerLine);
+            $('<td colspan=' + this.cols[i].length + ' class="title">' + columnTitle + '</td>').appendTo($headerRow).data('size', this.cols[i].size);
         }, this);
 
         this.$body = $('<tbody></tbody>').appendTo(this.$block);
-
         this.rows.forEach(function (row) {
             row.draw();
         });
@@ -112,21 +112,22 @@
         this.cells = cellsRaw.map(function (cellRaw) {
             return new TableCell(cellRaw, this, null);
         }, this);
-        this.length = xMath.lcm.apply(xMath, this.cells.map(function (cell) {
+        this.size = Math.max.apply(Math, this.cells.map(function (cell) {
             return cell.vLength;
         }));
+        this.length = xMath.lcm.apply(xMath, xMath.range(1, this.size));
     };
 
     /**
      * Отрисовка строки таблицы
      */
     TableRow.prototype.draw = function () {
-        this.lines = new Array(this.length);
-        for (var linesKey = 0, linesLength = this.lines.length; linesKey < linesLength; linesKey++) {
-            this.lines[linesKey] = $('<tr></tr>').appendTo(this.table.$body);
+        this.rows = new Array(this.length);
+        for (var rowsKey = 0, rowsLength = this.rows.length; rowsKey < rowsLength; rowsKey++) {
+            this.rows[rowsKey] = $('<tr></tr>').appendTo(this.table.$body);
         }
 
-        $('<td rowspan=' + this.length + ' class="time">' + this.table.times[this.pos] + '</td>').appendTo(this.lines[0]);
+        $('<td rowspan=' + this.length + ' class="time">' + this.table.times[this.pos] + '</td>').appendTo(this.rows[0]);
 
         this.cells.forEach(function (cell) {
             cell.draw();
@@ -147,9 +148,10 @@
         this.cells = cellsRaw.map(function (cellRaw) {
             return new TableCell(cellRaw, null, this);
         }, this);
-        this.length = xMath.lcm.apply(xMath, this.cells.map(function (cell) {
+        this.size = Math.max.apply(Math, this.cells.map(function (cell) {
             return cell.hLength;
         }));
+        this.length = xMath.lcm.apply(xMath, xMath.range(1, this.size));
     };
 
 
@@ -186,7 +188,7 @@
             return new TableWeek(weekRaw, this, pos);
         }, this);
         this.vLength = this.weeks.length * 2;
-        this.hLength = xMath.lcm.apply(xMath, this.weeks.map(function (week) {
+        this.hLength = Math.max.apply(Math, this.weeks.map(function (week) {
             return week.length;
         }));
     };
@@ -196,7 +198,7 @@
      */
     TableCell.prototype.draw = function () {
         if (this.empty) {
-            $('<td rowspan=' + this.row.length + ' colspan=' + this.col.length + '></td>').appendTo(this.row.lines[0]);
+            $('<td rowspan=' + this.row.length + ' colspan=' + this.col.length + '></td>').appendTo(this.row.rows[0]);
             return;
         }
 
@@ -238,8 +240,8 @@
         if (this.empty) {
             var rowSize = this.cell.row.length / this.cell.vLength * 2;
             var colLength = this.cell.col.length;
-            var lines = this.cell.row.lines;
-            $('<td rowspan=' + rowSize + ' colspan=' + colLength + '></td>').appendTo(lines[this.pos * rowSize]);
+            var rows = this.cell.row.rows;
+            $('<td rowspan=' + rowSize + ' colspan=' + colLength + ' class="cell-empty"></td>').appendTo(rows[this.pos * rowSize]);
             return;
         }
 
@@ -270,28 +272,26 @@
     };
 
     /**
-     * Отрисвка группы предметов
+     * Отрисвка группы занятий
      */
     TableGroup.prototype.draw = function () {
         var rowSize = this.week.cell.row.length / this.week.cell.vLength * 2;
         var colSize = this.week.cell.col.length / this.week.length;
-        var lines = this.week.cell.row.lines;
+        var rows = this.week.cell.row.rows;
         var pos = this.week.pos * rowSize;
 
         if (this.empty) {
-            $('<td rowspan=' + rowSize + ' colspan=' + colSize * this.length + '></td>').appendTo(lines[pos]);
+            $('<td rowspan=' + rowSize + ' colspan=' + colSize + '></td>').appendTo(rows[pos]);
             return;
         }
 
         if (this.length > 1) {
-            $('<td colspan=' + colSize * this.length + ' class="sub-cell-title multi">' + this.title + '</td>').appendTo(lines[pos]);
+            $('<td colspan=' + colSize * this.length + ' class="cell-title">' + this.title + '</td>').appendTo(rows[pos]);
             this.contents.forEach(function (content) {
-                $('<td rowspan=' + (rowSize - 1) + ' colspan=' + colSize + ' class="sub-cell-content multi">' + content + '</td>').appendTo(lines[pos + 1]);
+                $('<td rowspan=' + (rowSize - 1) + ' colspan=' + colSize + ' class="cell-content">' + content + '</td>').appendTo(rows[pos + 1]);
             });
         } else {
-            $('<td rowspan=' + rowSize / 2 + ' colspan=' + colSize * this.length + ' class="sub-cell-title">' + this.title + '</td>').appendTo(lines[pos]);
-            var content = this.contents[0];
-            $('<td rowspan=' + rowSize / 2 + ' colspan=' + colSize + ' class="sub-cell-content">' + content + '</td>').appendTo(lines[pos + rowSize / 2]);
+            $('<td rowspan=' + rowSize + ' colspan=' + colSize + ' class="cell-full">' + this.title + this.contents[0] + '</td>').appendTo(rows[pos]);
         }
     };
 })();

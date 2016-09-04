@@ -6,6 +6,7 @@
     var page = new Page();
     var switcher = new Switcher();
 
+    // dev
     system.backendUrl = 'http://users.mmcs.sfedu.ru:3000/';
 
     $(function () {
@@ -29,9 +30,13 @@
         });
 
         switcher.set();
+
+        system.$print.on('click', function () {
+            window.print();
+        });
     });
 
     $(document).ready(page.setContentHeight);
-    $(window).load(page.setContentHeight);
+    $(window).on('load', page.setContentHeight);
     $(window).resize(page.setContentHeight);
 })();

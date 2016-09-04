@@ -10,7 +10,7 @@
 <link href="static/style/page.css" rel="stylesheet">
 <link href="static/style/icons/icons.css" rel="stylesheet">
 
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//code.jquery.com/jquery-3.1.0.min.js"></script>
 <script>
 if (!window.jQuery) {
     document.write(unescape('%3Cscript src="//users.mmcs.sfedu.ru/~cdn/jquery-2.1.4.min.js"%3E%3C/script%3E'));
@@ -19,7 +19,7 @@ if (!window.jQuery) {
 
 <script src="static/helpers/helpers.js"></script>
 
-<script src="static/xmath/xmath.js"></script>
+<script src="static/xMath/xMath.js"></script>
 
 <script src="static/system/system.js"></script>
 
@@ -32,27 +32,10 @@ if (!window.jQuery) {
 <script src="static/schedule/schedule.js"></script>
 
 <script src="static/table/table.js"></script>
+<script src="static/table/tweaker.js"></script>
 <link href="static/table/table.css" rel="stylesheet">
 
 <script src="static/init/init.js"></script>
-
-<!--
-<link href="static/modalWindow/modalWindow.css" rel="stylesheet">
-<script src="static/modalWindow/modalWindow.js"></script>
-
-<script src="static/schedule/menuLoader.js"></script>
-<script src="static/helpers.js"></script>
-
-<script src="static/xmath/xmath.js"></script>
-<script src="static/timetable/table.js"></script>
-
-<script src="static/timetable/helper.js"></script>
-<script src="static/timetable/timetable.js"></script>
-
-<script src="static/schedule/schedule.js"></script>
-<script src="static/schedule/deletetion.js"></script>
-<script src="static/schedule/edit.js"></script>
--->
 
 <div class="page" id="page">
     <div class="header clearfix">
@@ -69,8 +52,8 @@ if (!window.jQuery) {
             <div class="switch clearfix" id="switch"></div>
         </div>
         <div class="right clearfix">
-            <span class="button icon-32 icon-32_printer dev_hidden" id="print" title="Печать"></span>
-            <span class="button icon-32 icon-32_profile dev_hidden" id="auth" title="Авторизация"></span>
+            <span class="button icon-32 icon-32_printer" id="print" title="Печать"></span>
+            <span class="button icon-32 icon-32_profile" id="auth" title="Авторизация"></span>
         </div>
     </div>
     <div class="content" id="content">
@@ -78,25 +61,11 @@ if (!window.jQuery) {
             <p>Добро пожаловать в раздел интерактивого расписания!
             <p>Выберите тип расписания, затем курс и группу, аудиторию или преподавателя.
         </div>
-        <table class="schedule" id="schedule"></table>
+        <div class="schedule" id="schedule"></div>
     </div>
     <div class="footer">
         <div class="center">
             <span class="copyright"><a href="http://vk.com/public67527475">IT-лаборатория мехмата ЮФУ</a> © 2015</span>
         </div>
     </div>
-</div>
-<div class="management_wrapper dev_hidden">
-    <span id="management_auth">Авторизация</span>
-    <select id="management" class="default_select">
-        <option value="0" selected>Выберите действие</option>
-        <option value="1">Добавить преподавателя</option>
-        <option value="2">Добавить аудиторию</option>
-        <option value="3">Добавить курс</option>
-        <option value="4">Добавить группу</option>
-        <option value="5">Добавить пару</option>
-        <option value="addSubject">Добавить предмет</option>
-        <option value="6" class="deleteoff">delete mode off</option>
-        <option value="logout">Выйти</option>
-    </select>
 </div>
