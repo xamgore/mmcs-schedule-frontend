@@ -38,5 +38,6 @@
         page.setContentHeight();
         $(window).on('load', page.setContentHeight);
         $(window).resize(page.setContentHeight);
+        system.onShow = page.setContentHeight;
     });
 })();

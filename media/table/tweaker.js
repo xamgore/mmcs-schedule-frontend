@@ -109,7 +109,7 @@
                     continue;
                 }
                 var nextData = $next.data();
-                if (nextData.type !== 'full' || cellData.width !== nextData.width || $cell.html() !== $next.html()) {
+                if (nextData.type !== 'full' || cellData.sizeX !== nextData.sizeX || $cell.html() !== $next.html()) {
                     continue;
                 }
 
@@ -144,7 +144,7 @@
                     continue;
                 }
                 var nextData = $next.data();
-                if (nextData.type !== 'full' || cellData.height !== nextData.height || $cell.html() !== $next.html()) {
+                if (nextData.type !== 'full' || cellData.sizeY !== nextData.sizeY || $cell.html() !== $next.html()) {
                     continue;
                 }
 
@@ -179,8 +179,6 @@
             cols.forEach(function (col, colID) {
                 $cells.eq(colID).css('width', col.width + '%');
             });
-
-            console.log(cols, widthPerCol);
         },
         helpers: {
             findCell: function (posX, posY) {

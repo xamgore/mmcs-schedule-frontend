@@ -3,6 +3,7 @@
 
     var System = window.System = function () {
         this.backendUrl = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
+        this.onShow = function () {};
     };
 
     System.prototype.getElements = function () {
@@ -15,6 +16,7 @@
         this.$content = $('#content');
         this.$intro = $('#intro');
         this.$schedule = $('#schedule');
+        this.$overlay = $('#overlay');
     };
 
     System.prototype.setWeek = function (week) {
@@ -32,10 +34,12 @@
     System.prototype.showSchedule = function () {
         this.$intro.hide();
         this.$schedule.show();
+        this.onShow();
     };
 
     System.prototype.showIntro = function () {
         this.$schedule.hide();
         this.$intro.show();
+        this.onShow();
     };
 })();

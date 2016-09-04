@@ -62,6 +62,16 @@
             text: 'Суббота'
         } ]);
 
+        // Действие при сбросе выбора типа расписания
+        this.type.bind('', function () {
+            this.course.hide();
+            this.group.hide();
+            this.teacher.hide();
+            this.auditory.hide();
+            this.day.hide();
+            this.closeSchedule();
+        }, this);
+
         // Действие при выборе группы в типе расписания
         this.type.bind('group', function () {
             api.switcher.getCourses(function (result) {
@@ -86,6 +96,12 @@
 
         // Действие при выборе курса
         this.course.bind(function (course) {
+            if (course === '') {
+                this.group.hide();
+                this.closeSchedule();
+                return;
+            }
+
             api.switcher.getGroups(course, function (result) {
                 this.group.fill('Выберите группу', result.map(function (item) {
                     var name = item.num + ' группа';
@@ -103,6 +119,11 @@
 
         // Действие при выборе группы
         this.group.bind(function (group) {
+            if (group === '') {
+                this.closeSchedule();
+                return;
+            }
+
             api.schedule.getForGroup(group, function (result) {
                 this.openSchedule('group', result);
             }, this);
@@ -128,6 +149,11 @@
 
         // Действие при выборе преподавателя
         this.teacher.bind(function (teacher) {
+            if (teacher === '') {
+                this.closeSchedule();
+                return;
+            }
+
             api.schedule.getForTeacher(teacher, function (result) {
                 this.openSchedule('teacher', result);
             }, this);
