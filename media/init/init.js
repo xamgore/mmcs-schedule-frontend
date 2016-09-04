@@ -34,9 +34,9 @@
         system.$print.on('click', function () {
             window.print();
         });
-    });
 
-    $(document).ready(page.setContentHeight);
-    $(window).on('load', page.setContentHeight);
-    $(window).resize(page.setContentHeight);
+        page.setContentHeight();
+        $(window).on('load', page.setContentHeight);
+        $(window).resize(page.setContentHeight);
+    });
 })();

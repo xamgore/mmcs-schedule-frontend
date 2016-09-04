@@ -170,7 +170,7 @@
                 return col.length;
             }));
 
-            cols[0].width = 5;
+            cols[0].width = 4;
             var widthPerCol = (100 - cols[0].width) / fullLength;
             cols.forEach(function (col) {
                 col.width = widthPerCol * col.length || col.width;
