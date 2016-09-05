@@ -47,7 +47,7 @@
 
                 api.auth.login(login, pass, function () {
                     api.auth.status(login, pass, function (result) {
-                        if (result) {
+                        if (result === 'manager') {
                             system.$overlay.fadeOut();
                             $form.fadeOut(function () {
                                 $form.remove();

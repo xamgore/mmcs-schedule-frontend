@@ -42,16 +42,7 @@
         },
         auth: {
             status : function (callback, thisArg) {
-                query('status', null, 'get', function (result) {
-                    switch (result) {
-                        case 'manager':
-                            callback.call(this, true);
-                            break;
-
-                        default:
-                            callback.call(this, false);
-                    }
-                }, thisArg);
+                query('status', null, 'get', callback, thisArg);
             },
             login : function (login, pass, callback, thisArg) {
                 query('auth/login', {
