@@ -17,73 +17,26 @@
         this.course = new Select('course').hide();
         this.group = new Select('group').hide();
         this.teacher = new Select('teacher').hide();
-        this.auditory = new Select('auditory').hide();
-        this.day = new Select('day').hide();
-
-        // Заполнение селектора типа расписания
-        this.type.fill('Тип расписания', [ {
-            value: 'group',
-            text: 'Группа'
-        }, {
-            value: 'teacher',
-            text: 'Преподаватель'
-        }, {
-            value: 'auditory',
-            text: 'Аудитория',
-            disabled: true
-        }, {
-            value: 'chair',
-            text: 'Кафедра',
-            disabled: true
-        }, {
-            value: 'session',
-            text: 'Сессия',
-            disabled: true
-        } ]);
-
-        // Заполение селектора дня
-        this.day.fill('День', [ {
-            value: '1',
-            text: 'Понедельник'
-        }, {
-            value: '2',
-            text: 'Вторник'
-        }, {
-            value: '3',
-            text: 'Среда'
-        }, {
-            value: '4',
-            text: 'Четверг'
-        }, {
-            value: '5',
-            text: 'Пятница'
-        }, {
-            value: '6',
-            text: 'Суббота'
-        } ]);
 
         // Действие при сбросе выбора типа расписания
         this.type.bind('', function () {
             this.course.hide();
             this.group.hide();
             this.teacher.hide();
-            this.auditory.hide();
-            this.day.hide();
             this.closeSchedule();
         }, this);
 
         // Действие при выборе группы в типе расписания
         this.type.bind('group', function () {
+            this.course.hide();
+            this.group.hide();
+            this.teacher.hide();
+
             api.switcher.getCourses(function (result) {
                 var degreeMap = {
                     bachelor: '',
                     master: 'Магистратура, '
                 };
-
-                this.group.hide();
-                this.teacher.hide();
-                this.auditory.hide();
-                this.day.hide();
 
                 this.course.fill('Выберите курс', result.map(function (item) {
                     return {
@@ -96,8 +49,9 @@
 
         // Действие при выборе курса
         this.course.bind(function (course) {
+            this.group.hide();
+
             if (course === '') {
-                this.group.hide();
                 this.closeSchedule();
                 return;
             }
@@ -131,13 +85,11 @@
 
         // Действие при выборе преподавателя в типе расписания
         this.type.bind('teacher', function () {
-            api.switcher.getTeachers(function (result) {
-                this.course.hide();
-                this.group.hide();
-                this.teacher.hide();
-                this.auditory.hide();
-                this.day.hide();
+            this.course.hide();
+            this.group.hide();
+            this.teacher.hide();
 
+            api.switcher.getTeachers(function (result) {
                 this.teacher.fill('Выберите преподавателя', result.map(function (item) {
                     return {
                         value: item.id,
@@ -159,8 +111,47 @@
             }, this);
         }, this);
 
-        // Отображенеи селектора типа расписания
-        this.type.show();
+        // localStorage
+        this.type.bind(function(type, notClean) {
+            localStorage.type = type;
+            if (!notClean) {
+                localStorage.course = '';
+                localStorage.teacher = '';
+            }
+        });
+        this.course.bind(function(course, notClean) {
+            localStorage.course = course;
+            if (!notClean) {
+                localStorage.group = '';
+            }
+        });
+        this.group.bind(function(group) {
+            localStorage.group = group;
+        });
+        this.teacher.bind(function(teacher) {
+            localStorage.teacher = teacher;
+        });
+
+        // Заполнение и отображение селектора типа расписания
+        this.type.fill('Тип расписания', [ {
+            value: 'group',
+            text: 'Группа'
+        }, {
+            value: 'teacher',
+            text: 'Преподаватель'
+        }, {
+            value: 'auditory',
+            text: 'Аудитория',
+            disabled: true
+        }, {
+            value: 'chair',
+            text: 'Кафедра',
+            disabled: true
+        }, {
+            value: 'session',
+            text: 'Сессия',
+            disabled: true
+        } ]).show();
 
         return this;
     };
@@ -204,7 +195,8 @@
      * @param {string} id id блока селектора
      */
     var Select = function (id) {
-        this.$select = $('<select class="select" id="' + id + '"></select>').appendTo(system.$switch);
+        this.id = id;
+        this.$select = $('<select class="select" id="' + this.id + '"></select>').appendTo(system.$switch);
     };
 
     /**
@@ -232,6 +224,11 @@
             this.createOption(item.value, item.text, item.disabled).appendTo(this.$select);
         }, this);
 
+        if (localStorage[this.id]) {
+            this.$select.find('[value="' + localStorage[this.id] + '"]').prop('selected', true);
+            this.$select.trigger("change", [ true ]);
+        }
+
         return this;
     };
 
@@ -249,10 +246,10 @@
             value = null;
         }
 
-        this.$select.change(function () {
+        this.$select.change(function (event, param) {
             var selectValue = $(this).val();
             if (selectValue === value || value == null) {
-                callback.call(thisArg, selectValue);
+                callback.call(thisArg, selectValue, param);
             }
         });
 
