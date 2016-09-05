@@ -29,28 +29,45 @@
     };
 
     Page.prototype.auth = function () {
-        var content = '<form action="#" method="post" class="form-auth" id="form-auth">' +
-            '<span class="title">Авторизация</span>' +
+        var $form = $('<form action="#" method="post" class="form-auth" id="form-auth">' +
             '<input type="text" name="login" placeholder="Логин">' +
             '<input type="password" name="pass" placeholder="Пароль">' +
             '<button type="submit">Войти</button>' +
-        '</form>';
-        var sidePanel = new SidePanel(content, 500);
-        sidePanel.onHide = sidePanel.destruct.bind(sidePanel);
-        sidePanel.$block.find('#form-auth').on('submit', function (event) {
-            event.preventDefault();
+        '</form>').appendTo(system.$body);
 
-            var $form = $(this);
+        system.$overlay.fadeIn();
+        $form.fadeIn(function () {
+            $form.on('submit', function (event) {
+                event.preventDefault();
 
-            var login = $form.find('[name=login]').val();
-            var pass = $form.find('[name=pass]').val();
+                var $form = $(this);
 
-            api.auth.login(login, pass, function (result) {
-                console.log(result);
+                var login = $form.find('[name=login]').val();
+                var pass = $form.find('[name=pass]').val();
+
+                api.auth.login(login, pass, function () {
+                    api.auth.status(login, pass, function (result) {
+                        if (result) {
+                            system.$overlay.fadeOut();
+                            $form.fadeOut(function () {
+                                $form.remove();
+                            });
+                        } else {
+                            $form.addClass('error');
+                            $form.one('click', function (){
+                                $form.deleteClass('error');
+                            });
+                        }
+                    });
+                });
             });
 
-            sidePanel.hide();
+            system.$overlay.click(function () {
+                system.$overlay.fadeOut();
+                $form.fadeOut(function () {
+                    $form.remove();
+                });
+            });
         });
-        sidePanel.show();
     };
 })();
