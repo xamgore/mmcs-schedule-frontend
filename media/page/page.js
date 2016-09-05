@@ -52,6 +52,7 @@
                             $form.fadeOut(function () {
                                 $form.remove();
                             });
+                            // Код выполнаяемый при удачной авторизации разместить ниже
                         } else {
                             $form.addClass('error');
                             $form.one('click', function (){
