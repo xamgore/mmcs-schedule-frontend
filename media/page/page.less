@@ -68,11 +68,24 @@ body {
 
             .switch {
                 .select {
+                    display: block;
                     position: relative;
                     float: left;
 
+                    height: 32px;
                     min-width: 280px;
                     margin-right: 10px;
+                    padding-left: 10px;
+                    padding-right: 30px;
+                    border: 1px solid #ccc;
+
+                    appearance: none;
+                    border-radius: 0;
+                    background-image: url(select.png);
+                    background-position: right center;
+                    background-repeat: no-repeat;
+
+                    background-color: #fff;
                 }
             }
         }
@@ -81,9 +94,18 @@ body {
             float: right;
 
             .button {
+                display: block;
                 float: left;
 
+                margin: -10px 0;
+                height: 52px;
+                padding: 10px;
+
                 cursor: pointer;
+
+                &:hover {
+                    background-color: #ddd;
+                }
             }
         }
     }
@@ -109,14 +131,88 @@ body {
 
     // Подвал
     .footer {
+        position: relative;
+        height: 50px;
         padding: 15px;
 
         background-color: #f3f3f3;
 
         color: #333;
 
+        span {
+            margin: 0 5px;
+        }
+
         .center {
             text-align: center;
+        }
+
+        .left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 15px;
+        }
+
+        .right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 15px;
+        }
+    }
+}
+
+.form-auth {
+    padding: 0 30px 30px;
+
+    font-size: 20px;
+    line-height: 32px;
+
+    .title {
+        display: block;
+
+        margin: 0 -30px 30px;
+        padding: 0 45px;
+
+        font-size: 32px;
+        line-height: 80px;
+
+        background-color: #47a;
+        color: #fff;
+    }
+
+    input {
+        display: block;
+
+        width: 440px;
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+
+        appearance: none;
+        border-radius: 0;
+
+        background-color: #fff;
+
+        &:focus {
+            border-color: #aaa;
+        }
+    }
+    button {
+        display: block;
+
+        width: 440px;
+        padding: 10px;
+
+        appearance: none;
+        border-radius: 0;
+
+        background-color: #4a7;
+        color: #fff;
+
+        &:hover {
+            background-color: #396;
         }
     }
 }

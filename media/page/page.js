@@ -1,4 +1,4 @@
-/* global system */
+/* global api, SidePanel, system */
 (function () {
     'use strict';
 
@@ -26,5 +26,31 @@
                 system.$week.html('Сейчас нижняя неделя');
                 break;
         }
+    };
+
+    Page.prototype.auth = function () {
+        var content = '<form action="#" method="post" class="form-auth" id="form-auth">' +
+            '<span class="title">Авторизация</span>' +
+            '<input type="text" name="login" placeholder="Логин">' +
+            '<input type="password" name="pass" placeholder="Пароль">' +
+            '<button type="submit">Войти</button>' +
+        '</form>';
+        var sidePanel = new SidePanel(content, 500);
+        sidePanel.onHide = sidePanel.destruct.bind(sidePanel);
+        sidePanel.$block.find('#form-auth').on('submit', function (event) {
+            event.preventDefault();
+
+            var $form = $(this);
+
+            var login = $form.find('[name=login]').val();
+            var pass = $form.find('[name=pass]').val();
+
+            api.auth.login(login, pass, function (result) {
+                console.log(result);
+            });
+
+            sidePanel.hide();
+        });
+        sidePanel.show();
     };
 })();

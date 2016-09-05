@@ -39,6 +39,14 @@
             getForTeacher: function (teacher, callback, thisArg) {
                 query('schedule/teacher/' + teacher, null, 'get', callback, thisArg);
             }
+        },
+        auth: {
+            login : function (login, pass, callback, thisArg) {
+                query('auth/login', {
+                    login: login,
+                    pass: pass
+                }, 'get', callback, thisArg);
+            }
         }
     };
 

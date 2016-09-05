@@ -35,6 +35,8 @@
             window.print();
         });
 
+        system.$auth.on('click', page.auth);
+
         page.setContentHeight();
         $(window).on('load', page.setContentHeight);
         $(window).resize(page.setContentHeight);
