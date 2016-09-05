@@ -143,7 +143,7 @@
         switch (this.type) {
             case 'group':
             case 'teacher':
-                this.tweaksList = ['setData', 'mergeVertical', 'fixWidth'];
+                this.tweaksList = ['mergeVertical', 'fixWidth'];
                 break;
         }
 
@@ -212,7 +212,7 @@
             curricula[curriculum.subnum - 1] = {
                 subject: {
                     name: curriculum.subjectname,
-                    abbr: curriculum.subjectabbr
+                    abbr: curriculum.subjectabbr || curriculum.subjectname
                 },
                 teacher: {
                     name: curriculum.teachername,
@@ -489,7 +489,7 @@
 
     /**
      * Преобразование в массив
-     * @return {array} [description]
+     * @return {array} данные ячейки
      */
     ScheduleCell.prototype.toArray = function () {
         return this.data;

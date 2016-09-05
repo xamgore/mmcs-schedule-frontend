@@ -20,51 +20,21 @@
     };
 
     /**
-     * Заполненение необъявленных ключей data для корректной работы forEach
-     */
-    Table.prototype.prepareData = function () {
-        this.data.forEach(function (row) {
-            for (var rowKey = 0, rowLength = row.length; rowKey < rowLength; rowKey++) {
-                var cell = row[rowKey];
-
-                if (!cell) {
-                    row[rowKey] = null;
-                    continue;
-                }
-
-                for (var cellKey = 0, cellLength = cell.length; cellKey < cellLength; cellKey++) {
-                    var week = cell[cellKey];
-
-                    if (!week) {
-                        cell[cellKey] = null;
-                        continue;
-                    }
-
-                    for (var weekKey = 0, weekLength = week.length; weekKey < weekLength; weekKey++) {
-                        var group = week[weekKey];
-
-                        if (!group) {
-                            week[weekKey] = null;
-                            continue;
-                        }
-                    }
-                }
-            }
-        });
-    };
-
-    /**
      * Заполнение массива строк
+     * @return {Table} this
      */
     Table.prototype.setRows = function () {
         this.rows = new Array(this.data.length);
         for (var rowsKey = 0, rowsLength = this.rows.length; rowsKey < rowsLength; rowsKey++) {
             this.rows[rowsKey] = new TableRow(this.data[rowsKey], this, rowsKey);
         }
+
+        return this;
     };
 
     /**
      * Заполнение массива строк
+     * @return {Table} this
      */
     Table.prototype.setCols = function () {
         this.cols = new Array(this.rows[0].cells.length);
@@ -73,10 +43,13 @@
                 return row.cells[colsKey];
             }), this, colsKey);
         }
+
+        return this;
     };
 
     /**
      * Отрисовка таблицы
+     * @return {Table} this
      */
     Table.prototype.draw = function () {
         this.$block.html('');
@@ -91,6 +64,8 @@
         this.rows.forEach(function (row) {
             row.draw();
         });
+
+        return this;
     };
 
     /**
@@ -120,6 +95,7 @@
 
     /**
      * Отрисовка строки таблицы
+     * @return {TableRow} this
      */
     TableRow.prototype.draw = function () {
         this.rows = new Array(this.length);
@@ -132,6 +108,8 @@
         this.cells.forEach(function (cell) {
             cell.draw();
         });
+
+        return this;
     };
 
 
@@ -180,7 +158,6 @@
             this.empty = true;
             this.vLength = 2;
             this.hLength = 1;
-
             return;
         }
 
@@ -195,16 +172,19 @@
 
     /**
      * Отрисовка ячейки
+     * @return {TableCell} this
      */
     TableCell.prototype.draw = function () {
         if (this.empty) {
             $('<td rowspan=' + this.row.length + ' colspan=' + this.col.length + '></td>').appendTo(this.row.rows[0]);
-            return;
+            return this;
         }
 
         this.weeks.forEach(function (week) {
             week.draw();
         });
+
+        return this;
     };
 
 
@@ -221,7 +201,6 @@
         if (!weekRaw) {
             this.empty = true;
             this.length = 1;
-
             return;
         }
 
@@ -235,6 +214,7 @@
 
     /**
      * Отрисовка недели
+     * @return {TableWeek} this
      */
     TableWeek.prototype.draw = function () {
         if (this.empty) {
@@ -242,12 +222,14 @@
             var colLength = this.cell.col.length;
             var rows = this.cell.row.rows;
             $('<td rowspan=' + rowSize + ' colspan=' + colLength + ' class="cell-empty"></td>').appendTo(rows[this.pos * rowSize]);
-            return;
+            return this;
         }
 
         this.groups.forEach(function (group) {
             group.draw();
         });
+
+        return this;
     };
 
 
@@ -273,6 +255,7 @@
 
     /**
      * Отрисвка группы занятий
+     * @return {TableWeek} this
      */
     TableGroup.prototype.draw = function () {
         var rowSize = this.week.cell.row.length / this.week.cell.vLength * 2;
@@ -282,7 +265,7 @@
 
         if (this.empty) {
             $('<td rowspan=' + rowSize + ' colspan=' + colSize + '></td>').appendTo(rows[pos]);
-            return;
+            return this;
         }
 
         if (this.length > 1) {
@@ -293,5 +276,7 @@
         } else {
             $('<td rowspan=' + rowSize + ' colspan=' + colSize + ' class="cell-full">' + this.title + this.contents[0] + '</td>').appendTo(rows[pos]);
         }
+
+        return this;
     };
 })();
