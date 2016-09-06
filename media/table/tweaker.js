@@ -176,7 +176,7 @@
                 return col.length;
             }));
 
-            cols[0].width = 4;
+            cols[0].width = 5;
             var widthPerCol = (100 - cols[0].width) / fullLength;
             cols.forEach(function (col) {
                 col.width = widthPerCol * col.length || col.width;
@@ -185,6 +185,9 @@
             cols.forEach(function (col, colID) {
                 $cells.eq(colID).css('width', col.width + '%');
             });
+
+            $cells.first().css('width', '50px');
+            $cells.last().css('width', 'auto');
         }
     };
 
