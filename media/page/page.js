@@ -45,21 +45,21 @@
                 var login = $form.find('[name=login]').val();
                 var pass = $form.find('[name=pass]').val();
 
-                api.auth.login(login, pass, function () {
-                    api.auth.status(login, pass, function (result) {
-                        if (result === 'manager') {
-                            system.$overlay.fadeOut();
-                            $form.fadeOut(function () {
-                                $form.remove();
-                            });
-                            // Код выполнаяемый при удачной авторизации разместить ниже
-                        } else {
-                            $form.addClass('error');
-                            $form.one('click', function (){
-                                $form.deleteClass('error');
-                            });
-                        }
-                    });
+                api.auth.login(login, pass, function (result) {
+                    if (result) {
+                        system.$overlay.fadeOut();
+                        $form.fadeOut(function () {
+                            $form.remove();
+                        });
+
+                        // Код, выполнаяемый при удачной авторизации, разместить ниже
+
+                    } else {
+                        $form.addClass('error');
+                        $form.one('click', function (){
+                            $form.removeClass('error');
+                        });
+                    }
                 });
             });
 

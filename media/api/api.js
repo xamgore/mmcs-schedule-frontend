@@ -18,37 +18,44 @@
         },
         times: {
             get: function (callback, thisArg) {
-                query('time/list', null, 'get', callback, thisArg);
+                query('time/list', null, 'get', callback, null, thisArg);
             }
         },
         switcher: {
             getCourses: function (callback, thisArg) {
-                query('grade/list', null, 'get', callback, thisArg);
+                query('grade/list', null, 'get', callback, null, thisArg);
             },
             getGroups: function (course, callback, thisArg) {
-                query('group/list/' + course, null, 'get', callback, thisArg);
+                query('group/list/' + course, null, 'get', callback, null, thisArg);
             },
             getTeachers: function (callback, thisArg) {
-                query('teacher/list', null, 'get', callback, thisArg);
+                query('teacher/list', null, 'get', callback, null, thisArg);
             }
         },
         schedule: {
             getForGroup: function (group, callback, thisArg) {
-                query('schedule/group/' + group, null, 'get', callback, thisArg);
+                query('schedule/group/' + group, null, 'get', callback, null, thisArg);
             },
             getForTeacher: function (teacher, callback, thisArg) {
-                query('schedule/teacher/' + teacher, null, 'get', callback, thisArg);
+                query('schedule/teacher/' + teacher, null, 'get', callback, null, thisArg);
             }
         },
         auth: {
-            status : function (callback, thisArg) {
-                query('status', null, 'get', callback, thisArg);
+            status: function (callback, thisArg) {
+                query('auth/status', null, 'get', callback, null, thisArg);
             },
-            login : function (login, pass, callback, thisArg) {
+            login: function (login, pass, callback, thisArg) {
                 query('auth/login', {
                     login: login,
                     pass: pass
-                }, 'get', callback, thisArg);
+                }, 'get', function () {
+                    callback.call(thisArg, true);
+                }, function () {
+                    callback.call(thisArg, false);
+                });
+            },
+            logout: function (callback, thisArg) {
+                query('auth/logout', null, 'get', callback, null, thisArg);
             }
         }
     };
@@ -61,16 +68,20 @@
      * @param  {function} callback функция, выполняющаяся при удачном запросе
      * @param  {object}   thisArg  контекст callback
      */
-    var query = function (url, data, type, callback, thisArg) {
+    var query = function (url, data, type, callback, errback, thisArg) {
         data = data || {};
         type = ['post', 'get', 'pop'].indexOf(type) !== -1 ? type : 'post';
-        callback = callback || function (){};
+        callback = callback || function () {};
+        errback = errback || function () {};
 
         $.ajax(system.getUrl(url), {
             data: data,
             method: type.toUpperCase(),
             success: function (result) {
                 callback.call(thisArg, result);
+            },
+            error: function () {
+                errback.call(thisArg);
             }
         });
     };
