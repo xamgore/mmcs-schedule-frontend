@@ -42,13 +42,16 @@
         },
         auth: {
             status: function (callback, thisArg) {
-                query('auth/status', null, 'get', callback, null, thisArg);
+                query('APIv1/auth/status', {
+                  APIKey: system.getAPIKey
+                }, 'get', callback, null, thisArg);
             },
             login: function (login, pass, callback, thisArg) {
-                query('auth/login', {
+                query('APIv1/auth/login', {
                     login: login,
                     pass: pass
                 }, 'get', function () {
+                    // system.setAPIKey('APIKEY');
                     callback.call(thisArg, true);
                 }, function () {
                     callback.call(thisArg, false);
@@ -76,6 +79,7 @@
 
         $.ajax(system.getUrl(url), {
             data: data,
+            dataType: 'jsonp',
             method: type.toUpperCase(),
             success: function (result) {
                 callback.call(thisArg, result);

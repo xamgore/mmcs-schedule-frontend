@@ -3,6 +3,7 @@
 
     var System = window.System = function () {
         this.backendUrl = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
+        this.APIKey = null;
         this.onShow = function () {};
     };
 
@@ -21,6 +22,18 @@
 
     System.prototype.setWeek = function (week) {
         this.week = week;
+    };
+
+    System.prototype.setAPIKey = function (apikey) {
+        this.APIKey = apikey;
+    };
+
+    System.prototype.getAPIKey = function () {
+        return this.APIKey;
+    };
+
+    System.prototype.removeAPIKey = function () {
+        this.APIKey = null;
     };
 
     System.prototype.setTimes = function (times) {

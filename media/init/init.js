@@ -7,7 +7,7 @@
     var switcher = new Switcher();
 
     // dev
-    system.backendUrl = 'http://users.mmcs.sfedu.ru:3000/';
+    system.backendUrl = 'http://localhost:3000/';//'http://users.mmcs.sfedu.ru:3000/';
 
     $(function () {
         system.getElements();
