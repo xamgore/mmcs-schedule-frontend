@@ -14,6 +14,7 @@
     Switcher.prototype.set = function () {
         // Добавление селекторов
         this.type = new Select('type').hide();
+        this.audience = new Select('audience').hide();
         this.course = new Select('course').hide();
         this.group = new Select('group').hide();
         this.teacher = new Select('teacher').hide();
@@ -23,6 +24,7 @@
             this.course.hide();
             this.group.hide();
             this.teacher.hide();
+            this.audience.hide();
             this.closeSchedule();
         }, this);
 
@@ -31,6 +33,7 @@
             this.course.hide();
             this.group.hide();
             this.teacher.hide();
+            this.audience.hide();
 
             api.switcher.getCourses(function (result) {
                 var degreeMap = {
@@ -88,6 +91,7 @@
             this.course.hide();
             this.group.hide();
             this.teacher.hide();
+            this.audience.hide();
 
             api.switcher.getTeachers(function (result) {
                 this.teacher.fill('Выберите преподавателя', result.map(function (item) {
@@ -96,6 +100,23 @@
                         text: item.name
                     };
                 }, this)).show();
+            }, this);
+        }, this);
+
+        // Действие при выборе аудитории в типе расписания
+        this.type.bind('audience', function () {
+            this.course.hide();
+            this.group.hide();
+            this.teacher.hide();
+            this.audience.hide();
+
+            api.switcher.getAudience(function (result) {
+              this.audience.fill('Выберите Аудиторию', result.map(function (item) {
+                  return {
+                      value: item.id,
+                      text: item.name
+                  };
+              }, this)).show();
             }, this);
         }, this);
 
@@ -140,9 +161,9 @@
             value: 'teacher',
             text: 'Преподаватель'
         }, {
-            value: 'auditory',
+            value: 'audience',
             text: 'Аудитория',
-            disabled: true
+            //disabled: true
         }, {
             value: 'chair',
             text: 'Кафедра',

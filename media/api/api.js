@@ -30,6 +30,9 @@
             },
             getTeachers: function (callback, thisArg) {
                 query('teacher/list', null, 'get', callback, null, thisArg);
+            },
+            getAudience: function (callback, thisArg) {
+                query('room/list', null, 'get', callback, null, thisArg);
             }
         },
         schedule: {
@@ -37,6 +40,9 @@
                 query('schedule/group/' + group, null, 'get', callback, null, thisArg);
             },
             getForTeacher: function (teacher, callback, thisArg) {
+                query('schedule/teacher/' + teacher, null, 'get', callback, null, thisArg);
+            },
+            getForAudience: function (audience, callback, thisArg) {
                 query('schedule/teacher/' + teacher, null, 'get', callback, null, thisArg);
             }
         },
@@ -79,7 +85,7 @@
 
         $.ajax(system.getUrl(url), {
             data: data,
-            dataType: 'jsonp',
+            dataType: 'json',
             method: type.toUpperCase(),
             success: function (result) {
                 callback.call(thisArg, result);
