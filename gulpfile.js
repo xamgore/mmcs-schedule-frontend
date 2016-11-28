@@ -1,160 +1,143 @@
 'use strict';
 
-//=========================
+
+//===================================
 //  Модули
-//=========================
+//===================================
 
-// Основные модули gulp
-var gulp = require('gulp');
-var lazypipe = require('lazypipe');
-var through = require('through');
-var empty = function() {
-    return through(function(data) {
-        this.emit('data', data);
-    }, function() {
-        this.emit('end');
-    });
+let gulp = require('gulp');
+let runSequence = require('run-sequence');
+let console = require('console');
+let lazypipe = require('lazypipe');
+let empty = () => require('through')(function (data) { this.emit('data', data); }, function () { this.emit('end'); });
+let fs = require('fs-extra');
+fs.path = require('path');
+fs.delSync = path => require('del').sync(path);
+
+// Обработчик ошибок
+let errorHandler = error => console.error(error.message);
+
+
+//===================================
+//  Параметры запуска
+//===================================
+
+let argv = require('yargs').argv;
+let opts = {
+    minify: argv.release
 };
-var changed  = require('gulp-changed');
-
-// Модули для css
-var lessCss = require('gulp-less');
-var prefixerCss = require('gulp-autoprefixer');
-var minifyCss = require('gulp-minify-css');
-
-// Модули для js
-var minifyJs = require('gulp-uglify');
-var beautifyJs = require('gulp-jsbeautifier');
 
 
-//=========================
+//===================================
 //  Настройки
-//=========================
+//===================================
 
-// Получение настроек
-var opts = (function() {
-    var minimist = require('minimist');
-    var argv = minimist(process.argv.slice(2));
-
-    return {
-        minify: argv.release,
-        incremental: !argv.force,
-        beautify: argv.beauty || argv.rainbow
-    };
-})();
-
-var DIR_SRC = 'media';
-var DIR_DST = 'site/static';
+let config = {
+    media: {
+        src: "media",
+        dest: "site/static",
+    },
+};
 
 // Настройки для типов файлов
-var types = {};
-types.css = {
-    ext: {
-        src: '.css',
-        dst: '.css'
-    },
+config.media.types = {};
+config.media.types.css = {
     path: {
-        src: DIR_SRC + '/**/*.css',
-        dst: DIR_DST
+        src: `${config.media.src}/**/*.css`,
+        dest: `${config.media.dest}/`
     },
     pipe: lazypipe()
-        .pipe(prefixerCss, 'last 2 versions', '> 1%', 'ie9')
-        .pipe(opts.minify ? minifyCss : empty)
+        .pipe(require('gulp-autoprefixer'), 'last 2 versions', '> 1%', 'ie9'),
+    minify: require('gulp-cssnano')
 };
-types.less = {
-    ext: {
-        src: '.less',
-        dst: '.css'
-    },
+config.media.types.less = {
     path: {
-        src: DIR_SRC + '/**/*.less',
-        dst: DIR_DST
+        src: `${config.media.src}/**/*.less`,
+        dest: `${config.media.dest}/`
     },
     pipe: lazypipe()
-        .pipe(lessCss)
-        .pipe(types.css.pipe)
+        .pipe(require('gulp-less'))
+        .pipe(config.media.types.css.pipe),
+    minify: config.media.types.css.minify
 };
-types.js = {
-    ext: {
-        src: '.js',
-        dst: '.js'
-    },
+config.media.types.js = {
     path: {
-        src: DIR_SRC + '/**/*.js',
-        dst: DIR_DST
+        src: `${config.media.src}/**/*.js`,
+        dest: `${config.media.dest}`
     },
     pipe: lazypipe()
-        .pipe(opts.minify ? minifyJs : empty)
-        .pipe(opts.beautify ? beautifyJs : empty)
+        .pipe(require('gulp-babel'), { presets: [ 'es2015-without-strict' ], ignore: /js\/lib/ }),
+    minify: require('gulp-uglify')
 };
-types.etc = {
-    ext: {
-        src: null,
-        dst: null
-    },
+config.media.types.etc = {
     path: {
-        src: (function() {
-            var list = [DIR_SRC + '/**/*'];
-            Object.keys(types).forEach(function(type) {
-                list.push('!' + types[type].path.src);
+        src: (() => {
+            let list = [ `${config.media.src}/**/*` ];
+            Object.keys(config.media.types).forEach(typeName => {
+                let type = config.media.types[typeName];
+                list.push(`!${type.path.src}`)
             });
             return list;
         })(),
-        dst: DIR_DST
-    },
-    pipe: empty
+        dest: config.media.dest
+    }
 };
 
 
-//=========================
-//  Работа с потоками
-//=========================
+//===================================
+//  Задачи по работе с media
+//===================================
 
-// Выполнить поток
-var executePipe = function(type) {
-    var errorHandler = function(e) {
-        process.stdout.write(e.message + '\n');
-    };
-
-    var pipeChanged = lazypipe()
-        .pipe(changed, types[type].path.dst, {
-            extension: types[type].ext.dst
-        });
-
-    gulp.src(types[type].path.src)
-        .pipe(opts.incremental ? pipeChanged() : empty())
-        .pipe(types[type].pipe()).on('error', errorHandler)
-        .pipe(gulp.dest(types[type].path.dst));
-};
-
-
-//=========================
-//  Задачи
-//=========================
-
-// Подзадачи
-gulp.task('css', function() {
-    executePipe('css');
+// Копирование файлов
+Object.keys(config.media.types).forEach(typeName => {
+    let type = config.media.types[typeName];
+    gulp.task(`media_${typeName}`, () => gulp.src(type.path.src)
+        .pipe(type.pipe ? type.pipe() : empty()).on('error', errorHandler)
+        .pipe(opts.minify && type.minify ? type.minify() : empty())
+        .pipe(gulp.dest(type.path.dest)));
 });
 
-gulp.task('less', function() {
-    executePipe('less');
+gulp.task('media_copy', callback => runSequence(
+    Object.keys(config.media.types).map(typeName => `media_${typeName}`),
+    callback
+));
+
+// Очистка папки сборки
+gulp.task('media_clean', callback => {
+    fs.delSync(config.media.dest);
+    callback();
 });
 
-gulp.task('js', function() {
-    executePipe('js');
+// Генерация media
+gulp.task('media', callback => runSequence(
+    'media_clean',
+    'media_copy',
+    callback
+));
+
+// Отслеживание изменений
+gulp.task('media_watch', callback => {
+    Object.keys(config.media.types).forEach(typeName => {
+        let type = config.media.types[typeName];
+        gulp.watch(type.path.src, [ `media_${typeName}` ]);
+    });
+    //callback();
 });
 
-gulp.task('etc', function() {
-    executePipe('etc');
-});
 
-// Задачи
-gulp.task('default', ['css', 'less', 'js', 'etc']);
+//===================================
+//  Основные задачи
+//===================================
 
-gulp.task('watch', function() {
-    gulp.watch(types.css.path.src, ['css']);
-    gulp.watch(types.less.path.src, ['less']);
-    gulp.watch(types.js.path.src, ['js']);
-    gulp.watch(types.etc.path.src, ['etc']);
-});
+// Задача по-умолчанию
+gulp.task('default', callback => runSequence(
+    'media',
+    callback
+));
+
+// Отслеживание изменений
+gulp.task('watch', callback => runSequence(
+    'media',
+    'media_watch',
+    callback
+));
