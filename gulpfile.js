@@ -9,6 +9,7 @@ let gulp = require('gulp');
 let runSequence = require('run-sequence');
 let console = require('console');
 let lazypipe = require('lazypipe');
+let plumber = require('gulp-plumber');
 let empty = () => require('through')(function (data) { this.emit('data', data); }, function () { this.emit('end'); });
 let fs = require('fs-extra');
 fs.path = require('path');
@@ -92,7 +93,8 @@ config.media.types.etc = {
 Object.keys(config.media.types).forEach(typeName => {
     let type = config.media.types[typeName];
     gulp.task(`media_${typeName}`, () => gulp.src(type.path.src)
-        .pipe(type.pipe ? type.pipe() : empty()).on('error', errorHandler)
+        .pipe(plumber({ errorHandler }))
+        .pipe(type.pipe ? type.pipe() : empty())
         .pipe(opts.minify && type.minify ? type.minify() : empty())
         .pipe(gulp.dest(type.path.dest)));
 });
