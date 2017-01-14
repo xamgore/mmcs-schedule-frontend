@@ -36,7 +36,7 @@ let opts = {
 let config = {
     media: {
         src: "media",
-        dest: "site/static",
+        dest: "www/static",
     },
 };
 
