@@ -61,9 +61,9 @@
 
             switch (this.type.val()) {
                 case 'course':
-                    /*api.schedule.getForCourse(course, function (result) {
+                    api.schedule.getForCourse(course, function (result) {
                         this.openSchedule('course', result);
-                    }, this);*/
+                    }, this);
                     break;
 
                 case 'group':
@@ -211,12 +211,31 @@
      * @return {Switcher}      this
      */
     Switcher.prototype.openSchedule = function (type, data) {
-        if (this.schedule) {
-            this.schedule.destruct();
+        system.$schedule.html('');
+
+        switch (type) {
+            case 'course':
+                for (let i = 0; i < 6; i++) {
+                    let $block = $('<div class="schedule"></div>').appendTo(system.$schedule);
+                    let filteredData = { 
+                        lessons: data.lessons.filter(({ timeslot }) => timeslot[1] == i),
+                        curricula: data.curricula,
+                        groups: data.groups,
+                    };
+                    let schedule = new Schedule($block, 'day', filteredData);
+                    schedule.draw();
+                }
+                break;
+
+            case 'group':
+            case 'teacher':
+            case 'day':
+                let $block = $('<div class="schedule"></div>').appendTo(system.$schedule);
+                let schedule = new Schedule($block, type, data);
+                schedule.draw();
+                break;
         }
 
-        this.schedule = new Schedule(system.$schedule, type, data);
-        this.schedule.draw();
         system.showSchedule();
 
         return this;
@@ -227,11 +246,6 @@
      * @return {Switcher} this
      */
     Switcher.prototype.closeSchedule = function () {
-        if (this.schedule) {
-            this.schedule.destruct();
-            this.schedule = null;
-        }
-
         system.showIntro();
 
         return this;

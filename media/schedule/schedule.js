@@ -11,7 +11,7 @@
     var Schedule = window.Schedule = function ($block, type, data) {
         this.type = type;
 
-        this.buildTablesBlock($block);
+        this.buildTableBlock($block);
         this.buildTimes(system.times);
         this.buildHeader(data.groups || []);
         this.buildLessons(data.lessons, data.curricula, data.groups || [], system.times);
@@ -20,29 +20,13 @@
     };
 
     /**
-     * Генерация блока таблиц
-     * @param  {jQuery}   $block блок для таблиц
+     * Генерация блока таблицы
+     * @param  {jQuery}   $block блок для таблицы
      * @return {Schedule}        this
      */
-    Schedule.prototype.buildTablesBlock = function ($block) {
-        $block.html('');
-
-        let sz;
-        switch (this.type) {
-            case 'course':
-                sz = 6;
-                break;
-
-            case 'group':
-            case 'teacher':
-                sz = 1;
-                break;
-        }
-
-        this.tables$ = new Array(sz);
-        for (let i = 0; i < sz; i++) {
-            this.tables$[i] = $('<table></table>').appendTo($block);
-        }
+    Schedule.prototype.buildTableBlock = function ($block) {
+        this.$block = $block;
+        this.$table = $('<table></table>').appendTo($block);
 
         return this;
     };
@@ -66,13 +50,13 @@
      */
     Schedule.prototype.buildHeader = function (groups) {
         switch (this.type) {
-            case 'course':
-                this.header = groups.map(helpers.getGroupName);
-                break;
-
             case 'group':
             case 'teacher':
-                this.header = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+                this.header = [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ];
+                break;
+
+            case 'day':
+                this.header = groups.map(group => helpers.getGroupName(group));
                 break;
         }
 
@@ -94,36 +78,42 @@
 
         curricula = helpers.array.groupBy(curricula, 'lessonid');
 
-        groups.forEach(group => group.name = helpers.getGroupName(group));
-        groups = helpers.array.groupBy(groups, 'uberid');
+        switch (this.type) {
+            case 'teacher':
+                groups = helpers.array.groupBy(groups, 'uberid');
+                break;
+        }
 
-        times = times.map(function (time) {
-            return {
-                begin: helpers.time.getStamp(time.cbeg),
-                end: helpers.time.getStamp(time.cend)
-            };
-        });
+        times = times.map(({ cbeg, cend }) => ({
+            begin: helpers.time.getStamp(cbeg),
+            end: helpers.time.getStamp(cend),
+        }));
 
-        var titles = [];
+        let titles = [];
         switch (this.type) {
             case 'group':
             case 'teacher':
                 titles = [0, 1, 2, 3, 4, 5];
                 break;
+
+            case 'day':
+                titles = groups.map(({ id }) => id);
+                break;
         }
 
         this.lessons = [];
-        lessons.forEach(function (lesson) {
+        lessons.forEach(lesson => {
             try {
+                let groupsForLesson = groups && groups.hasOwnProperty(lesson.uberid) ? groups[lesson.uberid] : [];
                 this.lessons.push(new ScheduleLesson(
                     this.type,
-                    lesson, curricula[lesson.id], groups[lesson.uberid],
+                    lesson, curricula[lesson.id], groupsForLesson,
                     times, titles
                 ));
             } catch (error) {
                 console.log(error, lesson);
             }
-        }, this);
+        });
 
         return this;
     };
@@ -134,26 +124,21 @@
      */
     Schedule.prototype.buildData = function () {
         this.data = new Array(this.times.length);
-        for (var row = 0, dataLength = this.data.length; row < dataLength; row++) {
+        for (let row = 0, dataLength = this.data.length; row < dataLength; row++) {
             this.data[row] = new Array(this.header.length);
             helpers.array.fill(this.data[row], null);
         }
 
-        this.lessons.forEach(function (lesson) {
+        this.lessons.forEach(lesson => {
             let { row, col } = lesson.pos;
             if (this.data[row][col]) {
                 this.data[row][col].push(lesson);
             } else {
                 this.data[row][col] = [ lesson ];
             }
+        });
 
-        }, this);
-
-        this.data = this.data.map(function (row) {
-            return row.map(function (cell) {
-                return new ScheduleCell(this.type, cell).toArray();
-            }, this);
-        }, this);
+        this.data = this.data.map(row => row.map(cell => new ScheduleCell(this.type, cell).toArray()));
 
         return this;
     };
@@ -164,13 +149,13 @@
      */
     Schedule.prototype.buildTweaksList = function () {
         switch (this.type) {
-            case 'course':
-                this.tweaksList = ['mergeHorisontal', 'mergeVertical', 'fixWidth'];
-                break;
-
             case 'group':
             case 'teacher':
-                this.tweaksList = ['mergeVertical', 'fixWidth'];
+                this.tweaksList = [ 'mergeVertical', 'fixWidth' ];
+                break;
+
+            case 'day':
+                this.tweaksList = [ 'mergeHorisontal', 'mergeVertical', 'fixWidth' ];
                 break;
         }
 
@@ -182,26 +167,13 @@
      * @return {Schedule} this
      */
     Schedule.prototype.draw = function () {
-        this.tables = this.tables$.map($table => {
-            console.log(this.data, this.lessons);
+        let table = new Table(this.$table, this.data, this.times, this.header);
+        table.draw();
 
-            let table = new Table($table, this.data, this.times, this.header);
-            table.draw();
-
-            let tweaker = new TableTweaker($table, this.tweaksList);
-            tweaker.apply();
-
-            return table;
-        });
+        let tweaker = new TableTweaker(this.$table, this.tweaksList);
+        tweaker.apply();
 
         return this;
-    };
-
-    /**
-     * Деструктор класса Schedule
-     */
-    Schedule.prototype.destruct = function () {
-        this.tables.forEach(table => table.destruct());
     };
 
 
@@ -217,7 +189,7 @@
     var ScheduleLesson = function (type, lesson, curricula, groups, times, titles) {
         this.type = type;
 
-        this.build(lesson, curricula, groups || [], times, titles);
+        this.build(lesson, curricula, groups, times, titles);
     };
 
     /**
@@ -234,32 +206,30 @@
             throw new Error('Lesson has empty curricula');
         }
 
-        this.setTimeAndPos(lesson.timeslot, times, titles);
+        this.setTimeAndPos(lesson.timeslot, lesson.groupid, times, titles);
 
-        var curricula = new Array(lesson.subcount);
+        let curricula = new Array(lesson.subcount);
         helpers.array.fill(curricula, null);
-        var groupName = groups.map(function (group) {
-            return group.name;
-        }).join(', ');
-        curriculaRaw.forEach(function (curriculum) {
+        let groupName = groups.map(groupb => helpers.getGroupName(group)).join(', ');
+        curriculaRaw.forEach(curriculum => {
             curricula[curriculum.subnum - 1] = {
                 subject: {
                     name: curriculum.subjectname,
-                    abbr: curriculum.subjectabbr || curriculum.subjectname
+                    abbr: curriculum.subjectabbr || curriculum.subjectname,
                 },
                 teacher: {
                     name: curriculum.teachername,
                     abbr: helpers.getNameAbbr(curriculum.teachername),
-                    degree: curriculum.teacherdegree
+                    degree: curriculum.teacherdegree,
                 },
                 room: {
-                    name: curriculum.roomname
+                    name: curriculum.roomname,
                 },
                 group: {
-                    name: groupName
-                }
+                    name: groupName,
+                },
             };
-        }, this);
+        });
 
         this.mergeCurricula(curricula);
 
@@ -273,41 +243,63 @@
      * @param  {array}          titles   массив заголовков
      * @return {ScheduleLesson}          this
      */
-    ScheduleLesson.prototype.setTimeAndPos = function (timeslot, times, titles) {
-        var time = timeslot.replace(/[\(\)]/g, '').split(',');
+    ScheduleLesson.prototype.setTimeAndPos = function (timeslot, groupID, times, titles) {
+        let [ day, begin, end, week ] = timeslot.replace(/[\(\)]/g, '').split(',');
 
         this.time = {
-            begin: helpers.time.getStamp(helpers.time.parse(time[1])),
-            end: helpers.time.getStamp(helpers.time.parse(time[2]))
+            begin: helpers.time.getStamp(helpers.time.parse(begin)),
+            end: helpers.time.getStamp(helpers.time.parse(end))
         };
 
-        var row;
-        times.some(function (time, index) {
-            if (helpers.compare(time, this.time)) {
-                row = index;
-                return true;
-            }
-        }, this);
-        if (row == null) {
-            throw new Error('Сan not find lesson row');
+        let row, col;
+        switch (this.type) {
+            case 'group':
+            case 'teacher':
+                times.some((time, index) => {
+                    if (helpers.compare(time, this.time)) {
+                        row = index;
+                        return true;
+                    }
+                });
+                if (row == null) {
+                    throw new Error('Сan not find lesson row');
+                }
+
+                titles.some((title, index) => {
+                    if (title == day) {
+                        col = index;
+                        return true;
+                    }
+                });
+                if (col == null) {
+                    throw new Error('Сan not find lesson column');
+                }
+                break;
+
+            case 'day':
+                times.some((time, index) => {
+                    if (helpers.compare(time, this.time)) {
+                        row = index;
+                        return true;
+                    }
+                });
+                if (row == null) {
+                    throw new Error('Сan not find lesson row');
+                }
+
+                titles.some((title, index) => {
+                    if (title == groupID) {
+                        col = index;
+                        return true;
+                    }
+                });
+                if (col == null) {
+                    throw new Error('Сan not find lesson column');
+                }
+                break;
         }
 
-        var col;
-        titles.some(function (title, index) {
-            if (title === Number(time[0])) {
-                col = index;
-                return true;
-            }
-        }, this);
-        if (col == null) {
-            throw new Error('Сan not find lesson column');
-        }
-
-        this.pos = {
-            row: row,
-            col: col,
-            week: time[3]
-        };
+        this.pos = { row, col, week };
 
         return this;
     };
@@ -320,13 +312,13 @@
     ScheduleLesson.prototype.mergeCurricula = function (curricula) {
         this.groups = [];
 
-        curricula.forEach(function (curriculum) {
+        curricula.forEach(curriculum => {
             if (!curriculum) {
                 this.groups.push(null);
                 return;
             }
 
-            var lastGroup = helpers.array.last(this.groups);
+            let lastGroup = helpers.array.last(this.groups);
             if (lastGroup && helpers.compare(lastGroup.subject, curriculum.subject)) {
                 lastGroup.curricula.push(curriculum);
             } else {
@@ -335,25 +327,25 @@
                     curricula: [curriculum]
                 });
             }
-        },this);
+        });
 
         switch (this.type) {
             case 'group':
             case 'teacher':
-                this.groups = this.groups.map(function (group) {
+            case 'day':
+                this.groups = this.groups.map(group => {
                     if (!group) {
                         return null;
                     }
 
-                    var newCurricula = [];
-
-                    group.curricula.forEach(function (curriculum) {
+                    let newCurricula = [];
+                    group.curricula.forEach(curriculum => {
                         if (!curriculum) {
                             newCurricula.push(null);
                             return;
                         }
 
-                        var lastCurriculum = helpers.array.last(newCurricula);
+                        let lastCurriculum = helpers.array.last(newCurricula);
                         if (
                             lastCurriculum &&
                             helpers.compare(lastCurriculum.teacher, curriculum.teacher) &&
@@ -371,6 +363,7 @@
                         length: group.curricula.length
                     };
                 });
+                break;
         }
     };
 
@@ -380,7 +373,7 @@
      * @param {string} type    тип расписания
      * @param {array}  lessons занятия
      */
-    var ScheduleCell = function(type, lessons) {
+    var ScheduleCell = function (type, lessons) {
         this.type = type;
 
         if (lessons) {
@@ -465,6 +458,7 @@
     ScheduleCell.prototype.buildLesson = function (week) {
         switch (this.type) {
             case 'group':
+            case 'day':
                 return week.map(function (group) {
                     if (!group) {
                         return null;

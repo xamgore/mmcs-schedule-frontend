@@ -44,6 +44,27 @@
             },
             getForRoom: function (room, callback, thisArg) {
                 query('schedule/room/' + room, null, 'get', callback, null, thisArg);
+            },
+            getForCourse: function (course, callback, thisArg) {
+                api.switcher.getGroups(course, groups => {
+                    let data = {
+                        lessons: [],
+                        curricula: [],
+                        groups: groups,
+                    };
+                    let queryCount = 0;
+                    data.groups.forEach(({ id }) => {
+                        api.schedule.getForGroup(id, ({ lessons, curricula }) => {
+                            lessons.forEach(lesson => lesson.groupid = id);
+                            Array.prototype.push.apply(data.lessons, lessons);
+                            Array.prototype.push.apply(data.curricula, curricula);
+                            queryCount++;
+                            if (queryCount == data.groups.length) {
+                                callback.call(thisArg, data);
+                            }
+                        });
+                    });
+                });
             }
         },
         auth: {

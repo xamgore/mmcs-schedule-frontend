@@ -11,9 +11,14 @@
         return `${lastName}${firstName}${secondName}`;
     };
 
-    helpers.getGroupName = ({ gradenum, groupnum, name }) => {
-        name = name && name != 'NULL' ? `(${name})` : '';
-        return `${gradenum}.${groupnum}${name}`;
+    helpers.getGroupName = ({ gradenum, groupnum, num, name }, gradeNum) => {
+        gradenum = gradenum || gradeNum;
+        groupnum = groupnum || num;
+
+        gradenum = gradenum ? `${gradenum}.` : '';
+        name = name && name !== 'NULL' ? ` (${name})` : '';
+        
+        return `${gradenum}${groupnum}${name}`;
     };
 
     helpers.compare = (x, y) => {

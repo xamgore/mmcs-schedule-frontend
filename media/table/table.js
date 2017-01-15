@@ -68,11 +68,6 @@
         return this;
     };
 
-    /**
-     * Деструктор класса Table
-     */
-    Table.prototype.destruct = function () {};
-
 
     /**
      * Конструктор класса TableRow
