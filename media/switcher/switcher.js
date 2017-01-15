@@ -14,26 +14,26 @@
     Switcher.prototype.set = function () {
         // Добавление селекторов
         this.type = new Select('type').hide();
-        this.audience = new Select('audience').hide();
         this.course = new Select('course').hide();
         this.group = new Select('group').hide();
         this.teacher = new Select('teacher').hide();
+        this.room = new Select('room').hide();
 
         // Действие при сбросе выбора типа расписания
-        this.type.bind('', function () {
+        this.type.bind([''], function () {
             this.course.hide();
             this.group.hide();
             this.teacher.hide();
-            this.audience.hide();
+            this.room.hide();
             this.closeSchedule();
         }, this);
 
         // Действие при выборе группы в типе расписания
-        this.type.bind('group', function () {
+        this.type.bind(['course', 'group'], function () {
             this.course.hide();
             this.group.hide();
             this.teacher.hide();
-            this.audience.hide();
+            this.room.hide();
 
             api.switcher.getCourses(function (result) {
                 var degreeMap = {
@@ -41,10 +41,10 @@
                     master: 'Магистратура, '
                 };
 
-                this.course.fill('Выберите курс', result.map(function (item) {
+                this.course.fill('Выберите курс', result.map(function (course) {
                     return {
-                        value: item.id,
-                        text: degreeMap[item.degree] + item.num + ' курс'
+                        value: course.id,
+                        text: degreeMap[course.degree] + course.num + ' курс'
                     };
                 }, this)).show();
             }, this);
@@ -59,19 +59,29 @@
                 return;
             }
 
-            api.switcher.getGroups(course, function (result) {
-                this.group.fill('Выберите группу', result.map(function (item) {
-                    var name = item.num + ' группа';
-                    if (item.name && item.name !== 'NULL') {
-                        name = item.name + ', ' + name;
-                    }
+            switch (this.type.val()) {
+                case 'course':
+                    /*api.schedule.getForCourse(course, function (result) {
+                        this.openSchedule('course', result);
+                    }, this);*/
+                    break;
 
-                    return {
-                        value: item.id,
-                        text: name
-                    };
-                }, this)).show();
-            }, this);
+                case 'group':
+                    api.switcher.getGroups(course, function (result) {
+                        this.group.fill('Выберите группу', result.map(function (group) {
+                            var name = group.num + ' группа';
+                            if (group.name && group.name !== 'NULL') {
+                                name = group.name + ', ' + name;
+                            }
+
+                            return {
+                                value: group.id,
+                                text: name
+                            };
+                        }, this)).show();
+                    }, this);
+                    break;
+            }
         }, this);
 
         // Действие при выборе группы
@@ -87,36 +97,19 @@
         }, this);
 
         // Действие при выборе преподавателя в типе расписания
-        this.type.bind('teacher', function () {
+        this.type.bind(['teacher'], function () {
             this.course.hide();
             this.group.hide();
             this.teacher.hide();
-            this.audience.hide();
+            this.room.hide();
 
             api.switcher.getTeachers(function (result) {
-                this.teacher.fill('Выберите преподавателя', result.map(function (item) {
+                this.teacher.fill('Выберите преподавателя', result.map(function (teacher) {
                     return {
-                        value: item.id,
-                        text: item.name
+                        value: teacher.id,
+                        text: teacher.name
                     };
                 }, this)).show();
-            }, this);
-        }, this);
-
-        // Действие при выборе аудитории в типе расписания
-        this.type.bind('audience', function () {
-            this.course.hide();
-            this.group.hide();
-            this.teacher.hide();
-            this.audience.hide();
-
-            api.switcher.getAudience(function (result) {
-              this.audience.fill('Выберите Аудиторию', result.map(function (item) {
-                  return {
-                      value: item.id,
-                      text: item.name
-                  };
-              }, this)).show();
             }, this);
         }, this);
 
@@ -132,17 +125,46 @@
             }, this);
         }, this);
 
+        // Действие при выборе аудитории в типе расписания
+        this.type.bind(['room'], function () {
+            this.course.hide();
+            this.group.hide();
+            this.teacher.hide();
+            this.room.hide();
+
+            api.switcher.getRooms(function (result) {
+              this.room.fill('Выберите Аудиторию', result.map(function (room) {
+                    return {
+                        value: room.id,
+                        text: room.name
+                    };
+                }, this)).show();
+            }, this);
+        }, this);
+
+        // Действие при выборе аудитории
+        this.room.bind(function (room) {
+            if (room === '') {
+                this.closeSchedule();
+                return;
+            }
+
+            api.schedule.getForTeacher(room, function (result) {
+                this.openSchedule('room', result);
+            }, this);
+        }, this);
+
         // localStorage
-        this.type.bind(function(type, notClean) {
+        this.type.bind(function(type, init) {
             localStorage.type = type;
-            if (!notClean) {
+            if (!init) {
                 localStorage.course = '';
                 localStorage.teacher = '';
             }
         });
-        this.course.bind(function(course, notClean) {
+        this.course.bind(function(course, init) {
             localStorage.course = course;
-            if (!notClean) {
+            if (!init || localStorage.type !== 'group') {
                 localStorage.group = '';
             }
         });
@@ -152,26 +174,31 @@
         this.teacher.bind(function(teacher) {
             localStorage.teacher = teacher;
         });
+        this.room.bind(function(room) {
+            localStorage.room = room;
+        });
 
         // Заполнение и отображение селектора типа расписания
         this.type.fill('Тип расписания', [ {
+            value: 'course',
+            text: 'Курс',
+        },  {
             value: 'group',
-            text: 'Группа'
+            text: 'Группа',
         }, {
             value: 'teacher',
-            text: 'Преподаватель'
+            text: 'Преподаватель',
         }, {
-            value: 'audience',
+            value: 'room',
             text: 'Аудитория',
-            //disabled: true
         }, {
             value: 'chair',
             text: 'Кафедра',
-            disabled: true
+            disabled: true,
         }, {
             value: 'session',
             text: 'Сессия',
-            disabled: true
+            disabled: true,
         } ]).show();
 
         return this;
@@ -241,7 +268,7 @@
         this.$select.html('');
 
         this.createOption('', text).appendTo(this.$select);
-        data.forEach(function(item) {
+        data.forEach(function (item) {
             this.createOption(item.value, item.text, item.disabled).appendTo(this.$select);
         }, this);
 
@@ -255,21 +282,21 @@
 
     /**
      * Привязка функции к изменению селектора
-     * @param  {string}   [value]   необходимое значение для вызова функции
+     * @param  {array}    [values]  необходимое значение для вызова функции
      * @param  {function} callback  функция
-     * @param  {object}   [thisArg] кнонтекст функици
+     * @param  {object}   [thisArg] контекст функици
      * @return {Select}             this
      */
-    Select.prototype.bind = function (value, callback, thisArg) {
-        if (typeof value === 'function') {
+    Select.prototype.bind = function (values, callback, thisArg) {
+        if (typeof values === 'function') {
             thisArg = callback;
-            callback = value;
-            value = null;
+            callback = values;
+            values = null;
         }
 
         this.$select.change(function (event, param) {
             var selectValue = $(this).val();
-            if (selectValue === value || value == null) {
+            if (values == null || values.includes(selectValue)) {
                 callback.call(thisArg, selectValue, param);
             }
         });
@@ -295,5 +322,13 @@
         this.$select.hide();
 
         return this;
+    };
+
+    /**
+     * Скрытие селектора
+     * @return {string} Значение
+     */
+    Select.prototype.val = function () {
+        return this.$select.val();
     };
 })();

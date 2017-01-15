@@ -1,41 +1,45 @@
-(function () {
+(() => {
     'use strict';
 
-    var helpers = window.helpers = {};
+    let helpers = window.helpers = {};
 
-    helpers.abbrName = function(name) {
-        name = name.split(' ');
-        if (name.length === 3) {
-            return name[0] + ' ' + name[1][0] + '.' + name[2][0] + '.';
-        } else {
-            return name;
-        }
+    helpers.getNameAbbr = name => {
+        let [ lastName, firstName, secondName ] = name.split(' ');
+        lastName = lastName ? `${lastName} ` : '';
+        firstName = firstName ? `${firstName[0]}.` : '';
+        secondName = secondName ? `${secondName[0]}.` : '';
+        return `${lastName}${firstName}${secondName}`;
     };
 
-    helpers.compare = function (x, y) {
+    helpers.getGroupName = ({ gradenum, groupnum, name }) => {
+        name = name && name != 'NULL' ? `(${name})` : '';
+        return `${gradenum}.${groupnum}${name}`;
+    };
+
+    helpers.compare = (x, y) => {
         return JSON.stringify(x) === JSON.stringify(y);
     };
 
     helpers.array = {};
 
-    helpers.array.groupBy = function (array, key) {
-        var out = {};
+    helpers.array.groupBy = (array, key) => {
+        let res = {};
         array.forEach(function (elem) {
             if (!elem) {
                 return;
             }
 
-            var keyVal = JSON.stringify(elem[key]);
-            if (out[keyVal]) {
-                out[keyVal].push(elem);
+            let keyVal = JSON.stringify(elem[key]);
+            if (res[keyVal]) {
+                res[keyVal].push(elem);
             } else {
-                out[keyVal] = [elem];
+                res[keyVal] = [ elem ];
             }
         });
-        return out;
+        return res;
     };
 
-    helpers.array.setLength = function (array, length) {
+    helpers.array.setLength = (array, length) => {
         array.splice(length, array.length);
         while (array.length < length) {
             array.push(null);
@@ -43,14 +47,14 @@
         return array;
     };
 
-    helpers.array.fill = function (array, value) {
+    helpers.array.fill = (array, value) => {
         for (var i = 0, sz = array.length; i < sz; i++) {
             array[i] = value;
         }
         return array;
     };
 
-    helpers.array.last = function (array) {
+    helpers.array.last = array => {
         if (array.length) {
             return array[array.length - 1];
         }
@@ -58,28 +62,26 @@
 
     helpers.time = {};
 
-    helpers.time.parse = function (time) {
-        time = /([0-9]+):([0-9]+)/.exec(time);
-
-        return {
-            hours: Number(time[1]),
-            minutes: Number(time[2])
-        };
+    helpers.time.parse = time => {
+        let [ full, hours, minutes ] = /([0-9]+):([0-9]+)/.exec(time);
+        hours = Number(hours);
+        minutes = Number(minutes);
+        return { hours, minutes };
     };
 
-    helpers.time.getStamp = function (time) {
+    helpers.time.getStamp = time => {
         return time.hours * 60 + (time.minutes || 0);
     };
 
-    helpers.time.getString = function (time) {
-        if (!time.minutes) {
-            return String(time.hours) + ':00';
+    helpers.time.getString = ({ hours, minutes }) => {
+        if (!minutes) {
+            return `${hours}:00`;
         }
 
-        if (time.minutes < 10) {
-            return String(time.hours) + ':0' + String(time.minutes);
+        if (minutes < 10) {
+            return `${hours}:0${minutes}`;
         }
 
-        return String(time.hours) + ':' + String(time.minutes);
+        return `${hours}:${minutes}`;
     };
 })();

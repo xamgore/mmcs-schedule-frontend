@@ -4,21 +4,47 @@
 
     /**
      * Конструктор класса Schedule
-     * @param {jQuery} $table блок таблицы
+     * @param {jQuery} $block блок для таблиц
      * @param {string} type   тип расписания
      * @param {object} data   данные о занятиях
      */
-    var Schedule = window.Schedule = function ($table, type, data) {
-        $table.html('');
-
-        this.$table = $('<table></table>').appendTo($table);
+    var Schedule = window.Schedule = function ($block, type, data) {
         this.type = type;
 
+        this.buildTablesBlock($block);
         this.buildTimes(system.times);
-        this.buildHeader();
+        this.buildHeader(data.groups || []);
         this.buildLessons(data.lessons, data.curricula, data.groups || [], system.times);
         this.buildData();
         this.buildTweaksList();
+    };
+
+    /**
+     * Генерация блока таблиц
+     * @param  {jQuery}   $block блок для таблиц
+     * @return {Schedule}        this
+     */
+    Schedule.prototype.buildTablesBlock = function ($block) {
+        $block.html('');
+
+        let sz;
+        switch (this.type) {
+            case 'course':
+                sz = 6;
+                break;
+
+            case 'group':
+            case 'teacher':
+                sz = 1;
+                break;
+        }
+
+        this.tables$ = new Array(sz);
+        for (let i = 0; i < sz; i++) {
+            this.tables$[i] = $('<table></table>').appendTo($block);
+        }
+
+        return this;
     };
 
     /**
@@ -38,8 +64,12 @@
      * Построение шапки
      * @return {Schedule} this
      */
-    Schedule.prototype.buildHeader = function () {
+    Schedule.prototype.buildHeader = function (groups) {
         switch (this.type) {
+            case 'course':
+                this.header = groups.map(helpers.getGroupName);
+                break;
+
             case 'group':
             case 'teacher':
                 this.header = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
@@ -64,13 +94,7 @@
 
         curricula = helpers.array.groupBy(curricula, 'lessonid');
 
-        groups.forEach(function (group) {
-            var name = group.gradenum + '.' + group.groupnum;
-            if (group.name !== 'NULL') {
-                name += '(' + group.name + ')';
-            }
-            group.name = name;
-        });
+        groups.forEach(group => group.name = helpers.getGroupName(group));
         groups = helpers.array.groupBy(groups, 'uberid');
 
         times = times.map(function (time) {
@@ -110,18 +134,17 @@
      */
     Schedule.prototype.buildData = function () {
         this.data = new Array(this.times.length);
-        for (var i = 0, sz = this.data.length; i < sz; i++) {
-            this.data[i] = new Array(this.header.length);
-            helpers.array.fill(this.data[i], null);
+        for (var row = 0, dataLength = this.data.length; row < dataLength; row++) {
+            this.data[row] = new Array(this.header.length);
+            helpers.array.fill(this.data[row], null);
         }
 
         this.lessons.forEach(function (lesson) {
-            var row = lesson.pos.row;
-            var col = lesson.pos.col;
+            let { row, col } = lesson.pos;
             if (this.data[row][col]) {
                 this.data[row][col].push(lesson);
             } else {
-                this.data[row][col] = [lesson];
+                this.data[row][col] = [ lesson ];
             }
 
         }, this);
@@ -141,6 +164,10 @@
      */
     Schedule.prototype.buildTweaksList = function () {
         switch (this.type) {
+            case 'course':
+                this.tweaksList = ['mergeHorisontal', 'mergeVertical', 'fixWidth'];
+                break;
+
             case 'group':
             case 'teacher':
                 this.tweaksList = ['mergeVertical', 'fixWidth'];
@@ -155,11 +182,17 @@
      * @return {Schedule} this
      */
     Schedule.prototype.draw = function () {
-        this.table = new Table(this.$table, this.data, this.times, this.header);
-        this.table.draw();
+        this.tables = this.tables$.map($table => {
+            console.log(this.data, this.lessons);
 
-        var tweaker = new TableTweaker(this.$table, this.tweaksList);
-        tweaker.apply();
+            let table = new Table($table, this.data, this.times, this.header);
+            table.draw();
+
+            let tweaker = new TableTweaker($table, this.tweaksList);
+            tweaker.apply();
+
+            return table;
+        });
 
         return this;
     };
@@ -168,7 +201,7 @@
      * Деструктор класса Schedule
      */
     Schedule.prototype.destruct = function () {
-        this.table.destruct();
+        this.tables.forEach(table => table.destruct());
     };
 
 
@@ -216,7 +249,7 @@
                 },
                 teacher: {
                     name: curriculum.teachername,
-                    abbr: helpers.abbrName(curriculum.teachername),
+                    abbr: helpers.getNameAbbr(curriculum.teachername),
                     degree: curriculum.teacherdegree
                 },
                 room: {
