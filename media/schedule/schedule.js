@@ -351,7 +351,7 @@
                             helpers.compare(lastCurriculum.teacher, curriculum.teacher) &&
                             helpers.compare(lastCurriculum.group, curriculum.group)
                         ) {
-                            lastCurriculum.room.name.split(', ');
+                            lastCurriculum.room.name += `, ${curriculum.room.name}`;
                         } else {
                             newCurricula.push(curriculum);
                         }
