@@ -155,7 +155,7 @@
                 break;
 
             case 'day':
-                this.tweaksList = [ 'mergeHorisontal', 'mergeVertical', 'fixWidth' ];
+                this.tweaksList = [ 'mergeHorisontal', 'mergeVertical', 'fixWidth', 'setGroupsHeader' ];
                 break;
         }
 

@@ -19,13 +19,13 @@
      * @return {TableTweaker} this
      */
     TableTweaker.prototype.setData = function () {
-        var $header = this.$block.children('thead');
-        var $body = this.$block.children('tbody');
+        this.$header = this.$block.children('thead');
+        this.$body = this.$block.children('tbody');
 
-        var width = xMath.sum.apply(xMath, $header.find('td').toArray().map(function (cell) {
+        var width = xMath.sum.apply(xMath, this.$header.find('td').toArray().map(function (cell) {
             return cell.colSpan;
         }));
-        var height = xMath.sum.apply(xMath, $body.find('td.time').toArray().map(function (cell) {
+        var height = xMath.sum.apply(xMath, this.$body.find('td.time').toArray().map(function (cell) {
             return cell.rowSpan;
         }));
 
@@ -43,7 +43,7 @@
             type: 'empty'
         };
 
-        $body.find('td').toArray().forEach(function (cell) {
+        this.$body.find('td').toArray().forEach(function (cell) {
             while (filled[data.posY][data.posX]) {
                 data.posX++;
                 if (data.posX >= width) {
@@ -104,8 +104,7 @@
      */
     TableTweaker.prototype.tweaks = {
         mergeVertical: function () {
-            var $body = this.$block.children('tbody');
-            var $cells = $body.find('td');
+            var $cells = this.$body.find('td');
             for (var cellsPos = 0, cellsSz = $cells.length; cellsPos < cellsSz; cellsPos++) {
                 if ($cells[cellsPos] === null) {
                     continue;
@@ -134,8 +133,7 @@
             }
         },
         mergeHorisontal: function () {
-            var $body = this.$block.children('tbody');
-            var $cells = $body.find('td');
+            var $cells = this.$body.find('td');
             for (var cellsPos = 0, cellsSz = $cells.length; cellsPos < cellsSz; cellsPos++) {
                 if ($cells[cellsPos] === null) {
                     continue;
@@ -164,8 +162,7 @@
             }
         },
         fixWidth: function () {
-            var $header = this.$block.children('thead');
-            var $cells = $header.find('td');
+            var $cells = this.$header.find('td');
             var cols = $cells.toArray().map(function (cell) {
                 return {
                     length: $(cell).data('size') || 0,
@@ -188,7 +185,29 @@
 
             $cells.first().css('width', '50px');
             $cells.last().css('width', 'auto');
-        }
+        },
+        setGroupsHeader: function () {
+            let $areas = $('<tr><td rowspan="2"></td></tr>').prependTo(this.$header);
+            let $cells = this.$header.children().eq(1).find('td');
+            $cells.first().remove();
+
+            $cells.toArray().forEach(cell => {
+                let $cell = $(cell);
+                let text = $cell.text();
+                let [ full, group, area ] = /(.*?) \((.*?)\)/.exec(text) || [ text, text, '' ];
+
+                let $lastArea = $areas.children().last();
+                if ($lastArea.text() == area) {
+                    let colspan = Number($lastArea.attr('colspan')) + Number($cell.attr('colspan'));
+                    $lastArea.attr('colspan', colspan);
+                } else {
+                    let colspan = Number($cell.attr('colspan'));    
+                    $(`<td colspan="${colspan}">${area}</td>`).appendTo($areas);
+                }
+
+                $cell.text(`${group} гр.`);
+            });
+        },
     };
 
 
@@ -273,9 +292,7 @@
      */
     Cell.prototype.html = function () {
         if (this.$cells) {
-            return this.$cells.toArray().map(function (cell) {
-                return $(cell).html();
-            }).join();
+            return this.$cells.toArray().map(cell => $(cell).html()).join();
         }
 
         return '';
