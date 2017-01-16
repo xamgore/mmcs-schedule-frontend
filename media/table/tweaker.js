@@ -162,29 +162,28 @@
             }
         },
         fixWidth: function () {
-            var $cells = this.$header.find('td');
-            var cols = $cells.toArray().map(function (cell) {
-                return {
+            let $headerLines = this.$header.children();
+            for (let i = 0, sz = $headerLines.length; i < sz; i++) {
+                let $cells = $headerLines.eq(i).find('td');
+                if (i != 0) {
+                    $cells = $headerLines.first().children().first().add($cells);
+                }
+
+                let cols = $cells.toArray().map(cell => ({
                     length: $(cell).data('size') || 0,
                     width: 0
-                };
-            });
-            var fullLength = xMath.sum.apply(xMath, cols.map(function (col) {
-                return col.length;
-            }));
+                }));
+                let fullLength = xMath.sum.apply(xMath, cols.map(col => col.length));
 
-            cols[0].width = 5;
-            var widthPerCol = (100 - cols[0].width) / fullLength;
-            cols.forEach(function (col) {
-                col.width = widthPerCol * col.length || col.width;
-            });
+                cols[0].width = 5;
+                let widthPerCol = (100 - cols[0].width) / fullLength;
+                cols.forEach(col => col.width = widthPerCol * col.length || col.width);
 
-            cols.forEach(function (col, colID) {
-                $cells.eq(colID).css('width', col.width + '%');
-            });
+                cols.forEach((col, colID) => $cells.eq(colID).css('width', col.width + '%'));
 
-            $cells.first().css('width', '50px');
-            $cells.last().css('width', 'auto');
+                $cells.first().css('width', '50px');
+                $cells.last().css('width', 'auto');
+            }
         },
         setGroupsHeader: function () {
             let $areas = $('<tr><td rowspan="2"></td></tr>').prependTo(this.$header);
@@ -198,11 +197,13 @@
 
                 let $lastArea = $areas.children().last();
                 if ($lastArea.text() == area) {
-                    let colspan = Number($lastArea.attr('colspan')) + Number($cell.attr('colspan'));
-                    $lastArea.attr('colspan', colspan);
+                    let colspan = Number($lastArea.attr('colspan')) + Number($cell.attr('colspan')) || 0;
+                    let size = $lastArea.data('size') + $cell.data('size');
+                    $lastArea.attr('colspan', colspan).data('size', size);
                 } else {
-                    let colspan = Number($cell.attr('colspan'));    
-                    $(`<td colspan="${colspan}">${area}</td>`).appendTo($areas);
+                    let colspan = Number($cell.attr('colspan')) || 0; 
+                    let size = $cell.data('size');   
+                    $(`<td colspan="${colspan}">${area}</td>`).data('size', size).appendTo($areas);
                 }
 
                 $cell.text(`${group} гр.`);
