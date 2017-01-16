@@ -25,7 +25,7 @@
      */
     Table.prototype.setRows = function () {
         this.rows = new Array(this.data.length);
-        for (var rowsKey = 0, rowsLength = this.rows.length; rowsKey < rowsLength; rowsKey++) {
+        for (let rowsKey = 0, rowsLength = this.rows.length; rowsKey < rowsLength; rowsKey++) {
             this.rows[rowsKey] = new TableRow(this.data[rowsKey], this, rowsKey);
         }
 
@@ -38,10 +38,8 @@
      */
     Table.prototype.setCols = function () {
         this.cols = new Array(this.rows[0].cells.length);
-        for (var colsKey = 0, colsLength = this.cols.length; colsKey < colsLength; colsKey++) {
-            this.cols[colsKey] = new TableCol(this.rows.map(function (row) {
-                return row.cells[colsKey];
-            }), this, colsKey);
+        for (let colsKey = 0, colsLength = this.cols.length; colsKey < colsLength; colsKey++) {
+            this.cols[colsKey] = new TableCol(this.rows.map(row => row.cells[colsKey]), this, colsKey);
         }
 
         return this;
@@ -54,16 +52,14 @@
     Table.prototype.draw = function () {
         this.$block.html('');
 
-        var $header = $('<thead></thead>').appendTo(this.$block);
-        var $headerRow = $('<tr><td></td></tr>').appendTo($header);
-        this.header.forEach(function (columnTitle, i) {
-            $('<td colspan=' + this.cols[i].length + ' class="title">' + columnTitle + '</td>').appendTo($headerRow).data('size', this.cols[i].size);
-        }, this);
+        let $header = $('<thead></thead>').appendTo(this.$block);
+        let $headerRow = $('<tr><td></td></tr>').appendTo($header);
+        this.header.forEach((columnTitle, i) => {
+            $(`<td colspan=${this.cols[i].length} class="title">${columnTitle}</td>`).data('size', this.cols[i].size).appendTo($headerRow);
+        });
 
         this.$body = $('<tbody></tbody>').appendTo(this.$block);
-        this.rows.forEach(function (row) {
-            row.draw();
-        });
+        this.rows.forEach(row => row.draw());
 
         return this;
     };
@@ -79,12 +75,8 @@
         this.table = table;
         this.pos = pos;
 
-        this.cells = cellsRaw.map(function (cellRaw) {
-            return new TableCell(cellRaw, this, null);
-        }, this);
-        this.size = Math.max.apply(Math, this.cells.map(function (cell) {
-            return cell.vLength;
-        }));
+        this.cells = cellsRaw.map(cellRaw => new TableCell(cellRaw, this, null));
+        this.size = Math.max.apply(Math, this.cells.map(cell => cell.vLength));
         this.length = xMath.lcm.apply(xMath, xMath.range(1, this.size));
     };
 
@@ -94,15 +86,13 @@
      */
     TableRow.prototype.draw = function () {
         this.rows = new Array(this.length);
-        for (var rowsKey = 0, rowsLength = this.rows.length; rowsKey < rowsLength; rowsKey++) {
+        for (let rowsKey = 0, rowsLength = this.rows.length; rowsKey < rowsLength; rowsKey++) {
             this.rows[rowsKey] = $('<tr></tr>').appendTo(this.table.$body);
         }
 
-        $('<td rowspan=' + this.length + ' class="time">' + this.table.times[this.pos] + '</td>').appendTo(this.rows[0]);
+        $(`<td rowspan=${this.length} class="time">${this.table.times[this.pos]}</td>`).appendTo(this.rows[0]);
 
-        this.cells.forEach(function (cell) {
-            cell.draw();
-        });
+        this.cells.forEach(cell => cell.draw());
 
         return this;
     };
@@ -118,12 +108,8 @@
         this.table = table;
         this.pos = pos;
 
-        this.cells = cellsRaw.map(function (cellRaw) {
-            return new TableCell(cellRaw, null, this);
-        }, this);
-        this.size = Math.max.apply(Math, this.cells.map(function (cell) {
-            return cell.hLength;
-        }));
+        this.cells = cellsRaw.map(cellRaw =>new TableCell(cellRaw, null, this));
+        this.size = Math.max.apply(Math, this.cells.map(cell => cell.hLength));
         this.length = xMath.lcm.apply(xMath, xMath.range(1, this.size));
     };
 
@@ -156,13 +142,9 @@
             return;
         }
 
-        this.weeks = cellRaw.map(function (weekRaw, pos) {
-            return new TableWeek(weekRaw, this, pos);
-        }, this);
+        this.weeks = cellRaw.map((weekRaw, pos) => new TableWeek(weekRaw, this, pos));
         this.vLength = this.weeks.length * 2;
-        this.hLength = Math.max.apply(Math, this.weeks.map(function (week) {
-            return week.length;
-        }));
+        this.hLength = Math.max.apply(Math, this.weeks.map(week => week.length));
     };
 
     /**
@@ -171,13 +153,11 @@
      */
     TableCell.prototype.draw = function () {
         if (this.empty) {
-            $('<td rowspan=' + this.row.length + ' colspan=' + this.col.length + '></td>').appendTo(this.row.rows[0]);
+            $(`<td rowspan=${this.row.length} colspan=${this.col.length}></td>`).data('size', this.hLength).appendTo(this.row.rows[0]);
             return this;
         }
 
-        this.weeks.forEach(function (week) {
-            week.draw();
-        });
+        this.weeks.forEach(week => week.draw());
 
         return this;
     };
@@ -199,12 +179,8 @@
             return;
         }
 
-        this.groups = weekRaw.map(function (groupRaw) {
-            return new TableGroup(groupRaw, this);
-        }, this);
-        this.length = xMath.sum.apply(xMath, this.groups.map(function (group) {
-            return group.length;
-        }));
+        this.groups = weekRaw.map(groupRaw => new TableGroup(groupRaw, this));
+        this.length = xMath.sum.apply(xMath, this.groups.map(group => group.length));
     };
 
     /**
@@ -212,17 +188,19 @@
      * @return {TableWeek} this
      */
     TableWeek.prototype.draw = function () {
+        this.rowSize = this.cell.row.length / this.cell.vLength * 2;
+        this.colSize = this.cell.col.length / this.length;
+        let rowPos = this.pos * this.rowSize;
+        this.rows = [ this.cell.row.rows[rowPos], this.cell.row.rows[rowPos + 1] ];
+
         if (this.empty) {
-            var rowSize = this.cell.row.length / this.cell.vLength * 2;
-            var colLength = this.cell.col.length;
-            var rows = this.cell.row.rows;
-            $('<td rowspan=' + rowSize + ' colspan=' + colLength + ' class="cell-empty"></td>').appendTo(rows[this.pos * rowSize]);
+            $(`<td rowspan=${this.rowSize} colspan=${this.colSize} class="cell-empty"></td>`).data('size', this.length).appendTo(this.cell.row.rows[this.pos * this.rowSize]);
             return this;
         }
 
-        this.groups.forEach(function (group) {
-            group.draw();
-        });
+        let colPos = this.rows[0].children().length;
+        this.groups.forEach(group => group.draw());
+        this.rows[0].children().eq(colPos).data('size', this.length);
 
         return this;
     };
@@ -239,7 +217,6 @@
         if (!groupRaw) {
             this.empty = true;
             this.length = 1;
-
             return;
         }
 
@@ -253,23 +230,18 @@
      * @return {TableWeek} this
      */
     TableGroup.prototype.draw = function () {
-        var rowSize = this.week.cell.row.length / this.week.cell.vLength * 2;
-        var colSize = this.week.cell.col.length / this.week.length;
-        var rows = this.week.cell.row.rows;
-        var pos = this.week.pos * rowSize;
-
         if (this.empty) {
-            $('<td rowspan=' + rowSize + ' colspan=' + colSize + '></td>').appendTo(rows[pos]);
+            $(`<td rowspan=${this.week.rowSize} colspan=${this.week.colSize}></td>`).appendTo(this.week.rows[0]);
             return this;
         }
 
         if (this.length > 1) {
-            $('<td colspan=' + colSize * this.length + ' class="cell-title">' + this.title + '</td>').appendTo(rows[pos]);
-            this.contents.forEach(function (content) {
-                $('<td rowspan=' + (rowSize - 1) + ' colspan=' + colSize + ' class="cell-content">' + content + '</td>').appendTo(rows[pos + 1]);
+            $(`<td colspan=${this.week.colSize * this.length} class="cell-title">${this.title}</td>`).appendTo(this.week.rows[0]);
+            this.contents.forEach(content => {
+                $(`<td rowspan=${this.week.rowSize - 1} colspan=${this.week.colSize} class="cell-content">${content}</td>`).appendTo(this.week.rows[1]);
             });
         } else {
-            $('<td rowspan=' + rowSize + ' colspan=' + colSize + ' class="cell-full">' + this.title + this.contents[0] + '</td>').appendTo(rows[pos]);
+            $(`<td rowspan=${this.week.rowSize} colspan=${this.week.colSize} class="cell-full">${this.title}${this.contents[0]}</td>`).appendTo(this.week.rows[0]);
         }
 
         return this;

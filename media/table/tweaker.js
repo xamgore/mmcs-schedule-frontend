@@ -54,6 +54,7 @@
 
             data.sizeX = Number(cell.colSpan);
             data.sizeY = Number(cell.rowSpan);
+            data.size = $(cell).data('size');
 
             switch (cell.className) {
                 case 'cell-title':
@@ -104,68 +105,70 @@
      */
     TableTweaker.prototype.tweaks = {
         mergeVertical: function () {
-            var $cells = this.$body.find('td');
-            for (var cellsPos = 0, cellsSz = $cells.length; cellsPos < cellsSz; cellsPos++) {
-                if ($cells[cellsPos] === null) {
-                    continue;
-                }
+            let $cells = this.$body.find('td');
+            for (let cellsPos = 0, cellsLength = $cells.length; cellsPos < cellsLength; cellsPos++) {
+                if ($cells[cellsPos] === null) continue;
 
-                var cell = new Cell(this.$block, $cells.eq(cellsPos));
-                if (!cell.$cells) {
-                    continue;
-                }
+                let current = new Cell(this.$block, $cells.eq(cellsPos));
+                if (!current.$cells) continue;
 
-                var $next = Cell.findCell(this.$block, cell.data.posX, cell.data.posY + cell.data.sizeY);
-                if (!$next) {
-                    continue;
-                }
-                var next = new Cell(this.$block, $next);
-                if (!next.$cells || cell.data.sizeX !== next.data.sizeX || cell.html() !== next.html()) {
-                    continue;
-                }
+                let next = new Cell(this.$block, Cell.findCell(this.$block, current.data.posX, current.data.posY + current.data.sizeY));
+                if (!next.$cells || current.data.sizeX !== next.data.sizeX || current.html() !== next.html()) continue;
 
-                for (var i = 0, sz = next.$cells.length; i < sz; i++) {
-                    $cells[$cells.index(next.$cells.eq(i))] = null;
-                }
-                cell.mergeVertical(next);
+                next.$cells.toArray().forEach(next => $cells[$cells.index($(next))] = null);
+                current.mergeVertical(next);
 
                 cellsPos--;
             }
         },
         mergeHorisontal: function () {
-            var $cells = this.$body.find('td');
-            for (var cellsPos = 0, cellsSz = $cells.length; cellsPos < cellsSz; cellsPos++) {
-                if ($cells[cellsPos] === null) {
-                    continue;
+            let $cells = this.$body.find('td');
+            for (let cellsPos = 0, cellsLength = $cells.length; cellsPos < cellsLength; cellsPos++) {
+                if ($cells[cellsPos] === null) continue;
+
+                let current = new Cell(this.$block, $cells.eq(cellsPos));
+                if (!current.$cells || !current.data.size) continue;
+                let currents = [];
+                for (let cellsOffset = 0, cellsLength = current.data.size; cellsOffset < cellsLength; cellsOffset++) {
+                    let current = new Cell(this.$block, $cells.eq(cellsPos + cellsOffset));
+                    currents.push(current);
+                    if (current.$cells) cellsLength -= (current.$cells.length - 1 || 1) - 1;
                 }
 
-                var cell = new Cell(this.$block, $cells.eq(cellsPos));
-                if (!cell.$cells) {
-                    continue;
-                }
+                if (current.data.size > 3) console.log(currents);
 
-                var $next = Cell.findCell(this.$block, cell.data.posX + cell.data.sizeX, cell.data.posY);
-                if (!$next) {
-                    continue;
-                }
-                var next = new Cell(this.$block, $next);
-                if (!next.$cells || cell.data.sizeY !== next.data.sizeY || cell.html() !== next.html()) {
-                    continue;
-                }
+                let posXOffset = xMath.sum.apply(null, currents.map(current => current.data.sizeX));
 
-                for (var i = 0, sz = next.$cells.length; i < sz; i++) {
-                    $cells[$cells.index(next.$cells.eq(i))] = null;
-                }
-                cell.mergeHorisontal(next);
+                let next = new Cell(this.$block, Cell.findCell(this.$block, current.data.posX + posXOffset, current.data.posY));
+                if (!next.$cells || current.data.size !== next.data.size) continue;
+                let nexts = new Array(next.data.size);
+                xMath.range(0, currents.length - 1).forEach(cellsOffset => {
+                    let current = currents[cellsOffset];
+                    nexts[cellsOffset] = new Cell(this.$block, Cell.findCell(this.$block, current.data.posX + posXOffset, current.data.posY));
+                });
+                if (xMath.range(0, currents.length - 1).some(cellsOffset => {
+                    let current = currents[cellsOffset];
+                    let next = nexts[cellsOffset];
+                    return !next.$cells || current.data.sizeY !== next.data.sizeY || current.html() !== next.html();
+                })) continue;
+
+                console.log(currents, nexts);
+
+                xMath.range(0, currents.length - 1).forEach(cellsOffset => {
+                    let current = currents[cellsOffset];
+                    let next = nexts[cellsOffset];
+                    next.$cells.toArray().forEach(cell => $cells[$cells.index($(cell))] = null);
+                    current.mergeHorisontal(next);
+                });
 
                 cellsPos--;
             }
         },
         fixWidth: function () {
             let $headerLines = this.$header.children();
-            for (let i = 0, sz = $headerLines.length; i < sz; i++) {
-                let $cells = $headerLines.eq(i).find('td');
-                if (i != 0) {
+            for (let row = 0, sz = $headerLines.length; row < sz; row++) {
+                let $cells = $headerLines.eq(row).find('td');
+                if (row != 0) {
                     $cells = $headerLines.first().children().first().add($cells);
                 }
 
@@ -227,6 +230,8 @@
             posY: 0
         };
 
+        if (!$cell) return;
+
         this.build($cell);
     };
 
@@ -265,6 +270,7 @@
                 this.data.sizeY = cellData.sizeY;
                 this.data.posX = cellData.posX;
                 this.data.posY = cellData.posY;
+                this.data.size = cellData.size;
                 break;
 
             case 'title':
@@ -273,13 +279,14 @@
                 this.data.sizeY = cellData.sizeY;
                 this.data.posX = cellData.posX;
                 this.data.posY = cellData.posY;
+                this.data.size = cellData.size;
                 var sizeX = 0;
                 while (sizeX !== this.data.sizeX) {
-                    var $fndCell = Cell.findCell(this.$block, this.data.posX + sizeX, this.data.posY + 1);
-                    var fndCellData = $fndCell.data();
-                    sizeX += fndCellData.sizeX;
-                    this.data.sizeY = 1 + fndCellData.sizeY;
-                    this.$cells = this.$cells.add($fndCell);
+                    var $foundCell = Cell.findCell(this.$block, this.data.posX + sizeX, this.data.posY + 1);
+                    var foundCellData = $foundCell.data();
+                    sizeX += foundCellData.sizeX;
+                    this.data.sizeY = 1 + foundCellData.sizeY;
+                    this.$cells = this.$cells.add($foundCell);
                 }
                 break;
         }
@@ -292,11 +299,7 @@
      * @return {string} html ячейки
      */
     Cell.prototype.html = function () {
-        if (this.$cells) {
-            return this.$cells.toArray().map(cell => $(cell).html()).join();
-        }
-
-        return '';
+        return this.$cells ? this.$cells.toArray().map(cell => $(cell).html()).join() : '';
     };
 
     /**
