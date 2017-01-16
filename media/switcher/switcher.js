@@ -215,6 +215,7 @@
 
         switch (type) {
             case 'course':
+                let days = [ 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ' ];
                 for (let i = 0; i < 6; i++) {
                     let $block = $('<div class="schedule"></div>').appendTo(system.$schedule);
                     let filteredData = { 
@@ -224,6 +225,7 @@
                     };
                     let schedule = new Schedule($block, 'day', filteredData);
                     schedule.draw();
+                    $block.find('table thead :first :first').text(days[i]);
                 }
                 break;
 
