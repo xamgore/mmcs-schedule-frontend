@@ -55,7 +55,7 @@
         let $header = $('<thead></thead>').appendTo(this.$block);
         let $headerRow = $('<tr><td></td></tr>').appendTo($header);
         this.header.forEach((columnTitle, i) => {
-            $(`<td colspan=${this.cols[i].length} class="title">${columnTitle}</td>`).data('size', this.cols[i].size).appendTo($headerRow);
+            $(`<td colspan=${this.cols[i].length} class="title">${columnTitle}</td>`).appendTo($headerRow);
         });
 
         this.$body = $('<tbody></tbody>').appendTo(this.$block);
@@ -153,7 +153,7 @@
      */
     TableCell.prototype.draw = function () {
         if (this.empty) {
-            $(`<td rowspan=${this.row.length} colspan=${this.col.length}></td>`).data('size', this.hLength).appendTo(this.row.rows[0]);
+            $(`<td rowspan=${this.row.length} colspan=${this.col.length}></td>`).data('width', 1).appendTo(this.row.rows[0]);
             return this;
         }
 
@@ -194,13 +194,14 @@
         this.rows = [ this.cell.row.rows[rowPos], this.cell.row.rows[rowPos + 1] ];
 
         if (this.empty) {
-            $(`<td rowspan=${this.rowSize} colspan=${this.colSize} class="cell-empty"></td>`).data('size', this.length).appendTo(this.cell.row.rows[this.pos * this.rowSize]);
+            $(`<td rowspan=${this.rowSize} colspan=${this.colSize} class="cell-empty"></td>`)
+                .data('width', 1).appendTo(this.cell.row.rows[this.pos * this.rowSize]);
             return this;
         }
 
         let colPos = this.rows[0].children().length;
         this.groups.forEach(group => group.draw());
-        this.rows[0].children().eq(colPos).data('size', this.length);
+        this.rows[0].children().eq(colPos).data('width', this.length);
 
         return this;
     };

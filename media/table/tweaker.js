@@ -2,360 +2,287 @@
 (function () {
     'use strict';
 
-    /**
-     * Конструктор класса TableTweaker
-     * @param {jQuery} $block     объект таблицы
-     * @param {array}  tweaksList список применяемых твиков
-     */
-    var TableTweaker = window.TableTweaker = function ($block, tweaksList) {
-        this.$block = $block;
-        this.tweaksList = tweaksList;
+    class TableTweaker {
+        constructor($table) {
+            this.$table = $table;
+            this.$header = this.$table.children('thead');
+            this.$body = this.$table.children('tbody');
 
-        this.setData();
-    };
+            this.width = xMath.sum.apply(xMath, this.$header.find('td').toArray().map(cell => cell.colSpan));
+            this.height = xMath.sum.apply(xMath, this.$body.find('td.time').toArray().map(cell => cell.rowSpan));
 
-    /**
-     * Заполнение данных в таблице для корректной работы твиков
-     * @return {TableTweaker} this
-     */
-    TableTweaker.prototype.setData = function () {
-        this.$header = this.$block.children('thead');
-        this.$body = this.$block.children('tbody');
+            let filled = new Array(this.height);
+            xMath.range(0, this.height - 1).forEach(i => {
+                filled[i] = new Array(this.width);
+                helpers.array.fill(filled[i], false);
+            });
 
-        var width = xMath.sum.apply(xMath, this.$header.find('td').toArray().map(function (cell) {
-            return cell.colSpan;
-        }));
-        var height = xMath.sum.apply(xMath, this.$body.find('td.time').toArray().map(function (cell) {
-            return cell.rowSpan;
-        }));
+            let types = {
+                'cell-title':   'title',
+                'cell-content': 'content',
+                'cell-full':    'full',
+                'time':         'time',
+            };
 
-        var filled = new Array(height);
-        for (var i = 0, sz = filled.length; i < sz; i++) {
-            filled[i] = new Array(width);
-            helpers.array.fill(filled[i], false);
+            let [ posX, posY ] = [ 0, 0 ];
+
+            let $cells = this.$body.find('td');
+            $cells.toArray().forEach(cell => {
+                while (filled[posY][posX]) {
+                    posX++;
+                    if (posX >= this.width) {
+                        posX = 0;
+                        posY++;
+                    }
+                }
+                let [ sizeX, sizeY ] = [ cell.colSpan, cell.rowSpan ];
+                let width = $(cell).data('width');
+                let type = types[cell.className] || 'empty';
+
+                $(cell).data({ posX, posY, sizeX, sizeY, width, type });
+
+                let xRange = xMath.range(posX, posX + sizeX - 1);
+                let yRange = xMath.range(posY, posY + sizeY - 1);
+                xRange.forEach(x => yRange.forEach(y => filled[y][x] = true));
+            });
         }
 
-        var data = {
-            sizeX: 0,
-            sizeY: 0,
-            posX: 0,
-            posY: 0,
-            type: 'empty'
-        };
+        mergeVertical() {
+            let $cells = this.$body.find('td');
+            for (let i = 0, sz = $cells.length; i < sz; i++) {
+                if (!$cells[i]) continue;
 
-        this.$body.find('td').toArray().forEach(function (cell) {
-            while (filled[data.posY][data.posX]) {
-                data.posX++;
-                if (data.posX >= width) {
-                    data.posX = 0;
-                    data.posY++;
-                }
+                let current = new Cell(this.$table, $cells.eq(i));
+                if (!current.ok || current.empty) continue;
+
+                let next = Cell.getCell(this.$table, current.posX, current.posY + current.sizeY);
+                if (!next.ok || current.sizeX !== next.sizeX || current.html() !== next.html()) continue;
+
+                next.cells.forEach(next => $cells[$cells.index($(next))] = null);
+                current.mergeVertical(next);
+
+                i--;
             }
+        }
 
-            data.sizeX = Number(cell.colSpan);
-            data.sizeY = Number(cell.rowSpan);
-            data.size = $(cell).data('size');
+        mergeHorisontal() {
+            let $cells = this.$body.find('td');
+            let dividers = new Array($cells.length);
+            helpers.array.fill(dividers, 1);
+            for (let i = 0, sz = $cells.length; i < sz; i++) {
+                if (!$cells[i]) continue;
 
-            switch (cell.className) {
-                case 'cell-title':
-                    data.type = 'title';
+                let current = new Cell(this.$table, $cells.eq(i), true);
+                if (!current.ok || current.empty) continue;
+
+                let next = Cell.getWeek(this.$table, current.posX + current.sizeX, current.posY);
+                if (!next.ok || current.sizeY !== next.sizeY || current.html() !== next.html()) continue;
+
+                next.cells.forEach(next => $cells[$cells.index($(next))] = null);
+                current.mergeHorisontal(next);
+
+                dividers[i]++;
+                current.cells[0].data('divider', dividers[i]);
+
+                i--;
+            }
+        }
+
+        fixWidth() {
+            let $headerCells = this.$header.find('td');
+            let $titles = $headerCells.slice(1);
+
+            let x = 1;
+            let yRange = xMath.range(0, this.height - 1);
+            let titles = $titles.toArray().map(title => {
+                let length = Math.max.apply(Math, yRange.map(y => {
+                    let week = Cell.getWeek(this.$table, x, y);
+                    if (!week.ok) return 0;
+                    let divider = Number(week.cells[0].data('divider')) || 1;
+                    return week.width / divider;
+                })) || 1;
+                let colspan = Number($(title).attr('colspan'))
+                x += colspan;
+                return { length, colspan };
+            });
+
+            let fullLength = xMath.sum.apply(xMath, titles.map(({ length }) => length));
+            let timeWidth = 5;
+            let widthPerCol = (100 - timeWidth) / fullLength;
+
+            let $fixWidthRow = $('<tr class="service"><td></td></tr>').prependTo(this.$header);
+            titles.forEach(({ length, colspan }) => {
+                $(`<td></td>`).css('width', `${widthPerCol * length}%`).attr("colspan", colspan).appendTo($fixWidthRow)
+            });
+            $fixWidthRow.children().first().css('width', '50px');
+            $fixWidthRow.children().last().css('width', 'auto');
+        }
+
+        setGroupsHeader() {
+            let $areaRow = $('<tr><td rowspan=2></td></tr>').insertAfter(this.$header.children().first());
+            let $titles = this.$header.children().last().find('td');
+            $titles.first().remove();
+            $titles = $titles.slice(1);
+
+            $titles.toArray().forEach(title => {
+                let $title = $(title);
+                let text = $title.text();
+                let [ fullText, titleText, areaText ] = /(.*?) \((.*?)\)/.exec(text) || [ text, text, '' ];
+
+                let $lastArea = $areaRow.children().last();
+                if ($areaRow.children().length > 1 && $lastArea.text() === areaText) {
+                    let colspan = Number($lastArea.attr('colspan')) + Number($title.attr('colspan')) || 0;
+                    $lastArea.attr('colspan', colspan);
+                } else {
+                    let colspan = Number($title.attr('colspan')) || 0;
+                    $(`<td>${areaText}</td>`).attr('colspan', colspan).appendTo($areaRow);
+                }
+
+                $title.text(`${titleText} гр.`);
+            });
+        }
+    }
+
+    class Cell {
+        constructor($table, $cell, week) {
+            if (!$cell) return;
+
+            let data = $cell.data();
+
+            this.cells = null;
+            this.posX = data.posX;
+            this.posY = data.posY;
+            this.sizeX = data.sizeX;
+            this.sizeY = data.sizeY;
+            this.width = data.width;
+            this.length = 0;
+            this.isWeek = Boolean(this.width);
+            this.empty = false;
+            this.ok = false;
+
+            if (week && !this.isWeek) return;
+
+            switch (data.type) {
+                case 'full':
+                    this.cells = [ $cell ];
+                    this.length = 1;
                     break;
 
-                case 'cell-content':
-                    data.type = 'content';
+                case 'title':
+                    this.cells = [ $cell ];
+                    for (let offsetX = 0; offsetX < this.sizeX; ) {
+                        let $cell = Cell.findCell($table, this.posX + offsetX, this.posY + 1);
+                        this.cells.push($cell);
+
+                        let { sizeX, sizeY } = $cell.data();
+                        offsetX += sizeX;
+                        this.sizeY = 1 + sizeY;
+
+                        this.length++;
+                    }
                     break;
 
-                case 'cell-full':
-                    data.type = 'full';
-                    break;
-
-                case 'time':
-                    data.type = 'time';
+                case 'empty':
+                    this.cells = [ $cell ];
+                    this.length = 1;
+                    this.empty = true;
                     break;
 
                 default:
-                    data.type = 'empty';
+                    return;
             }
 
-            $(cell).data(data);
-
-            for (var y = 0; y < data.sizeY; y++) {
-                for (var x = 0; x < data.sizeX; x++) {
-                    filled[data.posY + y][data.posX + x] = true;
+            if (week) {
+                for (let i = this.length, sz = this.width; i < sz; ) {
+                    let next = Cell.getCell($table, this.posX + this.sizeX, this.posY);
+                    [].push.apply(this.cells, next.cells);
+                    this.sizeX += next.sizeX;
+                    if (this.empty) this.empty = next.empty;
+                    i += next.length;
                 }
             }
-        });
-    };
 
+            this.ok = true;
+        }
 
-    /**
-     * Применить твики рендера
-     * @return {TableTweaker} this
-     */
-    TableTweaker.prototype.apply = function () {
-        this.tweaksList.forEach(function (tweak) {
-            this.tweaks[tweak].call(this);
-        }, this);
+        html() {
+            return this.ok ? this.cells.map(cell => $(cell).html()).join('\n') : '';
+        }
 
-        return this;
-    };
+        mergeVertical(next) {
+            let size = this.cells.length;
+            xMath.range(0, size - 1).forEach(i => {
+                let $this = this.cells[i]
+                let $next = next.cells[i]
 
-    /**
-     * Твики рендера
-     */
-    TableTweaker.prototype.tweaks = {
-        mergeVertical: function () {
-            let $cells = this.$body.find('td');
-            for (let cellsPos = 0, cellsLength = $cells.length; cellsPos < cellsLength; cellsPos++) {
-                if ($cells[cellsPos] === null) continue;
+                if ($this.data('type') === 'title') return;
 
-                let current = new Cell(this.$block, $cells.eq(cellsPos));
-                if (!current.$cells) continue;
+                let tData = $this.data();
+                let nData = $next.data();
 
-                let next = new Cell(this.$block, Cell.findCell(this.$block, current.data.posX, current.data.posY + current.data.sizeY));
-                if (!next.$cells || current.data.sizeX !== next.data.sizeX || current.html() !== next.html()) continue;
-
-                next.$cells.toArray().forEach(next => $cells[$cells.index($(next))] = null);
-                current.mergeVertical(next);
-
-                cellsPos--;
-            }
-        },
-        mergeHorisontal: function () {
-            let $cells = this.$body.find('td');
-            for (let cellsPos = 0, cellsLength = $cells.length; cellsPos < cellsLength; cellsPos++) {
-                if ($cells[cellsPos] === null) continue;
-
-                let current = new Cell(this.$block, $cells.eq(cellsPos));
-                if (!current.$cells || !current.data.size) continue;
-                let currents = [];
-                for (let cellsOffset = 0, cellsLength = current.data.size; cellsOffset < cellsLength; cellsOffset++) {
-                    let current = new Cell(this.$block, $cells.eq(cellsPos + cellsOffset));
-                    currents.push(current);
-                    if (current.$cells) cellsLength -= (current.$cells.length - 1 || 1) - 1;
-                }
-
-                if (current.data.size > 3) console.log(currents);
-
-                let posXOffset = xMath.sum.apply(null, currents.map(current => current.data.sizeX));
-
-                let next = new Cell(this.$block, Cell.findCell(this.$block, current.data.posX + posXOffset, current.data.posY));
-                if (!next.$cells || current.data.size !== next.data.size) continue;
-                let nexts = new Array(next.data.size);
-                xMath.range(0, currents.length - 1).forEach(cellsOffset => {
-                    let current = currents[cellsOffset];
-                    nexts[cellsOffset] = new Cell(this.$block, Cell.findCell(this.$block, current.data.posX + posXOffset, current.data.posY));
-                });
-                if (xMath.range(0, currents.length - 1).some(cellsOffset => {
-                    let current = currents[cellsOffset];
-                    let next = nexts[cellsOffset];
-                    return !next.$cells || current.data.sizeY !== next.data.sizeY || current.html() !== next.html();
-                })) continue;
-
-                console.log(currents, nexts);
-
-                xMath.range(0, currents.length - 1).forEach(cellsOffset => {
-                    let current = currents[cellsOffset];
-                    let next = nexts[cellsOffset];
-                    next.$cells.toArray().forEach(cell => $cells[$cells.index($(cell))] = null);
-                    current.mergeHorisontal(next);
-                });
-
-                cellsPos--;
-            }
-        },
-        fixWidth: function () {
-            let $headerLines = this.$header.children();
-            for (let row = 0, sz = $headerLines.length; row < sz; row++) {
-                let $cells = $headerLines.eq(row).find('td');
-                if (row != 0) {
-                    $cells = $headerLines.first().children().first().add($cells);
-                }
-
-                let cols = $cells.toArray().map(cell => ({
-                    length: $(cell).data('size') || 0,
-                    width: 0
-                }));
-                let fullLength = xMath.sum.apply(xMath, cols.map(col => col.length));
-
-                cols[0].width = 5;
-                let widthPerCol = (100 - cols[0].width) / fullLength;
-                cols.forEach(col => col.width = widthPerCol * col.length || col.width);
-
-                cols.forEach((col, colID) => $cells.eq(colID).css('width', col.width + '%'));
-
-                $cells.first().css('width', '50px');
-                $cells.last().css('width', 'auto');
-            }
-        },
-        setGroupsHeader: function () {
-            let $areas = $('<tr><td rowspan="2"></td></tr>').prependTo(this.$header);
-            let $cells = this.$header.children().eq(1).find('td');
-            $cells.first().remove();
-
-            $cells.toArray().forEach(cell => {
-                let $cell = $(cell);
-                let text = $cell.text();
-                let [ full, group, area ] = /(.*?) \((.*?)\)/.exec(text) || [ text, text, '' ];
-
-                let $lastArea = $areas.children().last();
-                if ($lastArea.text() == area) {
-                    let colspan = Number($lastArea.attr('colspan')) + Number($cell.attr('colspan')) || 0;
-                    let size = $lastArea.data('size') + $cell.data('size');
-                    $lastArea.attr('colspan', colspan).data('size', size);
-                } else {
-                    let colspan = Number($cell.attr('colspan')) || 0; 
-                    let size = $cell.data('size');   
-                    $(`<td colspan="${colspan}">${area}</td>`).data('size', size).appendTo($areas);
-                }
-
-                $cell.text(`${group} гр.`);
+                tData.sizeY += ($this.data('type') === 'content' ? 1 : 0) + nData.sizeY;
+                $this.data(tData).attr('rowspan', tData.sizeY);
             });
-        },
-    };
 
+            this.sizeY += next.sizeY;
+            next.cells.forEach($cell => $cell.remove());
+        }
 
-    /**
-     * Конструктор класса Cell
-     * @param {jQuery} $block блок таблицы
-     * @param {jQuery} $cell  ячейка
-     */
-    var Cell = function ($block, $cell) {
-        this.$block = $block;
-        this.$cells = null;
-        this.data = {
-            sizeX: 0,
-            sizeY: 0,
-            posX: 0,
-            posY: 0
-        };
+        mergeHorisontal(next) {
+            let offsetX = this.posX;
+            xMath.range(0, this.cells.length - 1).forEach(i => {
+                let $this = this.cells[i];
+                let $next = next.cells[i];
 
-        if (!$cell) return;
+                let tData = $this.data();
+                let nData = $next.data();
 
-        this.build($cell);
-    };
+                tData.posX = offsetX;
+                tData.sizeX += nData.sizeX;
 
-    /**
-     * Поиск ячейки по заданным координатам
-     * @param  {jQuery} $block блок таблицы
-     * @param  {int}    posX   позиция по OX
-     * @param  {int}    posY   позиция по OY
-     * @return {jQuery}        найденная ячейка или null
-     */
-    Cell.findCell = function ($block, posX, posY) {
-        var $res = null;
-        var $body = $block.children('tbody');
-        $body.find('td').toArray().some(function (cell) {
-            var $cell = $(cell);
-            var cellData = $cell.data();
-            if (cellData.posX === posX && cellData.posY === posY) {
-                $res = $cell;
-                return true;
-            }
-        });
-        return $res;
-    };
-
-    /**
-     * Построение ячейки по начальной
-     * @param  {jQuery} $cell блок ячейки
-     * @return {Cell}         this
-     */
-    Cell.prototype.build = function ($cell) {
-        var cellData = $cell.data();
-        switch(cellData.type) {
-            case 'full':
-                this.$cells = $($cell);
-                this.data.sizeX = cellData.sizeX;
-                this.data.sizeY = cellData.sizeY;
-                this.data.posX = cellData.posX;
-                this.data.posY = cellData.posY;
-                this.data.size = cellData.size;
-                break;
-
-            case 'title':
-                this.$cells = $($cell);
-                this.data.sizeX = cellData.sizeX;
-                this.data.sizeY = cellData.sizeY;
-                this.data.posX = cellData.posX;
-                this.data.posY = cellData.posY;
-                this.data.size = cellData.size;
-                var sizeX = 0;
-                while (sizeX !== this.data.sizeX) {
-                    var $foundCell = Cell.findCell(this.$block, this.data.posX + sizeX, this.data.posY + 1);
-                    var foundCellData = $foundCell.data();
-                    sizeX += foundCellData.sizeX;
-                    this.data.sizeY = 1 + foundCellData.sizeY;
-                    this.$cells = this.$cells.add($foundCell);
+                if ($this.data('type') !== 'title') {
+                    offsetX = tData.posX + tData.sizeX;
                 }
-                break;
+
+                $this.data(tData).attr('colspan', tData.sizeX);
+            });
+
+            this.sizeX += next.sizeX;
+            next.cells.forEach($cell => $cell.remove());
         }
 
-        return this;
-    };
-
-    /**
-     * Получить html ячейки
-     * @return {string} html ячейки
-     */
-    Cell.prototype.html = function () {
-        return this.$cells ? this.$cells.toArray().map(cell => $(cell).html()).join() : '';
-    };
-
-    /**
-     * Объединить ячейку с переданной (по вертикали)
-     * @param  {Cell} next заменяемая ячейка
-     * @return {Cell}      this
-     */
-    Cell.prototype.mergeVertical = function (next) {
-        for (var i = 0, sz = this.$cells.length; i < sz; i++) {
-            if (i === 0 && sz !== 1) {
-                continue;
-            }
-
-            var $cell = this.$cells.eq(i);
-            var $next = next.$cells.eq(i);
-
-            var cellData = $cell.data();
-            var nextData = $next.data();
-
-            cellData.sizeY += (sz !== 1 ? 1 : 0) + nextData.sizeY;
-            $cell.data(cellData);
-            $cell.attr('rowspan', cellData.sizeY);
+        static findCell($table, x, y) {
+            let $cells = $table.children('tbody').find('td');
+            let $fCell = null;
+            $cells.toArray().some(cell => {
+                let $cell = $(cell);
+                let { posX, posY } = $cell.data();
+                if (posX === x && posY === y) {
+                    $fCell = $cell;
+                    return true;
+                }
+            });
+            return $fCell;
         }
 
-        this.data.sizeY += next.data.sizeY;
-        next.$cells.remove();
-
-        return this;
-    };
-
-    /**
-     * Объединить ячейку с переданной (по горизонтали)
-     * @param  {Cell} next заменяемая ячейка
-     * @return {Cell}      this
-     */
-    Cell.prototype.mergeHorisontal = function (next) {
-        var nextPosXInc = 0;
-        for (var i = 0, sz = this.$cells.length; i < sz; i++) {
-            var $cell = this.$cells.eq(i);
-            var $next = next.$cells.eq(i);
-
-            var cellData = $cell.data();
-            var nextData = $next.data();
-
-            if (i !== 0) {
-                cellData.posX += nextPosXInc;
-                nextPosXInc += nextData.sizeX;
-            }
-            cellData.sizeX += nextData.sizeX;
-            $cell.data(cellData);
-            $cell.attr('colspan', cellData.sizeX);
+        static getCell($table, x, y) {
+            return new Cell($table, Cell.findCell($table, x, y));
         }
 
-        this.data.sizeX += next.data.sizeX;
-        next.$cells.remove();
+        static getWeek($table, x, y) {
+            let $cells = $table.children('tbody').find('td');
+            let fCell = new Cell($table, null);
+            $cells.toArray().some(cellDOM => {
+                let cell = new Cell($table, $(cellDOM), true);
+                if (cell.ok && x >= cell.posX && x < cell.posX + cell.sizeX && cell.posY === y) {
+                    fCell = cell;
+                    return true;
+                }
+            });
+            return fCell;
+        }
+    }
 
-        return this;
-    };
+    window.TableTweaker = TableTweaker;
+    window.Cell = Cell;
 })();

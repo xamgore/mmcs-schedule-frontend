@@ -16,7 +16,6 @@
         this.buildHeader(data.groups || []);
         this.buildLessons(data.lessons, data.curricula, data.groups || [], system.times);
         this.buildData();
-        this.buildTweaksList();
     };
 
     /**
@@ -144,25 +143,6 @@
     };
 
     /**
-     * Построение списка твиков
-     * @return {Schedule} this
-     */
-    Schedule.prototype.buildTweaksList = function () {
-        switch (this.type) {
-            case 'group':
-            case 'teacher':
-                this.tweaksList = [ 'mergeVertical', 'fixWidth' ];
-                break;
-
-            case 'day':
-                this.tweaksList = [ 'mergeHorisontal', 'mergeVertical', 'setGroupsHeader', 'fixWidth' ];
-                break;
-        }
-
-        return this;
-    };
-
-    /**
      * Отрисовка расписания
      * @return {Schedule} this
      */
@@ -170,8 +150,21 @@
         let table = new Table(this.$table, this.data, this.times, this.header);
         table.draw();
 
-        let tweaker = new TableTweaker(this.$table, this.tweaksList);
-        tweaker.apply();
+        let tweaker = new TableTweaker(this.$table);
+        switch (this.type) {
+            case 'group':
+            case 'teacher':
+                tweaker.mergeVertical();
+                tweaker.fixWidth();
+                break;
+
+            case 'day':
+                tweaker.mergeHorisontal();
+                tweaker.mergeVertical();
+                tweaker.fixWidth();
+                tweaker.setGroupsHeader();
+                break;
+        }
 
         return this;
     };

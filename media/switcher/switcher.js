@@ -225,7 +225,7 @@
                     };
                     let schedule = new Schedule($block, 'day', filteredData);
                     schedule.draw();
-                    $block.find('table thead :first :first').text(days[i]);
+                    $block.find('thead').children().eq(1).children().first().text(days[i]);
                 }
                 break;
 
