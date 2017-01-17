@@ -198,10 +198,9 @@
                     let next = Cell.getCell($table, posX, posY, true);
                     if (next.posX === posX && next.posY === posY) {
                         [].push.apply(this.cells, next.cells);
-                        this.sizeY = Math.max(this.sizeY, next.sizeY);
                     }
                     this.sizeX += next.sizeX;
-                    this.empty = this.width ||next.empty;
+                    this.empty = this.empty || next.empty;
                     i += next.length;
                 }
             }
