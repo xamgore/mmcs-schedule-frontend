@@ -194,10 +194,14 @@
 
             if (week) {
                 for (let i = this.length, sz = this.width; i < sz; ) {
-                    let next = Cell.getCell($table, this.posX + this.sizeX, this.posY);
-                    [].push.apply(this.cells, next.cells);
+                    let [ posX, posY ] = [ this.posX + this.sizeX, this.posY ];
+                    let next = Cell.getCell($table, posX, posY, true);
+                    if (next.posX === posX && next.posY === posY) {
+                        [].push.apply(this.cells, next.cells);
+                        this.sizeY = Math.max(this.sizeY, next.sizeY);
+                    }
                     this.sizeX += next.sizeX;
-                    if (this.empty) this.empty = next.empty;
+                    this.empty = this.width ||next.empty;
                     i += next.length;
                 }
             }
@@ -251,13 +255,16 @@
             next.cells.forEach($cell => $cell.remove());
         }
 
-        static findCell($table, x, y) {
+        static findCell($table, x, y, inCell) {
             let $cells = $table.children('tbody').find('td');
             let $fCell = null;
             $cells.toArray().some(cell => {
                 let $cell = $(cell);
-                let { posX, posY } = $cell.data();
-                if (posX === x && posY === y) {
+                let { posX, posY, sizeX, sizeY } = $cell.data();
+                if (
+                    !inCell && posX === x && posY === y ||
+                    inCell && x >= posX && x < posX + sizeX && y >= posY && y < posY + sizeY
+                ) {
                     $fCell = $cell;
                     return true;
                 }
@@ -265,8 +272,8 @@
             return $fCell;
         }
 
-        static getCell($table, x, y) {
-            return new Cell($table, Cell.findCell($table, x, y));
+        static getCell($table, x, y, inCell) {
+            return new Cell($table, Cell.findCell($table, x, y, inCell));
         }
 
         static getWeek($table, x, y) {
@@ -284,5 +291,4 @@
     }
 
     window.TableTweaker = TableTweaker;
-    window.Cell = Cell;
 })();
