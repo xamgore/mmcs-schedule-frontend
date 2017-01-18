@@ -37,6 +37,7 @@
         switch (this.type) {
             case 'group':
             case 'teacher':
+            case 'room':
                 this.header = [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ];
                 break;
 
@@ -78,6 +79,7 @@
         switch (this.type) {
             case 'group':
             case 'teacher':
+            case 'room':
                 titles = [0, 1, 2, 3, 4, 5];
                 break;
 
@@ -142,6 +144,7 @@
         switch (this.type) {
             case 'group':
             case 'teacher':
+            case 'room':
                 tweaker.mergeVertical();
                 tweaker.fixWidth();
                 break;
@@ -236,6 +239,7 @@
         switch (this.type) {
             case 'group':
             case 'teacher':
+            case 'room':
                 times.some((time, index) => {
                     if (helpers.compare(time, this.time)) {
                         row = index;
@@ -312,8 +316,9 @@
 
         switch (this.type) {
             case 'group':
-            case 'teacher':
             case 'day':
+            case 'teacher':
+            case 'room':
                 this.groups = this.groups.map(group => {
                     if (!group) {
                         return null;
@@ -492,6 +497,35 @@
                         contents: contents
                     };
                 });
+
+            case 'room':
+                return week.map(function (group) {
+                    if (!group) {
+                        return null;
+                    }
+
+                    var title = '<span class="lesson-titie">' +
+                        '<span class="subject full">' + group.subject.name + '</span>' +
+                        '<span class="subject short">' +
+                            '<abbr title="' + group.subject.name + '">' + group.subject.abbr + '</abbr>' +
+                        '</span>' +
+                    '</span>';
+
+                    var contents = group.curricula.map(function (curriculum) {
+                        return '<span class="lesson-content">' +
+                            '<span class="teacher">' +
+                                '<abbr title="' + curriculum.teacher.name + '">' + curriculum.teacher.abbr + '</abbr>' +
+                            '</span>' +
+                            '<span class="group">' + curriculum.group.name + '</span>' +
+                        '</span>';
+                    });
+
+                    return {
+                        title: title,
+                        contents: contents
+                    };
+                });
+                break;
         }
     };
 

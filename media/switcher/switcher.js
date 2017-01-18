@@ -162,7 +162,7 @@
                 return;
             }
 
-            api.schedule.getForTeacher(room, result => this.openSchedule('room', result));
+            api.schedule.getForRoom(room, result => this.openSchedule('room', result));
         });
 
         // localStorage
@@ -171,6 +171,7 @@
             if (!init) {
                 localStorage.course = '';
                 localStorage.teacher = '';
+                localStorage.room = '';
             }
         });
         this.course.bind((course, init) => {
