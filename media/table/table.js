@@ -2,6 +2,8 @@
 (function () {
     'use strict';
 
+    let lengths = [ 1, 2, 6, 12, 60, 60, 420, 840 ]
+
     /**
      * Конструктор класса Table
      * @param {array}  data   матрица с занятиями
@@ -74,7 +76,7 @@
 
         this.cells = cellsRaw.map(cellRaw => new TableCell(cellRaw, this, null));
         this.size = Math.max.apply(Math, this.cells.map(cell => cell.vLength));
-        this.length = xMath.fact(this.size);
+        this.length = lengths[this.size - 1];
     };
 
     /**
@@ -107,7 +109,7 @@
 
         this.cells = cellsRaw.map(cellRaw => new TableCell(cellRaw, null, this));
         this.size = Math.max.apply(Math, this.cells.map(cell => cell.hLength));
-        this.length = xMath.fact(this.size);
+        this.length = lengths[this.size - 1];
     };
 
 
@@ -139,7 +141,7 @@
         this.vLength = this.weeks.length * 2;
         this.hLength = Math.max.apply(Math, this.weeks.map(week => week.length));
 
-        if (this.hLength > 7) {
+        if (this.hLength >= lengths.length) {
             this.empty = true;
             this.vLength = 2;
             this.hLength = 1;
