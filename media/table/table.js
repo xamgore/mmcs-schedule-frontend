@@ -51,8 +51,8 @@
     Table.prototype.draw = function ($table) {
         let $header = $('<thead></thead>').appendTo($table);
         let $headerRow = $('<tr><td></td></tr>').appendTo($header);
-        this.header.forEach((columnTitle, i) => {
-            $(`<td colspan=${this.cols[i].length} class="title">${columnTitle}</td>`).appendTo($headerRow);
+        this.header.forEach((columnTitle, index) => {
+            $(`<td colspan=${this.cols[index].length} class="title">${columnTitle}</td>`).appendTo($headerRow);
         });
 
         this.$body = $('<tbody></tbody>').appendTo($table);
@@ -74,7 +74,7 @@
 
         this.cells = cellsRaw.map(cellRaw => new TableCell(cellRaw, this, null));
         this.size = Math.max.apply(Math, this.cells.map(cell => cell.vLength));
-        this.length = xMath.lcm.apply(xMath, xMath.range(1, this.size));
+        this.length = xMath.fact(this.size);
     };
 
     /**
@@ -105,9 +105,9 @@
         this.table = table;
         this.pos = pos;
 
-        this.cells = cellsRaw.map(cellRaw =>new TableCell(cellRaw, null, this));
+        this.cells = cellsRaw.map(cellRaw => new TableCell(cellRaw, null, this));
         this.size = Math.max.apply(Math, this.cells.map(cell => cell.hLength));
-        this.length = xMath.lcm.apply(xMath, xMath.range(1, this.size));
+        this.length = xMath.fact(this.size);
     };
 
 
@@ -120,12 +120,8 @@
     var TableCell = function (cellRaw, row, col) {
         // Проверка на созданность объекта
         if (cellRaw instanceof TableCell) {
-            if (row) {
-                cellRaw.row = row;
-            }
-            if (col) {
-                cellRaw.col = col;
-            }
+            if (row) cellRaw.row = row;
+            if (col) cellRaw.col = col;
             return cellRaw;
         }
 
@@ -142,6 +138,13 @@
         this.weeks = cellRaw.map((weekRaw, pos) => new TableWeek(weekRaw, this, pos));
         this.vLength = this.weeks.length * 2;
         this.hLength = Math.max.apply(Math, this.weeks.map(week => week.length));
+
+        if (this.hLength > 7) {
+            this.empty = true;
+            this.vLength = 2;
+            this.hLength = 1;
+            console.log(new Error('Very big cell'), cellRaw);
+        };
     };
 
     /**

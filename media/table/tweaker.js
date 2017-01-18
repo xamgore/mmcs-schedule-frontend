@@ -12,7 +12,7 @@
             this.height = xMath.sum.apply(xMath, this.$body.find('td.time').toArray().map(cell => cell.rowSpan));
 
             let filled = new Array(this.height);
-            xMath.range(0, this.height - 1).forEach(i => {
+            xMath.range(0, this.height).forEach(i => {
                 filled[i] = new Array(this.width).fill(false);
             });
 
@@ -49,8 +49,8 @@
                 }
                 this.cells.push(cell);
 
-                let xRange = xMath.range(cell.posX, cell.posX + cell.sizeX - 1);
-                let yRange = xMath.range(cell.posY, cell.posY + cell.sizeY - 1);
+                let xRange = xMath.range(cell.posX, cell.posX + cell.sizeX);
+                let yRange = xMath.range(cell.posY, cell.posY + cell.sizeY);
                 xRange.forEach(x => yRange.forEach(y => filled[y][x] = true));
             });
 
@@ -58,7 +58,7 @@
         }
 
         draw() {
-            let $rows = $(Array(this.height).fill('<tr></tr>').join('')).appendTo(this.$body);
+            let $rows = this.$body.children();
             this.cells.forEach(cell => {
                 if (cell.deleted) return;
 
@@ -109,7 +109,7 @@
             let $titles = $headerCells.slice(1);
 
             let x = 1;
-            let yRange = xMath.range(0, this.height - 1);
+            let yRange = xMath.range(0, this.height);
             let titles = $titles.toArray().map(title => {
                 let length = Math.max.apply(Math, yRange.map(y => {
                     let week = Cell.getWeek(this.cells, x, y);
@@ -226,7 +226,7 @@
         }
 
         mergeVertical(next) {
-            xMath.range(0, this.cells.length - 1).forEach(i => {
+            xMath.range(0, this.cells.length).forEach(i => {
                 let tData = this.cells[i];
                 let nData = next.cells[i];
 
@@ -242,7 +242,7 @@
 
         mergeHorisontal(next) {
             let offsetX = this.posX;
-            xMath.range(0, this.cells.length - 1).forEach(i => {
+            xMath.range(0, this.cells.length).forEach(i => {
                 let tData = this.cells[i];
                 let nData = next.cells[i];
 
