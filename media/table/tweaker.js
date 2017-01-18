@@ -13,8 +13,7 @@
 
             let filled = new Array(this.height);
             xMath.range(0, this.height - 1).forEach(i => {
-                filled[i] = new Array(this.width);
-                helpers.array.fill(filled[i], false);
+                filled[i] = new Array(this.width).fill(false);
             });
 
             let types = {
@@ -26,8 +25,9 @@
 
             let [ posX, posY ] = [ 0, 0 ];
 
+            this.cells = [];
             let $cells = this.$body.find('td');
-            $cells.toArray().forEach(cell => {
+            $cells.toArray().forEach(cellDOM => {
                 while (filled[posY][posX]) {
                     posX++;
                     if (posX >= this.width) {
@@ -35,30 +35,51 @@
                         posY++;
                     }
                 }
-                let [ sizeX, sizeY ] = [ cell.colSpan, cell.rowSpan ];
-                let width = $(cell).data('width');
-                let type = types[cell.className] || 'empty';
 
-                $(cell).data({ posX, posY, sizeX, sizeY, width, type });
+                let cell = {
+                    posX: posX,
+                    posY: posY,
+                    sizeX: cellDOM.colSpan,
+                    sizeY: cellDOM.rowSpan,
+                    width: $(cellDOM).data('width'),
+                    type: types[cellDOM.className] || 'empty',
+                    className: cellDOM.className,
+                    html: $(cellDOM).html(),
+                    deleted: false,
+                }
+                this.cells.push(cell);
 
-                let xRange = xMath.range(posX, posX + sizeX - 1);
-                let yRange = xMath.range(posY, posY + sizeY - 1);
+                let xRange = xMath.range(cell.posX, cell.posX + cell.sizeX - 1);
+                let yRange = xMath.range(cell.posY, cell.posY + cell.sizeY - 1);
                 xRange.forEach(x => yRange.forEach(y => filled[y][x] = true));
+            });
+
+            $cells.remove();
+        }
+
+        draw() {
+            let $rows = $(Array(this.height).fill('<tr></tr>').join('')).appendTo(this.$body);
+            this.cells.forEach(cell => {
+                if (cell.deleted) return;
+
+                let $cell = $('<td></td>').attr({
+                    class: cell.className,
+                    colspan: cell.sizeX,
+                    rowspan: cell.sizeY
+                }).html(cell.html).appendTo($rows.eq(cell.posY));
+
+                if (cell.width) $cell.data('width', cell.width);
             });
         }
 
         mergeVertical() {
-            let $cells = this.$body.find('td');
-            for (let i = 0, sz = $cells.length; i < sz; i++) {
-                if (!$cells[i]) continue;
-
-                let current = new Cell(this.$table, $cells.eq(i));
+            for (let i = 0, sz = this.cells.length; i < sz; i++) {
+                let current = new Cell(this.cells, this.cells[i]);
                 if (!current.ok || current.empty) continue;
 
-                let next = Cell.getCell(this.$table, current.posX, current.posY + current.sizeY);
+                let next = Cell.getCell(this.cells, current.posX, current.posY + current.sizeY);
                 if (!next.ok || current.sizeX !== next.sizeX || current.html() !== next.html()) continue;
 
-                next.cells.forEach(next => $cells[$cells.index($(next))] = null);
                 current.mergeVertical(next);
 
                 i--;
@@ -66,23 +87,18 @@
         }
 
         mergeHorisontal() {
-            let $cells = this.$body.find('td');
-            let dividers = new Array($cells.length);
-            helpers.array.fill(dividers, 1);
-            for (let i = 0, sz = $cells.length; i < sz; i++) {
-                if (!$cells[i]) continue;
-
-                let current = new Cell(this.$table, $cells.eq(i), true);
+            let dividers = new Array(this.cells.length).fill(1);
+            for (let i = 0, sz = this.cells.length; i < sz; i++) {
+                let current = new Cell(this.cells, this.cells[i], true);
                 if (!current.ok || current.empty) continue;
 
-                let next = Cell.getWeek(this.$table, current.posX + current.sizeX, current.posY);
+                let next = Cell.getWeek(this.cells, current.posX + current.sizeX, current.posY);
                 if (!next.ok || current.sizeY !== next.sizeY || current.html() !== next.html()) continue;
 
-                next.cells.forEach(next => $cells[$cells.index($(next))] = null);
                 current.mergeHorisontal(next);
 
                 dividers[i]++;
-                current.cells[0].data('divider', dividers[i]);
+                current.cells[0].divider = dividers[i];
 
                 i--;
             }
@@ -96,9 +112,9 @@
             let yRange = xMath.range(0, this.height - 1);
             let titles = $titles.toArray().map(title => {
                 let length = Math.max.apply(Math, yRange.map(y => {
-                    let week = Cell.getWeek(this.$table, x, y);
+                    let week = Cell.getWeek(this.cells, x, y);
                     if (!week.ok) return 0;
-                    let divider = Number(week.cells[0].data('divider')) || 1;
+                    let divider = week.cells[0].divider || 1;
                     return week.width / divider;
                 })) || 1;
                 let colspan = Number($(title).attr('colspan'))
@@ -144,17 +160,15 @@
     }
 
     class Cell {
-        constructor($table, $cell, week) {
-            if (!$cell) return;
-
-            let data = $cell.data();
+        constructor(cells, cell, week) {
+            if (!cell || cell.deleted) return;
 
             this.cells = null;
-            this.posX = data.posX;
-            this.posY = data.posY;
-            this.sizeX = data.sizeX;
-            this.sizeY = data.sizeY;
-            this.width = data.width;
+            this.posX = cell.posX;
+            this.posY = cell.posY;
+            this.sizeX = cell.sizeX;
+            this.sizeY = cell.sizeY;
+            this.width = cell.width;
             this.length = 0;
             this.isWeek = Boolean(this.width);
             this.empty = false;
@@ -162,28 +176,27 @@
 
             if (week && !this.isWeek) return;
 
-            switch (data.type) {
+            switch (cell.type) {
                 case 'full':
-                    this.cells = [ $cell ];
+                    this.cells = [ cell ];
                     this.length = 1;
                     break;
 
                 case 'title':
-                    this.cells = [ $cell ];
+                    this.cells = [ cell ];
                     for (let offsetX = 0; offsetX < this.sizeX; ) {
-                        let $cell = Cell.findCell($table, this.posX + offsetX, this.posY + 1);
-                        this.cells.push($cell);
+                        let fCell = Cell.findCell(cells, this.posX + offsetX, this.posY + 1);
+                        this.cells.push(fCell);
 
-                        let { sizeX, sizeY } = $cell.data();
-                        offsetX += sizeX;
-                        this.sizeY = 1 + sizeY;
+                        offsetX += fCell.sizeX;
+                        this.sizeY = 1 + fCell.sizeY;
 
                         this.length++;
                     }
                     break;
 
                 case 'empty':
-                    this.cells = [ $cell ];
+                    this.cells = [ cell ];
                     this.length = 1;
                     this.empty = true;
                     break;
@@ -195,13 +208,13 @@
             if (week) {
                 for (let i = this.length, sz = this.width; i < sz; ) {
                     let [ posX, posY ] = [ this.posX + this.sizeX, this.posY ];
-                    let next = Cell.getCell($table, posX, posY, true);
-                    if (next.posX === posX && next.posY === posY) {
-                        [].push.apply(this.cells, next.cells);
+                    let fCell = Cell.getCell(cells, posX, posY, true);
+                    if (fCell.posX === posX && fCell.posY === posY) {
+                        [].push.apply(this.cells, fCell.cells);
                     }
-                    this.sizeX += next.sizeX;
-                    this.empty = this.empty || next.empty;
-                    i += next.length;
+                    this.sizeX += fCell.sizeX;
+                    this.empty = this.empty || fCell.empty;
+                    i += fCell.length;
                 }
             }
 
@@ -209,77 +222,64 @@
         }
 
         html() {
-            return this.ok ? this.cells.map(cell => $(cell).html()).join('\n') : '';
+            return this.ok ? this.cells.map(cell => cell.html).join('\n') : '';
         }
 
         mergeVertical(next) {
-            let size = this.cells.length;
-            xMath.range(0, size - 1).forEach(i => {
-                let $this = this.cells[i]
-                let $next = next.cells[i]
+            xMath.range(0, this.cells.length - 1).forEach(i => {
+                let tData = this.cells[i];
+                let nData = next.cells[i];
 
-                if ($this.data('type') === 'title') return;
+                if (tData.type === 'title') return;
 
-                let tData = $this.data();
-                let nData = $next.data();
-
-                tData.sizeY += ($this.data('type') === 'content' ? 1 : 0) + nData.sizeY;
-                $this.data(tData).attr('rowspan', tData.sizeY);
+                tData.sizeY += nData.sizeY;
+                if (tData.type === 'content') tData.sizeY++;
             });
 
             this.sizeY += next.sizeY;
-            next.cells.forEach($cell => $cell.remove());
+            next.cells.forEach(cell => cell.deleted = true);
         }
 
         mergeHorisontal(next) {
             let offsetX = this.posX;
             xMath.range(0, this.cells.length - 1).forEach(i => {
-                let $this = this.cells[i];
-                let $next = next.cells[i];
-
-                let tData = $this.data();
-                let nData = $next.data();
+                let tData = this.cells[i];
+                let nData = next.cells[i];
 
                 tData.posX = offsetX;
                 tData.sizeX += nData.sizeX;
 
-                if ($this.data('type') !== 'title') {
-                    offsetX = tData.posX + tData.sizeX;
-                }
-
-                $this.data(tData).attr('colspan', tData.sizeX);
+                if (tData.type !== 'title') offsetX = tData.posX + tData.sizeX;
             });
 
             this.sizeX += next.sizeX;
-            next.cells.forEach($cell => $cell.remove());
+            next.cells.forEach(cell => cell.deleted = true);
         }
 
-        static findCell($table, x, y, inCell) {
-            let $cells = $table.children('tbody').find('td');
-            let $fCell = null;
-            $cells.toArray().some(cell => {
-                let $cell = $(cell);
-                let { posX, posY, sizeX, sizeY } = $cell.data();
+        static findCell(cells, x, y, inCell) {
+            let fCell = null;
+            cells.some(cell => {
+                if (!cell) return false;
+
                 if (
-                    !inCell && posX === x && posY === y ||
-                    inCell && x >= posX && x < posX + sizeX && y >= posY && y < posY + sizeY
+                    !inCell && cell.posX === x && cell.posY === y ||
+                    inCell && x >= cell.posX && x < cell.posX + cell.sizeX && y >= cell.posY && y < cell.posY + cell.sizeY
                 ) {
-                    $fCell = $cell;
+                    fCell = cell;
                     return true;
                 }
             });
-            return $fCell;
+            return fCell;
         }
 
-        static getCell($table, x, y, inCell) {
-            return new Cell($table, Cell.findCell($table, x, y, inCell));
+        static getCell(cells, x, y, inCell) {
+            return new Cell(cells, Cell.findCell(cells, x, y, inCell));
         }
 
-        static getWeek($table, x, y) {
-            let $cells = $table.children('tbody').find('td');
-            let fCell = new Cell($table, null);
-            $cells.toArray().some(cellDOM => {
-                let cell = new Cell($table, $(cellDOM), true);
+        static getWeek(cells, x, y) {
+            let fCell = new Cell(cells, null);
+            cells.some(cellData => {
+                let cell = new Cell(cells, cellData, true);
                 if (cell.ok && x >= cell.posX && x < cell.posX + cell.sizeX && cell.posY === y) {
                     fCell = cell;
                     return true;

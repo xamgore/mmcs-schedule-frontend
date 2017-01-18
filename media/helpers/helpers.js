@@ -45,17 +45,9 @@
     };
 
     helpers.array.setLength = (array, length) => {
-        array.splice(length, array.length);
-        while (array.length < length) {
-            array.push(null);
-        }
-        return array;
-    };
-
-    helpers.array.fill = (array, value) => {
-        for (var i = 0, sz = array.length; i < sz; i++) {
-            array[i] = value;
-        }
+        let oldLength = array.length;
+        array.length = length;
+        array.fill(null, oldLength);
         return array;
     };
 

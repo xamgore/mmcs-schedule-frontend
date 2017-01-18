@@ -4,13 +4,11 @@
 
     /**
      * Конструктор класса Table
-     * @param {jQuery} $block объект таблицы
      * @param {array}  data   матрица с занятиями
      * @param {array}  times  левая колоннка таблицы
      * @param {array}  header шапка таблицы
      */
-    var Table = window.Table = function ($block, data, times, header) {
-        this.$block = $block;
+    var Table = window.Table = function (data, times, header) {
         this.times = times;
         this.header = header;
         this.data = data;
@@ -47,18 +45,17 @@
 
     /**
      * Отрисовка таблицы
-     * @return {Table} this
+     * @param   {jQuery}    $table  объект таблицы
+     * @return  {Table}             this
      */
-    Table.prototype.draw = function () {
-        this.$block.html('');
-
-        let $header = $('<thead></thead>').appendTo(this.$block);
+    Table.prototype.draw = function ($table) {
+        let $header = $('<thead></thead>').appendTo($table);
         let $headerRow = $('<tr><td></td></tr>').appendTo($header);
         this.header.forEach((columnTitle, i) => {
             $(`<td colspan=${this.cols[i].length} class="title">${columnTitle}</td>`).appendTo($headerRow);
         });
 
-        this.$body = $('<tbody></tbody>').appendTo(this.$block);
+        this.$body = $('<tbody></tbody>').appendTo($table);
         this.rows.forEach(row => row.draw());
 
         return this;

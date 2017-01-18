@@ -4,14 +4,12 @@
 
     /**
      * Конструктор класса Schedule
-     * @param {jQuery} $block блок для таблиц
-     * @param {string} type   тип расписания
-     * @param {object} data   данные о занятиях
+     * @param   {string}    type    тип расписания
+     * @param   {object}    data    данные о занятиях
      */
-    var Schedule = window.Schedule = function ($block, type, data) {
+    var Schedule = window.Schedule = function (type, data) {
         this.type = type;
 
-        this.buildTableBlock($block);
         this.buildTimes(system.times);
         this.buildHeader(data.groups || []);
         this.buildLessons(data.lessons, data.curricula, data.groups || [], system.times);
@@ -19,21 +17,9 @@
     };
 
     /**
-     * Генерация блока таблицы
-     * @param  {jQuery}   $block блок для таблицы
-     * @return {Schedule}        this
-     */
-    Schedule.prototype.buildTableBlock = function ($block) {
-        this.$block = $block;
-        this.$table = $('<table></table>').appendTo($block);
-
-        return this;
-    };
-
-    /**
      * Подготовка времени пар
-     * @param  {array}    times массив времен
-     * @return {Schedule}       this
+     * @param   {array}     times   массив времен
+     * @return  {Schedule}          this
      */
     Schedule.prototype.buildTimes = function (times) {
         this.times = times.map(function (time) {
@@ -45,7 +31,7 @@
 
     /**
      * Построение шапки
-     * @return {Schedule} this
+     * @return  {Schedule}  this
      */
     Schedule.prototype.buildHeader = function (groups) {
         switch (this.type) {
@@ -64,11 +50,11 @@
 
     /**
      * Построение занятий
-     * @param  {array}    lessons   занятия
-     * @param  {array}    curricula дисциплины
-     * @param  {array}    groups    группы
-     * @param  {array}    times     массив времен
-     * @return {Schedule}           this
+     * @param   {array}     lessons     занятия
+     * @param   {array}     curricula   дисциплины
+     * @param   {array}     groups      группы
+     * @param   {array}     times       массив времен
+     * @return  {Schedule}              this
      */
     Schedule.prototype.buildLessons = function (lessons, curricula, groups, times) {
         if (!lessons) {
@@ -119,13 +105,12 @@
 
     /**
      * Построение данных о занятиях
-     * @return {Schedule} this
+     * @return  {Schedule}  this
      */
     Schedule.prototype.buildData = function () {
         this.data = new Array(this.times.length);
         for (let row = 0, dataLength = this.data.length; row < dataLength; row++) {
-            this.data[row] = new Array(this.header.length);
-            helpers.array.fill(this.data[row], null);
+            this.data[row] = new Array(this.header.length).fill(null);
         }
 
         this.lessons.forEach(lesson => {
@@ -144,13 +129,16 @@
 
     /**
      * Отрисовка расписания
-     * @return {Schedule} this
+     * @param   {jQuery}    $block  блок для таблиц
+     * @return  {Schedule}          this
      */
-    Schedule.prototype.draw = function () {
-        let table = new Table(this.$table, this.data, this.times, this.header);
-        table.draw();
+    Schedule.prototype.draw = function ($block) {
+        let $table = $('<table></table>').appendTo($block);
 
-        let tweaker = new TableTweaker(this.$table);
+        let table = new Table(this.data, this.times, this.header);
+        table.draw($table);
+
+        let tweaker = new TableTweaker($table);
         switch (this.type) {
             case 'group':
             case 'teacher':
@@ -165,6 +153,7 @@
                 tweaker.setGroupsHeader();
                 break;
         }
+        tweaker.draw();
 
         return this;
     };
@@ -201,8 +190,7 @@
 
         this.setTimeAndPos(lesson.timeslot, lesson.groupid, times, titles);
 
-        let curricula = new Array(lesson.subcount);
-        helpers.array.fill(curricula, null);
+        let curricula = new Array(lesson.subcount).fill(null);
         let groupName = groups.map(groupb => helpers.getGroupName(group)).join(', ');
         curriculaRaw.forEach(curriculum => {
             curricula[curriculum.subnum - 1] = {

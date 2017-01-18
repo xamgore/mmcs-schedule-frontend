@@ -223,8 +223,8 @@
                         curricula: data.curricula,
                         groups: data.groups,
                     };
-                    let schedule = new Schedule($block, 'day', filteredData);
-                    schedule.draw();
+                    let schedule = new Schedule('day', filteredData);
+                    schedule.draw($block);
                     $block.find('thead').children().eq(1).children().first().text(days[i]);
                 }
                 break;
@@ -233,8 +233,8 @@
             case 'teacher':
             case 'day':
                 let $block = $('<div class="schedule"></div>').appendTo(system.$schedule);
-                let schedule = new Schedule($block, type, data);
-                schedule.draw();
+                let schedule = new Schedule(type, data);
+                schedule.draw($block);
                 break;
         }
 
