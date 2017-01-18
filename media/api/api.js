@@ -67,9 +67,9 @@
                 });
             },
             getForDay: function (course, day, callback, thisArg) {
-                api.switcher.getForCourse(course, data => {
+                api.schedule.getForCourse(course, data => {
                     callback.call(thisArg, { 
-                        lessons: data.lessons.filter(({ timeslot }) => timeslot[1] == day),
+                        lessons: data.lessons.filter(({ timeslot }) => timeslot[1] === day),
                         curricula: data.curricula,
                         groups: data.groups,
                     });

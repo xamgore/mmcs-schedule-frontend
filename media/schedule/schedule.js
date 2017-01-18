@@ -191,7 +191,7 @@
         this.setTimeAndPos(lesson.timeslot, lesson.groupid, times, titles);
 
         let curricula = new Array(lesson.subcount).fill(null);
-        let groupName = groups.map(groupb => helpers.getGroupName(group)).join(', ');
+        let groupName = groups.map(group => helpers.getGroupName(group)).join(', ');
         curriculaRaw.forEach(curriculum => {
             curricula[curriculum.subnum - 1] = {
                 subject: {
