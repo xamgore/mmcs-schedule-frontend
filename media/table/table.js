@@ -54,7 +54,7 @@
         let $header = $('<thead></thead>').appendTo($table);
         let $headerRow = $('<tr><td></td></tr>').appendTo($header);
         this.header.forEach((columnTitle, index) => {
-            $(`<td colspan=${this.cols[index].length} class="title">${columnTitle}</td>`).appendTo($headerRow);
+            $(`<td colspan=${this.cols[index].length} class="title"><span>${columnTitle}</span></td>`).appendTo($headerRow);
         });
 
         this.$body = $('<tbody></tbody>').appendTo($table);

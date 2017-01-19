@@ -189,10 +189,10 @@
                     $lastArea.attr('colspan', colspan);
                 } else {
                     let colspan = Number($title.attr('colspan')) || 0;
-                    $(`<td>${areaText}</td>`).attr('colspan', colspan).appendTo($areaRow);
+                    $(`<td><span>${areaText}</span></td>`).attr('colspan', colspan).appendTo($areaRow);
                 }
 
-                $title.text(`${titleText} гр.`);
+                $title.html(`<span>${titleText} гр.</span>`);
             });
         }
     }
