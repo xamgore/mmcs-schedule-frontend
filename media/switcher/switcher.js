@@ -179,7 +179,7 @@
             if (!init || localStorage.type !== 'group') {
                 localStorage.group = '';
             }
-            if (!init || localStorage.type !== 'day') {
+            if (!init || localStorage.type !== 'course') {
                 localStorage.day = '';
             }
         });
