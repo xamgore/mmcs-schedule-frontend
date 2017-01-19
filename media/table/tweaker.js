@@ -104,6 +104,44 @@
             }
         }
 
+        deleteEmptySubgroups() {
+            for (let i = 0, sz = this.cells.length; i < sz; i++) {
+                let week = new Cell(this.cells, this.cells[i], true);
+                if (!week.ok || week.empty) continue;
+
+                let oldWidth = week.width;
+                week.cells.forEach(wCell => {
+                    if (!wCell || wCell.deleted) return;
+
+                    if (wCell.type === 'empty') {
+                        wCell.deleted = true;
+                        week.length--;
+                    }
+                });
+
+                week.width = week.length;
+                week.cells.some(wCell => {
+                    if (!wCell || wCell.deleted) return;
+
+                    wCell.width = week.length;
+                    return true;
+                })
+
+                let widthMul = oldWidth / week.width;
+                let posX = week.posX;
+                week.cells.forEach(wCell => {
+                    if (!wCell || wCell.deleted) return;
+
+                    wCell.sizeX *= widthMul;
+                    wCell.posX = posX;
+
+                    if (wCell.type !== 'title') posX += wCell.sizeX;
+                });
+
+                i += oldWidth - 1;
+            };
+        }
+
         fixWidth() {
             let $headerCells = this.$header.find('td');
             let $titles = $headerCells.slice(1);
@@ -206,15 +244,15 @@
             }
 
             if (week) {
-                for (let i = this.length, sz = this.width; i < sz; ) {
+                while (this.length < this.width) {
                     let [ posX, posY ] = [ this.posX + this.sizeX, this.posY ];
                     let fCell = Cell.getCell(cells, posX, posY, true);
                     if (fCell.posX === posX && fCell.posY === posY) {
                         [].push.apply(this.cells, fCell.cells);
                     }
                     this.sizeX += fCell.sizeX;
-                    this.empty = this.empty || fCell.empty;
-                    i += fCell.length;
+                    if (this.empty) this.empty = fCell.empty;
+                    this.length += fCell.length
                 }
             }
 

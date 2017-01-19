@@ -143,8 +143,6 @@
         let tweaker = new TableTweaker($table);
         switch (this.type) {
             case 'group':
-            case 'teacher':
-            case 'room':
                 tweaker.mergeVertical();
                 tweaker.fixWidth();
                 break;
@@ -154,6 +152,13 @@
                 tweaker.mergeVertical();
                 tweaker.fixWidth();
                 tweaker.setGroupsHeader();
+                break;
+
+            case 'teacher':
+            case 'room':
+                tweaker.deleteEmptySubgroups();
+                tweaker.mergeVertical();
+                tweaker.fixWidth();
                 break;
         }
         tweaker.draw();
