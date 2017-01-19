@@ -63,10 +63,11 @@
 
             switch (this.type.val()) {
                 case 'course':
-                    this.day.fill('Выберите день', [ 'Неделя', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ].map((day, index) => ({
-                        value: index - 1,
+                    this.day.fill('Неделя', [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ].map((day, index) => ({
+                        value: index,
                         text: day
                     }))).show();
+                    this.day.$select.trigger('change');
                     break;
 
                 case 'group':
@@ -100,11 +101,6 @@
         // Действие при выборе группы
         this.day.bind(day => {
             if (day === '') {
-                this.closeSchedule();
-                return;
-            }
-
-            if (day === '-1') {
                 api.schedule.getForCourse(this.course.val(), result => this.openSchedule('course', result));
             } else {
                 api.schedule.getForDay(this.course.val(), day, result => this.openSchedule('day', result));
@@ -270,7 +266,7 @@
      */
     var Select = function (id) {
         this.id = id;
-        this.$select = $('<select class="select" id="' + this.id + '"></select>').appendTo(system.$switch);
+        this.$select = $(`<select class="select" id="${id}"></select>`).appendTo(system.$switch);
     };
 
     /**
@@ -281,7 +277,7 @@
      * @return {jQuery}            блок пункта
      */
     Select.prototype.createOption = function (value, text, disabled) {
-        return $('<option value="' + value + '">' + text + '</option>').prop('disabled', disabled);
+        return $(`<option value="${value}">${text}</option>`).prop('disabled', disabled);
     };
 
     /**
@@ -294,13 +290,12 @@
         this.$select.html('');
 
         this.createOption('', text).appendTo(this.$select);
-        data.forEach(function (item) {
-            this.createOption(item.value, item.text, item.disabled).appendTo(this.$select);
-        }, this);
+        data.forEach(item => this.createOption(item.value, item.text, item.disabled).appendTo(this.$select));
 
-        if (localStorage[this.id]) {
-            this.$select.find('[value="' + localStorage[this.id] + '"]').prop('selected', true);
-            this.$select.trigger("change", [ true ]);
+        let value = localStorage[this.id];
+        if (value != null) {
+            this.$select.find(`[value="${value}"]`).prop('selected', true);
+            this.$select.trigger('change', [ true ]);
         }
 
         return this;
@@ -351,8 +346,8 @@
     };
 
     /**
-     * Скрытие селектора
-     * @return {string} Значение
+     * Получить значение
+     * @return {string} значение
      */
     Select.prototype.val = function () {
         return this.$select.val();
