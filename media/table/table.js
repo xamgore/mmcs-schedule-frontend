@@ -2,17 +2,19 @@
 (function () {
     'use strict';
 
-    let lengths = [ 1, 2, 6, 12, 60, 60, 420, 840 ]
+    let lengths = [ 1, 2, 6, 12, 60, 60, 420, 840 ];
 
     /**
      * Конструктор класса Table
-     * @param {array}  data   матрица с занятиями
-     * @param {array}  times  левая колоннка таблицы
-     * @param {array}  header шапка таблицы
+     * @param {array}  data    матрица с занятиями
+     * @param {array}  times   левая колоннка таблицы
+     * @param {array}  header  шапка таблицы
+     * @param {string} weekday день недели
      */
-    var Table = window.Table = function (data, times, header) {
+    var Table = window.Table = function (data, times, header, weekday) {
         this.times = times;
         this.header = header;
+        this.weekday = weekday;
         this.data = data;
 
         this.setRows();
@@ -52,7 +54,7 @@
      */
     Table.prototype.draw = function ($table) {
         let $header = $('<thead></thead>').appendTo($table);
-        let $headerRow = $('<tr><td></td></tr>').appendTo($header);
+        let $headerRow = $(`<tr><td>${this.weekday}</td></tr>`).appendTo($header);
         this.header.forEach((columnTitle, index) => {
             $(`<td colspan=${this.cols[index].length} class="title"><span>${columnTitle}</span></td>`).appendTo($headerRow);
         });
@@ -141,7 +143,7 @@
         this.vLength = this.weeks.length * 2;
         this.hLength = Math.max.apply(Math, this.weeks.map(week => week.length));
 
-        if (this.hLength >= lengths.length) {
+        if (this.vLength >= lengths.length || this.hLength >= lengths.length) {
             this.empty = true;
             this.vLength = 2;
             this.hLength = 1;
@@ -155,7 +157,8 @@
      */
     TableCell.prototype.draw = function () {
         if (this.empty) {
-            $(`<td rowspan=${this.row.length} colspan=${this.col.length}></td>`).data('width', 1).appendTo(this.row.rows[0]);
+            $(`<td rowspan=${this.row.length} colspan=${this.col.length}></td>`)
+                .data('width', 1).data('height', 1).appendTo(this.row.rows[0]);
             return this;
         }
 
@@ -197,13 +200,13 @@
 
         if (this.empty) {
             $(`<td rowspan=${this.rowSize} colspan=${this.colSize} class="cell-empty"></td>`)
-                .data('width', 1).appendTo(this.cell.row.rows[this.pos * this.rowSize]);
+                .data('width', 1).data('height', this.pos === 0 ? this.cell.weeks.length : null).appendTo(this.rows[0]);
             return this;
         }
 
         let colPos = this.rows[0].children().length;
         this.groups.forEach(group => group.draw());
-        this.rows[0].children().eq(colPos).data('width', this.length);
+        this.rows[0].children().eq(colPos).data('width', this.length).data('height', this.pos === 0 ? this.cell.weeks.length : null);
 
         return this;
     };
@@ -240,9 +243,7 @@
 
         if (this.length > 1) {
             $(`<td colspan=${this.week.colSize * this.length} class="cell-title">${this.title}</td>`).appendTo(this.week.rows[0]);
-            this.contents.forEach(content => {
-                $(`<td rowspan=${this.week.rowSize - 1} colspan=${this.week.colSize} class="cell-content">${content}</td>`).appendTo(this.week.rows[1]);
-            });
+            this.contents.forEach(content => $(`<td rowspan=${this.week.rowSize - 1} colspan=${this.week.colSize} class="cell-content">${content}</td>`).appendTo(this.week.rows[1]));
         } else {
             $(`<td rowspan=${this.week.rowSize} colspan=${this.week.colSize} class="cell-full">${this.title}${this.contents[0]}</td>`).appendTo(this.week.rows[0]);
         }

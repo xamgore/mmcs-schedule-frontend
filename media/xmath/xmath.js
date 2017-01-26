@@ -20,8 +20,4 @@
         }
         return arr;
     };
-
-    xMath.fact = function (x) {
-        return x ? x * xMath.fact(x - 1) : 1;
-    };
 })();

@@ -9,6 +9,7 @@
      */
     var Schedule = window.Schedule = function (type, data) {
         this.type = type;
+        this.weekday = data.weekday || '';
 
         this.buildTimes(system.times);
         this.buildHeader(data.groups || []);
@@ -66,6 +67,7 @@
 
         switch (this.type) {
             case 'teacher':
+            case 'room':
                 groups = helpers.array.groupBy(groups, 'uberid');
                 break;
         }
@@ -124,7 +126,7 @@
             }
         });
 
-        this.data = this.data.map(row => row.map(cell => new ScheduleCell(this.type, cell).toArray()));
+        this.data = this.data.map(row => row.map(cell => (new ScheduleCell(this.type, cell)).toArray()));
 
         return this;
     };
@@ -137,19 +139,18 @@
     Schedule.prototype.draw = function ($block) {
         let $table = $('<table></table>').appendTo($block);
 
-        let table = new Table(this.data, this.times, this.header);
-        table.draw($table);
+        (new Table(this.data, this.times, this.header, this.weekday)).draw($table);
 
         let tweaker = new TableTweaker($table);
         switch (this.type) {
             case 'group':
-                tweaker.mergeVertical();
+                tweaker.mergeCellsVertical();
                 tweaker.fixWidth();
                 break;
 
             case 'day':
-                tweaker.mergeHorisontal();
-                tweaker.mergeVertical();
+                tweaker.mergeWeeks();
+                tweaker.mergeCellsVertical();
                 tweaker.fixWidth();
                 tweaker.setGroupsHeader();
                 break;
@@ -157,7 +158,7 @@
             case 'teacher':
             case 'room':
                 tweaker.deleteEmptySubgroups();
-                tweaker.mergeVertical();
+                tweaker.mergeCellsVertical();
                 tweaker.fixWidth();
                 break;
         }
@@ -456,20 +457,18 @@
                     }
 
                     var title = '<span class="lesson-titie">' +
-                        '<span class="subject full">' + group.subject.name + '</span>' +
+                        `<span class="subject full">${group.subject.name}</span>` +
                         '<span class="subject short">' +
-                            '<abbr title="' + group.subject.name + '">' + group.subject.abbr + '</abbr>' +
+                            `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
                         '</span>' +
                     '</span>';
 
-                    var contents = group.curricula.map(function (curriculum) {
-                        return '<span class="lesson-content">' +
-                            '<span class="teacher">' +
-                                '<abbr title="' + curriculum.teacher.name + '">' + curriculum.teacher.abbr + '</abbr>' +
-                            '</span>' +
-                            '<span class="room">' + curriculum.room.name + '</span>' +
-                        '</span>';
-                    });
+                    var contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
+                        '<span class="teacher">' +
+                            `<abbr title="${curriculum.teacher.name}">${curriculum.teacher.abbr}</abbr>` +
+                        '</span>' +
+                        `<span class="room">${curriculum.room.name}</span>` +
+                    '</span>');
 
                     return {
                         title: title,
@@ -484,18 +483,16 @@
                     }
 
                     var title = '<span class="lesson-titie">' +
-                        '<span class="subject full">' + group.subject.name + '</span>' +
+                        `<span class="subject full">${group.subject.name}</span>` +
                         '<span class="subject short">' +
-                            '<abbr title="' + group.subject.name + '">' + group.subject.abbr + '</abbr>' +
+                            `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
                         '</span>' +
                     '</span>';
 
-                    var contents = group.curricula.map(function (curriculum) {
-                        return '<span class="lesson-content">' +
-                            '<span class="group">' + curriculum.group.name + '</span>' +
-                            '<span class="room">' + curriculum.room.name + '</span>' +
-                        '</span>';
-                    });
+                    var contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
+                        `<span class="group">${curriculum.group.name}</span>` +
+                        `<span class="room">${curriculum.room.name}</span>` +
+                    '</span>');
 
                     return {
                         title: title,
@@ -510,20 +507,18 @@
                     }
 
                     var title = '<span class="lesson-titie">' +
-                        '<span class="subject full">' + group.subject.name + '</span>' +
+                        `<span class="subject full">${group.subject.name}</span>` +
                         '<span class="subject short">' +
-                            '<abbr title="' + group.subject.name + '">' + group.subject.abbr + '</abbr>' +
+                            `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
                         '</span>' +
                     '</span>';
 
-                    var contents = group.curricula.map(function (curriculum) {
-                        return '<span class="lesson-content">' +
-                            '<span class="teacher">' +
-                                '<abbr title="' + curriculum.teacher.name + '">' + curriculum.teacher.abbr + '</abbr>' +
-                            '</span>' +
-                            '<span class="group">' + curriculum.group.name + '</span>' +
-                        '</span>';
-                    });
+                    var contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
+                        '<span class="teacher">' +
+                            `<abbr title="${curriculum.teacher.name}">${curriculum.teacher.abbr}</abbr>` +
+                        '</span>' +
+                        `<span class="group">${curriculum.group.name}</span>` +
+                    '</span>');
 
                     return {
                         title: title,

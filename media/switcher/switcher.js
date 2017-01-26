@@ -221,26 +221,18 @@
 
         switch (type) {
             case 'course':
-                let days = [ 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ' ];
-                for (let i = 0; i < 6; i++) {
-                    let $block = $('<div class="schedule"></div>').appendTo(system.$schedule);
-                    let filteredData = { 
-                        lessons: data.lessons.filter(({ timeslot }) => timeslot[1] == i),
-                        curricula: data.curricula,
-                        groups: data.groups,
-                    };
-                    let schedule = new Schedule('day', filteredData);
-                    schedule.draw($block);
-                    $block.find('thead').children().eq(1).children().first().text(days[i]);
-                }
+                [ 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ' ].forEach((weekday, index) => (new Schedule('day', { 
+                    lessons: data.lessons.filter(({ timeslot }) => timeslot[1] == index),
+                    curricula: data.curricula,
+                    groups: data.groups,
+                    weekday: weekday,
+                })).draw($('<div class="schedule"></div>').appendTo(system.$schedule)));
                 break;
 
             case 'group':
             case 'teacher':
             case 'day':
-                let $block = $('<div class="schedule"></div>').appendTo(system.$schedule);
-                let schedule = new Schedule(type, data);
-                schedule.draw($block);
+                (new Schedule(type, data)).draw($('<div class="schedule"></div>').appendTo(system.$schedule));
                 break;
         }
 
