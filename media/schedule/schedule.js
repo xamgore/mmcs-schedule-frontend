@@ -179,6 +179,7 @@
      */
     var ScheduleLesson = function (type, lesson, curricula, groups, times, titles) {
         this.type = type;
+        this.id = lesson.id;
 
         this.build(lesson, curricula, groups, times, titles);
     };
@@ -387,6 +388,10 @@
         var hasNotFull = false;
 
         lessons.forEach(function (lesson) {
+            lesson.groups.forEach(group => {
+                if (group) group.lessonID = lesson.id;
+            });
+
             switch (lesson.pos.week) {
                 case 'full':
                     helpers.array.setLength(upper, Math.max(upper.length, lower.length));
@@ -401,9 +406,7 @@
                 case 'upper':
                     upper = upper.concat(lesson.groups);
 
-                    if (hasFull) {
-                        helpers.array.setLength(lower, upper.length);
-                    }
+                    if (hasFull) helpers.array.setLength(lower, upper.length);
 
                     hasNotFull = true;
 
@@ -412,9 +415,7 @@
                 case 'lower':
                     lower = lower.concat(lesson.groups);
 
-                    if (hasFull) {
-                        helpers.array.setLength(upper, upper.length);
-                    }
+                    if (hasFull) helpers.array.setLength(upper, upper.length);
 
                     hasNotFull = true;
 
@@ -456,24 +457,23 @@
                         return null;
                     }
 
-                    var title = '<span class="lesson-titie">' +
+                    let title = '<span class="lesson-titie">' +
                         `<span class="subject full">${group.subject.name}</span>` +
                         '<span class="subject short">' +
                             `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
                         '</span>' +
                     '</span>';
 
-                    var contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
+                    let contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
                         '<span class="teacher">' +
                             `<abbr title="${curriculum.teacher.name}">${curriculum.teacher.abbr}</abbr>` +
                         '</span>' +
                         `<span class="room">${curriculum.room.name}</span>` +
                     '</span>');
 
-                    return {
-                        title: title,
-                        contents: contents
-                    };
+                    let lessonID = group.lessonID;
+
+                    return { title, contents, lessonID };
                 });
 
             case 'teacher':
@@ -482,22 +482,21 @@
                         return null;
                     }
 
-                    var title = '<span class="lesson-titie">' +
+                    let title = '<span class="lesson-titie">' +
                         `<span class="subject full">${group.subject.name}</span>` +
                         '<span class="subject short">' +
                             `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
                         '</span>' +
                     '</span>';
 
-                    var contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
+                    let contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
                         `<span class="group">${curriculum.group.name}</span>` +
                         `<span class="room">${curriculum.room.name}</span>` +
                     '</span>');
 
-                    return {
-                        title: title,
-                        contents: contents
-                    };
+                    let lessonID = group.lessonID;
+
+                    return { title, contents, lessonID };
                 });
 
             case 'room':
@@ -506,26 +505,24 @@
                         return null;
                     }
 
-                    var title = '<span class="lesson-titie">' +
+                    let title = '<span class="lesson-titie">' +
                         `<span class="subject full">${group.subject.name}</span>` +
                         '<span class="subject short">' +
                             `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
                         '</span>' +
                     '</span>';
 
-                    var contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
+                    let contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
                         '<span class="teacher">' +
                             `<abbr title="${curriculum.teacher.name}">${curriculum.teacher.abbr}</abbr>` +
                         '</span>' +
                         `<span class="group">${curriculum.group.name}</span>` +
                     '</span>');
 
-                    return {
-                        title: title,
-                        contents: contents
-                    };
+                    let lessonID = group.lessonID;
+
+                    return { title, contents, lessonID };
                 });
-                break;
         }
     };
 

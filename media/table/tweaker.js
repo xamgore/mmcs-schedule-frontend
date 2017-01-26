@@ -16,12 +16,13 @@
                 filled[i] = new Array(this.width).fill(false);
             });
 
-            let types = {
-                'cell-title':   'title',
-                'cell-content': 'content',
-                'cell-full':    'full',
-                'time':         'time',
-            };
+            function getType($cell) {
+                if ($cell.hasClass('cell-title')) return 'title';
+                if ($cell.hasClass('cell-content')) return 'content';
+                if ($cell.hasClass('cell-full')) return 'full';
+                if ($cell.hasClass('time')) return 'time';
+                return 'empty';
+            }
 
             let [ posX, posY ] = [ 0, 0 ];
 
@@ -43,8 +44,7 @@
                     sizeY: cellDOM.rowSpan,
                     width: $(cellDOM).data('width'),
                     height: $(cellDOM).data('height'),
-                    type: types[cellDOM.className] || 'empty',
-                    domID: cellDOM.id,
+                    type: getType($(cellDOM)),
                     domClass: cellDOM.className,
                     html: $(cellDOM).html(),
                     deleted: false,
@@ -65,7 +65,6 @@
                 if (cell.deleted) return;
 
                 let $cell = $('<td></td>').attr({
-                    id: cell.domID,
                     class: cell.domClass,
                     colspan: cell.sizeX,
                     rowspan: cell.sizeY,

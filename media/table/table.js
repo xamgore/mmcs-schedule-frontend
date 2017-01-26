@@ -229,6 +229,7 @@
         this.title = groupRaw.title;
         this.length = groupRaw.contents.length;
         this.contents = groupRaw.contents;
+        this.lessonID = groupRaw.lessonID;
     };
 
     /**
@@ -241,11 +242,13 @@
             return this;
         }
 
+        let className = `lesson_${this.lessonID}`;
+
         if (this.length > 1) {
-            $(`<td colspan=${this.week.colSize * this.length} class="cell-title">${this.title}</td>`).appendTo(this.week.rows[0]);
-            this.contents.forEach(content => $(`<td rowspan=${this.week.rowSize - 1} colspan=${this.week.colSize} class="cell-content">${content}</td>`).appendTo(this.week.rows[1]));
+            $(`<td colspan=${this.week.colSize * this.length} class="cell-title ${className}">${this.title}</td>`).appendTo(this.week.rows[0]);
+            this.contents.forEach(content => $(`<td rowspan=${this.week.rowSize - 1} colspan=${this.week.colSize} class="cell-content ${className}">${content}</td>`).appendTo(this.week.rows[1]));
         } else {
-            $(`<td rowspan=${this.week.rowSize} colspan=${this.week.colSize} class="cell-full">${this.title}${this.contents[0]}</td>`).appendTo(this.week.rows[0]);
+            $(`<td rowspan=${this.week.rowSize} colspan=${this.week.colSize} class="cell-full ${className}">${this.title}${this.contents[0]}</td>`).appendTo(this.week.rows[0]);
         }
 
         return this;

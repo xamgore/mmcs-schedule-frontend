@@ -59,9 +59,7 @@
                             Array.prototype.push.apply(data.lessons, lessons);
                             Array.prototype.push.apply(data.curricula, curricula);
                             queryCount++;
-                            if (queryCount == data.groups.length) {
-                                callback.call(thisArg, data);
-                            }
+                            if (queryCount == data.groups.length) callback.call(thisArg, data);
                         });
                     });
                 });

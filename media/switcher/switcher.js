@@ -67,7 +67,6 @@
                         value: index,
                         text: day
                     }))).show();
-                    this.day.$select.trigger('change');
                     break;
 
                 case 'group':
