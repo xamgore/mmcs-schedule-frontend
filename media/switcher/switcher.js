@@ -41,7 +41,8 @@
             api.switcher.getCourses(result => {
                 let degreeMap = {
                     bachelor: '',
-                    master: 'Магистратура, '
+                    master: 'Магистратура, ',
+                    postgraduate: 'Аспирантура, ',
                 };
 
                 this.course.fill('Выберите курс', result.map(course => ({
