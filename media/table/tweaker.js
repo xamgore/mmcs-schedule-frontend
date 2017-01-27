@@ -44,6 +44,7 @@
                     sizeY: cellDOM.rowSpan,
                     width: $(cellDOM).data('width'),
                     height: $(cellDOM).data('height'),
+                    vIndex: $(cellDOM).data('vIndex'),
                     type: getType($(cellDOM)),
                     domClass: cellDOM.className,
                     html: $(cellDOM).html(),
@@ -68,7 +69,8 @@
                     class: cell.domClass,
                     colspan: cell.sizeX,
                     rowspan: cell.sizeY,
-                }).html(cell.html).data('width', cell.width).data('height', cell.height).appendTo($rows.eq(cell.posY));
+                }).html(cell.html).data('width', cell.width).data('height', cell.height)
+                    .data('vIndex', cell.vIndex).appendTo($rows.eq(cell.posY));
             });
         }
 
@@ -225,6 +227,20 @@
                 $title.html(`<span>${titleText} гр.</span>`);
             });
         }
+
+        blurWeeks(pos, length) {
+            this.cells.forEach(cell => {
+                let both = new Cell(this.cells, cell, true, true);
+                if (!both.ok || both.height !== length) return;
+
+                both.cells.forEach(cell => {
+                    let week = new Cell(both.cells, cell, true);
+                    if (!week.ok || week.vIndex == pos) return;
+
+                    week.cells.forEach(cell => cell.domClass += ' cell-blured');
+                });
+            });
+        }
     }
 
     class Cell {
@@ -240,6 +256,7 @@
             this.sizeY = cell.sizeY;
             this.width = cell.width;
             this.height = cell.height;
+            this.vIndex = cell.vIndex;
             this.length = 0;
             this.isWeek = Boolean(this.width);
             this.isBoth = Boolean(this.height);

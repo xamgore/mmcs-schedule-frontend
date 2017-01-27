@@ -162,6 +162,7 @@
                 tweaker.fixWidth();
                 break;
         }
+        tweaker.blurWeeks([ 'upper', 'lower' ].indexOf(system.week), 2);
         tweaker.draw();
 
         return this;

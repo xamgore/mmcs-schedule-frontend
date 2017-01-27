@@ -158,7 +158,7 @@
     TableCell.prototype.draw = function () {
         if (this.empty) {
             $(`<td rowspan=${this.row.length} colspan=${this.col.length}></td>`)
-                .data('width', 1).data('height', 1).appendTo(this.row.rows[0]);
+                .data('width', 1).data('height', 1).data('vIndex', 1).appendTo(this.row.rows[0]);
             return this;
         }
 
@@ -200,13 +200,15 @@
 
         if (this.empty) {
             $(`<td rowspan=${this.rowSize} colspan=${this.colSize} class="cell-empty"></td>`)
-                .data('width', 1).data('height', this.pos === 0 ? this.cell.weeks.length : null).appendTo(this.rows[0]);
+                .data('width', 1).data('height', this.pos === 0 ? this.cell.weeks.length : null).data('vIndex', this.pos)
+                .appendTo(this.rows[0]);
             return this;
         }
 
         let colPos = this.rows[0].children().length;
         this.groups.forEach(group => group.draw());
-        this.rows[0].children().eq(colPos).data('width', this.length).data('height', this.pos === 0 ? this.cell.weeks.length : null);
+        this.rows[0].children().eq(colPos).data('width', this.length)
+            .data('height', this.pos === 0 ? this.cell.weeks.length : null).data('vIndex', this.pos);
 
         return this;
     };

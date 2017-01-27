@@ -31,7 +31,7 @@
         });
 
         // Действие при выборе группы в типе расписания
-        this.type.bind(['course', 'group'], () => {
+        this.type.bind([ 'course', 'group' ], () => {
             this.course.hide();
             this.group.hide();
             this.day.hide();
@@ -107,7 +107,7 @@
         }, this);
 
         // Действие при выборе преподавателя в типе расписания
-        this.type.bind(['teacher'], () => {
+        this.type.bind([ 'teacher' ], () => {
             this.course.hide();
             this.group.hide();
             this.day.hide();
@@ -135,7 +135,7 @@
         });
 
         // Действие при выборе аудитории в типе расписания
-        this.type.bind(['room'], () => {
+        this.type.bind([ 'room' ], () => {
             this.course.hide();
             this.group.hide();
             this.day.hide();
