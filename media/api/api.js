@@ -23,7 +23,7 @@
         },
         switcher: {
             getCourses: function (callback, thisArg) {
-                query('grade/list', null, 'get', callback, null, thisArg);
+                query('APIv1/grade/list', null, 'get', callback, null, thisArg);
             },
             getGroups: function (course, callback, thisArg) {
                 query('group/list/' + course, null, 'get', callback, null, thisArg);
@@ -40,7 +40,7 @@
                 query('schedule/group/' + group, null, 'get', callback, null, thisArg);
             },
             getForTeacher: function (teacher, callback, thisArg) {
-                query('schedule/teacher/' + teacher, null, 'get', callback, null, thisArg);
+                query('APIv1/schedule/teacher/' + teacher, null, 'get', callback, null, thisArg);
             },
             getForRoom: function (room, callback, thisArg) {
                 query('schedule/room/' + room, null, 'get', callback, null, thisArg);
@@ -77,22 +77,23 @@
         auth: {
             status: function (callback, thisArg) {
                 query('APIv1/auth/status', {
-                  APIKey: system.getAPIKey
-                }, 'get', callback, null, thisArg);
+                    APIKey: localStorage.APIKey
+                }, 'get', ({ status }) => callback.call(thisArg => status === 'manager'), null, thisArg);
             },
             login: function (login, pass, callback, thisArg) {
                 query('APIv1/auth/login', {
                     login: login,
                     pass: pass
-                }, 'get', function () {
-                    // system.setAPIKey('APIKEY');
+                }, 'get', ({ APIKey }) => {
+                    localStorage.APIKey = APIKey;
                     callback.call(thisArg, true);
-                }, function () {
-                    callback.call(thisArg, false);
-                });
+                }, () => callback.call(thisArg, false));
             },
             logout: function (callback, thisArg) {
-                query('auth/logout', null, 'get', callback, null, thisArg);
+                query('auth/logout', null, 'get', () => {
+                    delete localStorage.APIKey;
+                    callback.call(thisArg);
+                }, null, thisArg);
             }
         }
     };

@@ -24,18 +24,6 @@
         this.week = week;
     };
 
-    System.prototype.setAPIKey = function (apikey) {
-        this.APIKey = apikey;
-    };
-
-    System.prototype.getAPIKey = function () {
-        return this.APIKey;
-    };
-
-    System.prototype.removeAPIKey = function () {
-        this.APIKey = null;
-    };
-
     System.prototype.setTimes = function (times) {
         this.times = times;
     };
