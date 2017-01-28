@@ -74,10 +74,8 @@
                 }, () => callback(false));
             },
             logout: callback => {
-                query('auth/logout', null, 'get', () => {
-                    delete localStorage.APIKey;
-                    callback();
-                }, null);
+                delete localStorage.APIKey;
+                setTimeout(callback.bind(this), 0);
             },
         },
     };
