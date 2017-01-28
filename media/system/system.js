@@ -1,46 +1,44 @@
 (function () {
     'use strict';
 
-    var System = window.System = function () {
-        this.backendUrl = window.document.location.protocol + '//' + window.document.location.hostname + ':3000/';
-        this.APIKey = null;
-        this.onShow = function () {};
-    };
+    class System {
+        constructor() {
+            //this.backendUrl = `${window.document.location.protocol}//${window.document.location.hostname}:3000/`;
+            this.backendUrl = '//users.mmcs.sfedu.ru:3000/';
+            this.onShow = () => {};
+        }
 
-    System.prototype.getElements = function () {
-        this.$body = $('body');
-        this.$page = $('#page');
-        this.$week = $('#week');
-        this.$switch = $('#switch');
-        this.$print = $('#print');
-        this.$auth = $('#auth');
-        this.$content = $('#content');
-        this.$intro = $('#intro');
-        this.$schedule = $('#schedule');
-        this.$overlay = $('#overlay');
-    };
+        getElements() {
+            this.$body      = $('body');
+            this.$page      = $('#page');
+            this.$week      = $('#week');
+            this.$switch    = $('#switch');
+            this.$print     = $('#print');
+            this.$login     = $('#login');
+            this.$logout    = $('#logout');
+            this.$editmenu  = $('#editmenu');
+            this.$content   = $('#content');
+            this.$intro     = $('#intro');
+            this.$schedule  = $('#schedule');
+            this.$overlay   = $('#overlay');
+        }
 
-    System.prototype.setWeek = function (week) {
-        this.week = week;
-    };
+        getUrl(url) {
+            return this.backendUrl + url;
+        }
 
-    System.prototype.setTimes = function (times) {
-        this.times = times;
-    };
+        showSchedule() {
+            this.$intro.hide();
+            this.$schedule.show();
+            this.onShow();
+        }
 
-    System.prototype.getUrl = function (url) {
-        return this.backendUrl + url;
-    };
+        showIntro() {
+            this.$schedule.hide();
+            this.$intro.show();
+            this.onShow();
+        }
+    }
 
-    System.prototype.showSchedule = function () {
-        this.$intro.hide();
-        this.$schedule.show();
-        this.onShow();
-    };
-
-    System.prototype.showIntro = function () {
-        this.$schedule.hide();
-        this.$intro.show();
-        this.onShow();
-    };
+    window.System = System;
 })();

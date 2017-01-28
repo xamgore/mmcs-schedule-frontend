@@ -10,9 +10,7 @@
 
 <script src="//code.jquery.com/jquery-3.1.0.min.js"></script>
 <script>
-if (!window.jQuery) {
-    document.write(unescape('%3Cscript src="//users.mmcs.sfedu.ru/~cdn/jquery-3.1.0.min.js"%3E%3C/script%3E'));
-}
+if (!window.jQuery) document.write(unescape('%3Cscript src="//users.mmcs.sfedu.ru/~cdn/jquery-3.1.0.min.js"%3E%3C/script%3E'));
 </script>
 
 <link href="static/icons/icons.css" rel="stylesheet">
@@ -37,6 +35,8 @@ if (!window.jQuery) {
 <script src="static/table/tweaker.js"></script>
 <link href="static/table/table.css" rel="stylesheet">
 
+<script src="static/editor/editor.js"></script>
+
 <script src="static/init/init.js"></script>
 
 <div class="page" id="page">
@@ -54,8 +54,10 @@ if (!window.jQuery) {
             <div class="switch clearfix" id="switch"></div>
         </div>
         <div class="right clearfix">
-            <span class="button icon-32 icon-32_printer" id="print" title="Печать"></span>
-            <span class="button icon-32 icon-32_profile" id="auth" title="Авторизация"></span>
+            <span class="button icon-32 icon-32_print" id="print" title="Печать"></span>
+            <span class="button icon-32 icon-32_editor" id="login" title="Авторизация"></span>
+            <span class="button icon-32 icon-32_menu" id="editmenu" style="display: none" title="Меню редактора"></span>
+            <span class="button icon-32 icon-32_logout" id="logout" style="display: none" title="Выход"></span>
         </div>
     </div>
     <div class="content" id="content">

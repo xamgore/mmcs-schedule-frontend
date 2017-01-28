@@ -1,51 +1,35 @@
 /* global system */
-(function () {
+(() => {
     'use strict';
 
     window.api = {
         week: {
-            get: function (callback, thisArg) {
-                query('time/week', null, 'get', function(result) {
-                    var week = Number(result.type);
+            get: callback => {
+                query('time/week', null, 'get', result => {
+                    let week = Number(result.type);
 
                     if (week === 0) {
-                        callback.call(thisArg, 'upper');
+                        callback('upper');
                     } else {
-                        callback.call(thisArg, 'lower');
+                        callback('lower');
                     }
                 });
-            }
+            },
         },
         times: {
-            get: function (callback, thisArg) {
-                query('time/list', null, 'get', callback, null, thisArg);
-            }
+            get: callback => query('time/list', null, 'get', callback, null),
         },
         switcher: {
-            getCourses: function (callback, thisArg) {
-                query('APIv1/grade/list', null, 'get', callback, null, thisArg);
-            },
-            getGroups: function (course, callback, thisArg) {
-                query('group/list/' + course, null, 'get', callback, null, thisArg);
-            },
-            getTeachers: function (callback, thisArg) {
-                query('teacher/list', null, 'get', callback, null, thisArg);
-            },
-            getRooms: function (callback, thisArg) {
-                query('room/list', null, 'get', callback, null, thisArg);
-            }
+            getCourses: callback => query('APIv1/grade/list', null, 'get', callback, null),
+            getGroups: (course, callback) => query('group/list/' + course, null, 'get', callback, null),
+            getTeachers: callback => query('teacher/list', null, 'get', callback, null),
+            getRooms: callback => query('room/list', null, 'get', callback, null),
         },
         schedule: {
-            getForGroup: function (group, callback, thisArg) {
-                query('schedule/group/' + group, null, 'get', callback, null, thisArg);
-            },
-            getForTeacher: function (teacher, callback, thisArg) {
-                query('APIv1/schedule/teacher/' + teacher, null, 'get', callback, null, thisArg);
-            },
-            getForRoom: function (room, callback, thisArg) {
-                query('schedule/room/' + room, null, 'get', callback, null, thisArg);
-            },
-            getForCourse: function (course, callback, thisArg) {
+            getForGroup: (group, callback) => query('schedule/group/' + group, null, 'get', callback, null),
+            getForTeacher: (teacher, callback) => query('APIv1/schedule/teacher/' + teacher, null, 'get', callback, null),
+            getForRoom: (room, callback) => query('schedule/room/' + room, null, 'get', callback, null),
+            getForCourse: (course, callback) => {
                 api.switcher.getGroups(course, groups => {
                     let data = {
                         lessons: [],
@@ -59,43 +43,43 @@
                             Array.prototype.push.apply(data.lessons, lessons);
                             Array.prototype.push.apply(data.curricula, curricula);
                             queryCount++;
-                            if (queryCount == data.groups.length) callback.call(thisArg, data);
+                            if (queryCount == data.groups.length) callback(data);
                         });
                     });
                 });
             },
-            getForDay: function (course, day, callback, thisArg) {
+            getForDay: (course, day, callback) => {
                 api.schedule.getForCourse(course, data => {
-                    callback.call(thisArg, { 
+                    callback({ 
                         lessons: data.lessons.filter(({ timeslot }) => timeslot[1] === day),
                         curricula: data.curricula,
                         groups: data.groups,
                     });
                 });
-            }
+            },
         },
         auth: {
-            status: function (callback, thisArg) {
+            status: callback => {
                 query('APIv1/auth/status', {
                     APIKey: localStorage.APIKey
-                }, 'get', ({ status }) => callback.call(thisArg => status === 'manager'), null, thisArg);
+                }, 'get', ({ status }) => callback(status === 'manager'), null);
             },
-            login: function (login, pass, callback, thisArg) {
+            login: (login, pass, callback) => {
                 query('APIv1/auth/login', {
                     login: login,
                     pass: pass
                 }, 'get', ({ APIKey }) => {
                     localStorage.APIKey = APIKey;
-                    callback.call(thisArg, true);
-                }, () => callback.call(thisArg, false));
+                    callback(true);
+                }, () => callback(false));
             },
-            logout: function (callback, thisArg) {
+            logout: callback => {
                 query('auth/logout', null, 'get', () => {
                     delete localStorage.APIKey;
-                    callback.call(thisArg);
-                }, null, thisArg);
-            }
-        }
+                    callback();
+                }, null);
+            },
+        },
     };
 
     /**
@@ -104,24 +88,19 @@
      * @param  {object}   data     передаваемые данные
      * @param  {string}   type     тип запроса (post, get, pop)
      * @param  {function} callback функция, выполняющаяся при удачном запросе
-     * @param  {object}   thisArg  контекст callback
      */
-    var query = function (url, data, type, callback, errback, thisArg) {
+    let query = (url, data, type, callback, errback) => {
         data = data || {};
-        type = ['post', 'get', 'pop'].indexOf(type) !== -1 ? type : 'post';
-        callback = callback || function () {};
-        errback = errback || function () {};
+        type = type || 'post';
+        callback = callback || (() => {});
+        errback = errback || (() => {});
 
         $.ajax(system.getUrl(url), {
             data: data,
             dataType: 'json',
             method: type.toUpperCase(),
-            success: function (result) {
-                callback.call(thisArg, result);
-            },
-            error: function () {
-                errback.call(thisArg);
-            }
+            success: result => callback(result),
+            error: () => errback(),
         });
     };
-}());
+})();

@@ -1,38 +1,30 @@
 /* global api, Page, Switcher, System */
-(function () {
+(() => {
     'use strict';
 
-    var system = window.system = new System();
-    var page = new Page();
-    var switcher = new Switcher();
+    let system = window.system = new System();
+    let page = new Page();
+    let switcher = new Switcher();
+    let editor = new Editor();
 
-    $(function () {
+    $(() => {
         system.getElements();
 
-        $(document).ajaxStart(function () {
-            system.$body.css('cursor', 'progress');
-        });
+        $(document).ajaxStart(() => system.$body.css('cursor', 'progress'));
+        $(document).ajaxStop(() => system.$body.css('cursor', 'auto'));
 
-        $(document).ajaxStop(function () {
-            system.$body.css('cursor', 'auto');
-        });
-
-        api.week.get(function (week) {
-            system.setWeek(week);
+        api.week.get(week => {
+            system.week = week;
             page.setWeek();
         });
 
-        api.times.get(function (times) {
-            system.setTimes(times);
-        });
+        api.times.get(times => system.times = times);
 
         switcher.set();
-
-        system.$print.on('click', function () {
-            window.print();
-        });
-
-        system.$auth.on('click', page.auth);
+ 
+        system.$print.on('click', () => window.print());
+        system.$login.on('click', editor.login);
+        system.$logout.on('click', editor.logout);
 
         page.setContentHeight();
         $(window).on('load', page.setContentHeight);
