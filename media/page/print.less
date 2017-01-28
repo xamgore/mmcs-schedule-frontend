@@ -10,5 +10,21 @@ html {
 }
 
 .page {
-    min-width: auto;
+    width: 100%;
+
+    .content {
+        padding: 0;
+        
+        .schedule {
+            page-break-after: always;
+
+            table {
+                margin: 0;
+
+                thead {
+                    display: table-row-group;
+                }
+            }
+        }
+    }
 }
