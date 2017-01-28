@@ -1,0 +1,19 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font: inherit;
+}
+
+.clearfix {
+    position: relative;
+
+    &:after {
+        content: '';
+        display: table;
+        clear: both;
+    }
+}
