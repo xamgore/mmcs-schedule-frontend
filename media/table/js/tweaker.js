@@ -148,14 +148,15 @@
                     if (wCell.type === 'empty') {
                         wCell.deleted = true;
                         week.length--;
+                        week.width--;
                     }
                 });
 
-                week.width = week.length;
                 week.cells.some(wCell => {
                     if (!wCell || wCell.deleted) return;
 
-                    wCell.width = week.length;
+                    wCell.width = week.width;
+                    wCell.height = week.height;
                     return true;
                 })
 
