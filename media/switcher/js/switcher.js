@@ -288,6 +288,8 @@
         if (value != null) {
             this.$select.find(`[value="${value}"]`).prop('selected', true);
             this.$select.trigger('change', [ true ]);
+        } else {
+            this.$select.change();
         }
 
         return this;
