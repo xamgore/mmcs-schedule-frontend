@@ -3,7 +3,10 @@
     'use strict';
 
     class Editor {
-        constructor() {
+        set() {
+            system.$login.on('click', this.login);
+            system.$logout.on('click', this.logout);
+
             api.auth.status(ok => {
                 if (ok) {
                     system.$login.hide();

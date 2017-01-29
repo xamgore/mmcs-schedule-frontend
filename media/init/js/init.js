@@ -22,9 +22,9 @@
 
         switcher.set();
  
+        editor.set();
+
         system.$print.on('click', () => window.print());
-        system.$login.on('click', editor.login);
-        system.$logout.on('click', editor.logout);
 
         page.setContentHeight();
         $(window).on('load', page.setContentHeight);
