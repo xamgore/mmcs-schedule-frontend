@@ -1,12 +1,56 @@
-.overlay {
+.form-auth {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
     z-index: 10;
+    top: 50%;
+    left: 50%;
 
-    width: 100%;
-    height: 100%;
+    width: 320px;
+    height: 198px;
+    margin: -99px -160px;
+    padding: 20px;
 
-    background-color: rgba(0, 0, 0, .5);
+    background-color: rgba(255, 255, 255, .9);
+
+    input {
+        display: block;
+
+        width: 280px;
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #aaa;
+
+        appearance: none;
+        border-radius: 0;
+
+        background-color: #fff;
+
+        &:focus {
+            border-color: #888;
+        }
+    }
+
+    button {
+        display: block;
+
+        width: 280px;
+        padding: 12px 10px;
+        border-bottom: 3px solid #369;
+
+        appearance: none;
+        border-radius: 3px;
+
+        background-color: #37a;
+        color: #fff;
+
+        text-align: center;
+
+        &:hover {
+            background-color: #369;
+        }
+    }
+
+    &.error input {
+        border-color: #d88;
+    }
 }

@@ -1,16 +1,19 @@
-/* globals helpers, xMath */
-(function () {
+(() => {
     'use strict';
 
     class TableTweaker {
+        /**
+         * @param {jQuery} $table Блок таблицы
+         */
         constructor($table) {
             this.$table = $table;
             this.$header = this.$table.children('thead');
             this.$body = this.$table.children('tbody');
 
-            this.width = xMath.sum.apply(xMath, this.$header.find('td').toArray().map(cell => cell.colSpan));
-            this.height = xMath.sum.apply(xMath, this.$body.find('td.time').toArray().map(cell => cell.rowSpan));
-
+            let bodySize = this.$header.find("#bodySize").data();
+            this.width = bodySize.width;
+            this.height = bodySize.height;
+            
             let filled = new Array(this.height);
             xMath.range(0, this.height).forEach(i => {
                 filled[i] = new Array(this.width).fill(false);
@@ -60,6 +63,10 @@
             $cells.remove();
         }
 
+        /**
+         * Вывод таблицы
+         * @return {TableTweaker} this
+         */
         draw() {
             let $rows = this.$body.children();
             this.cells.forEach(cell => {
@@ -72,8 +79,14 @@
                 }).html(cell.html).data('width', cell.width).data('height', cell.height)
                     .data('vIndex', cell.vIndex).appendTo($rows.eq(cell.posY));
             });
+
+            return this;
         }
 
+        /**
+         * Объединение главных ячеек по вертикали
+         * @return {TableTweaker} this
+         */
         mergeBoths() {
             for (let i = 0, sz = this.cells.length; i < sz; i++) {
                 let current = new Cell(this.cells, this.cells[i], true, true);
@@ -86,8 +99,14 @@
 
                 i--;
             }
+            
+            return this;
         }
 
+        /**
+         * Объединение недель по горизонтали
+         * @return {TableTweaker} this
+         */
         mergeWeeks() {
             let dividers = new Array(this.cells.length).fill(1);
             for (let i = 0, sz = this.cells.length; i < sz; i++) {
@@ -104,8 +123,14 @@
 
                 i--;
             }
+            
+            return this;
         }
 
+        /**
+         * Объединение ячеек по вертикали
+         * @return {TableTweaker} this
+         */
         mergeCellsVertical() {
             for (let i = 0, sz = this.cells.length; i < sz; i++) {
                 let current = new Cell(this.cells, this.cells[i]);
@@ -119,8 +144,14 @@
 
                 i--;
             }
+            
+            return this;
         }
 
+        /**
+         * Объединение ячеек по горизонтали
+         * @return {TableTweaker} this
+         */
         mergeCellsHorisontal() {
             for (let i = 0, sz = this.cells.length; i < sz; i++) {
                 let current = new Cell(this.cells, this.cells[i]);
@@ -134,8 +165,14 @@
 
                 i--;
             }
+            
+            return this;
         }
 
+        /**
+         * Удаление пустых подгрупп
+         * @return {TableTweaker} this
+         */
         deleteEmptySubgroups() {
             for (let i = 0, sz = this.cells.length; i < sz; i++) {
                 let week = new Cell(this.cells, this.cells[i], true);
@@ -172,63 +209,78 @@
                 });
 
                 i += oldWidth - 1;
-            };
+            }
+            
+            return this;
         }
 
+        /**
+         * Пересчет ширины
+         * @return {TableTweaker} this
+         */
         fixWidth() {
-            let $headerCells = this.$header.find('td');
-            let $titles = $headerCells.slice(1);
+            let $fRow = this.$header.children().first();
+            let $fCells = $fRow.children().slice(1);
 
             let x = 1;
             let yRange = xMath.range(0, this.height);
-            let titles = $titles.toArray().map(title => {
+            let fCells = $fCells.toArray().map(title => {
                 let length = Math.max.apply(Math, yRange.map(y => {
                     let week = Cell.getWeek(this.cells, x, y);
                     if (!week.ok) return 0;
                     let divider = week.cells[0].divider || 1;
                     return week.width / divider;
                 })) || 1;
-                let colspan = Number($(title).attr('colspan'))
-                x += colspan;
-                return { length, colspan };
+                x += Number($(title).attr('colspan'));
+                return length;
             });
 
-            let fullLength = xMath.sum.apply(xMath, titles.map(({ length }) => length));
-            let timeWidth = 5;
-            let widthPerCol = (100 - timeWidth) / fullLength;
-
-            let $fixWidthRow = $('<tr class="service"><td></td></tr>').prependTo(this.$header);
-            titles.forEach(({ length, colspan }) => {
-                $(`<td></td>`).css('width', `${widthPerCol * length}%`).attr("colspan", colspan).appendTo($fixWidthRow)
-            });
-            $fixWidthRow.children().first().css('width', '50px');
-            $fixWidthRow.children().last().css('width', 'auto');
+            let colWidth = 95 / xMath.sum.apply(xMath, fCells);
+            fCells.forEach((length, index) => $fCells.eq(index).css('width', `${colWidth * length}%`));
+            $fRow.children().last().css('width', 'auto');
+            
+            return this;
         }
 
+        /**
+         * Добавление строки с названиями направлений
+         * @return {TableTweaker} this
+         */
         setGroupsHeader() {
-            let $areaRow = $('<tr></tr>').insertAfter(this.$header.children().first());
-            let $titles = this.$header.children().last().find('td');
-            $titles.first().detach().attr('rowspan', 2).appendTo($areaRow);
-            $titles = $titles.slice(1);
+            let $fRow = this.$header.children().eq(0);
+            let $tRow = this.$header.children().eq(1);
+            let $aRow = $('<tr></tr>').insertAfter($fRow);
 
-            $titles.toArray().forEach(title => {
+            let $tCells = $tRow.children();
+            $tCells.first().detach().attr('rowspan', 2).appendTo($aRow);
+            $tCells = $tCells.slice(1);
+
+            $tCells.toArray().forEach(title => {
                 let $title = $(title);
                 let text = $title.text();
                 let [ fullText, titleText, areaText ] = /(.*?) \((.*?)\)/.exec(text) || [ text, text, '' ];
 
-                let $lastArea = $areaRow.children().last();
-                if ($areaRow.children().length > 1 && $lastArea.text() === areaText) {
-                    let colspan = Number($lastArea.attr('colspan')) + Number($title.attr('colspan')) || 0;
+                let $lastArea = $aRow.children().last();
+                if ($aRow.children().length > 1 && $lastArea.text() === areaText) {
+                    let colspan = Number($lastArea.attr('colspan')) + Number($title.attr('colspan'));
                     $lastArea.attr('colspan', colspan);
                 } else {
-                    let colspan = Number($title.attr('colspan')) || 0;
-                    $(`<td><span>${areaText}</span></td>`).attr('colspan', colspan).appendTo($areaRow);
+                    let colspan = Number($title.attr('colspan'));
+                    $(`<td colspan="${colspan}"><span>${areaText}</span></td>`).appendTo($aRow);
                 }
 
                 $title.html(`<span>${titleText} гр.</span>`);
             });
+            
+            return this;
         }
 
+        /**
+         * Заблюривание ячеек
+         * @param  {number}       pos    Номер игнорируемой ячейки
+         * @param  {number}       length Количество ячеек, когда будет применяться блюр
+         * @return {TableTweaker}        this
+         */
         blurWeeks(pos, length) {
             this.cells.forEach(cell => {
                 let both = new Cell(this.cells, cell, true, true);
@@ -241,15 +293,26 @@
                     week.cells.forEach(cell => cell.domClass += ' cell-blured');
                 });
             });
+            
+            return this;
         }
     }
 
     class Cell {
+        /**
+         * @param {object[]} cells Массив ячеек, в которой требуется искать компоненты для этой
+         * @param {object}   cell  Ячейка
+         * @param {object}   week  Получить неделю
+         * @param {object}   both  Получить главную я чейку (требуется флаг week)
+         */
         constructor(cells, cell, week, both) {
+            // Флаг корректности
             this.ok = false;
 
+            // Проверка на существование
             if (!cell || cell.deleted) return;
 
+            // Перенос свойств из ячейки
             this.cells = null;
             this.posX = cell.posX;
             this.posY = cell.posY;
@@ -263,15 +326,18 @@
             this.isBoth = Boolean(this.height);
             this.empty = false;
 
+            // Проверка на возможность получения недели / главной ячейки
             if (week && !this.isWeek) return;
             if (both && !this.isBoth) return;
 
             switch (cell.type) {
+                // Полная ячейка
                 case 'full':
                     this.cells = [ cell ];
                     this.length = 1;
                     break;
 
+                // Заголовок ячейки
                 case 'title':
                     this.cells = [ cell ];
                     let offsetX = 0;
@@ -286,6 +352,7 @@
                     }
                     break;
 
+                // Пустая ячейка
                 case 'empty':
                     this.cells = [ cell ];
                     this.length = 1;
@@ -296,6 +363,7 @@
                     return;
             }
 
+            // Получение недели
             if (week) {
                 while (this.length < this.width) {
                     let [ posX, posY ] = [ this.posX + this.sizeX, this.posY ];
@@ -309,6 +377,7 @@
                 }
             }
 
+            // Получение полной ячейки
             if (both) {
                 for (let i = 1; i < this.height; i++) {
                     let [ posX, posY ] = [ this.posX, this.posY + this.sizeY ];
@@ -321,13 +390,23 @@
                 }
             }
 
+            // Флаг корректности
             this.ok = true;
         }
 
+        /**
+         * Получение HTML ячейки
+         * @return {string} HTML
+         */
         html() {
             return this.ok ? this.cells.map(cell => cell.html).join('\n') : '';
         }
 
+        /**
+         * Вертикальное объединение ячеек
+         * @param  {Cell} next Поглощаемая ячейка
+         * @return {Cell}      this
+         */
         mergeVertical(next) {
             xMath.range(0, this.cells.length).forEach(i => {
                 let tData = this.cells[i];
@@ -342,8 +421,15 @@
             this.sizeY += next.sizeY;
             if (this.isBoth && !next.isBoth) this.height = this.cells[0].height -= 1;
             next.cells.forEach(cell => cell.deleted = true);
+
+            return this;
         }
 
+        /**
+         * Горизонтальное объединение ячеек
+         * @param  {Cell} next Поглощаемая ячейка
+         * @return {Cell}      this
+         */
         mergeHorisontal(next) {
             let offsetX = this.posX;
             xMath.range(0, this.cells.length).forEach(i => {
@@ -359,8 +445,18 @@
             this.sizeX += next.sizeX;
             if (this.isWeek && !next.isWeek) this.width = this.cells[0].width -= next.length;
             next.cells.forEach(cell => cell.deleted = true);
+
+            return this;
         }
 
+        /**
+         * Поиск ячейки
+         * @param  {object[]} cells  Ячейки, среди которых происходит поиск
+         * @param  {number}   x      Положение ячейки по X
+         * @param  {number}   y      Положение ячейки по Y
+         * @param  {bool}     inCell Поиск ячейки, которая содержит указанную позицию, иначе только ВЛ-вершину
+         * @return {object}          Найденая ячейка или null
+         */
         static findCell(cells, x, y, inCell) {
             let fCell = null;
             cells.some(cell => {
@@ -377,10 +473,25 @@
             return fCell;
         }
 
+        /**
+         * Получение ячейки
+         * @param  {object[]} cells  Ячейки, среди которых происходит поиск
+         * @param  {number}   x      Положение ячейки по X
+         * @param  {number}   y      Положение ячейки по Y
+         * @param  {bool}     inCell Поиск ячейки, которая содержит указанную позицию, иначе только ВЛ-вершину
+         * @return {Cell}            Найденная ячейка или Cell(null)
+         */
         static getCell(cells, x, y, inCell) {
             return new Cell(cells, Cell.findCell(cells, x, y, inCell));
         }
 
+        /**
+         * Получение недели
+         * @param  {object[]} cells  Ячейки, среди которых происходит поиск
+         * @param  {number}   x      Положение ячейки по X
+         * @param  {number}   y      Положение ячейки по Y
+         * @return {Cell}            Найденная ячейка или Cell(null)
+         */
         static getWeek(cells, x, y) {
             let fCell = new Cell(cells, null);
             cells.some(cellData => {
@@ -393,6 +504,13 @@
             return fCell;
         }
 
+        /**
+         * Получение главной ячейки
+         * @param  {object[]} cells  Ячейки, среди которых происходит поиск
+         * @param  {number}   x      Положение ячейки по X
+         * @param  {number}   y      Положение ячейки по Y
+         * @return {Cell}            Найденная ячейка или Cell(null)
+         */
         static getBoth(cells, x, y) {
             let fCell = new Cell(cells, null);
             cells.some(cellData => {

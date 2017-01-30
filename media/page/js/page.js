@@ -1,8 +1,10 @@
-/* global api, SidePanel, system */
 (() => {
     'use strict';
 
     class Page {
+        /**
+         * Подстроить высоту страницы и положение интро
+         */
         setContentHeight() {
             system.$content.css('min-height', 0);
 
@@ -12,6 +14,9 @@
             if (system.$intro.is(':visible')) system.$intro.css('margin-top', (system.$content.height() - system.$intro.height()) / 2);
         }
 
+        /**
+         * Установить неделю в шапке
+         */
         setWeek() {
             switch (system.week) {
                 case 'upper':
@@ -21,6 +26,9 @@
                 case 'lower':
                     system.$week.html('Сейчас нижняя неделя');
                     break;
+
+                default:
+                    system.$week.html('Неделя не известна');
             }
         }
     }

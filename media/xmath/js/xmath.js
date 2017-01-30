@@ -1,23 +1,32 @@
-(function () {
+(() => {
     'use strict';
 
-    var xMath = window.xMath = {};
-
-    xMath.sum = function (/* ... */) {
-        var arr = arguments;
-        var a = arr[0];
-        for (var i = 1; i < arr.length; i++) {
-            a += arr[i];
+    class xMath {
+        /**
+         * Сумма
+         * @param  {number} ... Значения
+         * @return {number}     Сумма
+         */
+        static sum(/* ... */) {
+            let arr = arguments;
+            let a = arr[0];
+            for (let i = 1; i < arr.length; i++) a += arr[i];
+            return a;
         }
-        return a;
-    };
 
-    xMath.range = function (first, last) {
-        var size = last - first;
-        var arr = new Array(size);
-        for (var i = 0; i < size; i++) {
-            arr[i] = i + first;
+        /**
+         * Получить диапазон [first, last)
+         * @param  {number}   first
+         * @param  {number}   last
+         * @return {number[]}
+         */
+        static range(first, last) {
+            let size = last - first;
+            let arr = new Array(size);
+            for (let i = 0; i < size; i++) arr[i] = i + first;
+            return arr;
         }
-        return arr;
-    };
+    }
+
+    window.xMath = xMath;
 })();

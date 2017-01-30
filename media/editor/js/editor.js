@@ -1,8 +1,10 @@
-/* global system */
 (() => {
     'use strict';
 
     class Editor {
+        /**
+         * Получение статуса и настройка панели
+         */
         set() {
             system.$login.on('click', this.login);
             system.$logout.on('click', this.logout);
@@ -16,6 +18,9 @@
             });
         }
 
+        /**
+         * Обаботка кнопки авторизации
+         */
         login() {
             let $form = $('<form action="#" method="post" class="form-auth" id="form-auth">' +
                 '<input type="text" name="login" placeholder="Логин">' +
@@ -25,6 +30,7 @@
 
             system.$overlay.fadeIn();
             $form.fadeIn(() => {
+                $form.find('[name=login]').focus();
                 $form.on('submit', event => {
                     event.preventDefault();
 
@@ -48,6 +54,9 @@
             });
         }
 
+        /**
+         * Обработка кнопки выхода
+         */
         logout() {
             api.auth.logout(() => location.reload());
         }

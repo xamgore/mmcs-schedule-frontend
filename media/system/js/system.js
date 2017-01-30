@@ -1,13 +1,11 @@
-(function () {
+(() => {
     'use strict';
 
     class System {
-        constructor() {
-            //this.backendUrl = `${window.document.location.protocol}//${window.document.location.hostname}:3000/`;
-            this.backendUrl = '//users.mmcs.sfedu.ru:3000/';
-            this.onShow = () => {};
-        }
-
+        /**
+         * Получение элементов на странице
+         * @return {System} this
+         */
         getElements() {
             this.$body      = $('body');
             this.$page      = $('#page');
@@ -21,22 +19,32 @@
             this.$intro     = $('#intro');
             this.$schedule  = $('#schedule');
             this.$overlay   = $('#overlay');
+
+            return this;
         }
 
-        getUrl(url) {
-            return this.backendUrl + url;
-        }
-
+        /**
+         * Отобразить расписание
+         * @return {System} this
+         */
         showSchedule() {
             this.$intro.hide();
             this.$schedule.show();
-            this.onShow();
+            $(window).trigger('onScheduleShow', [ true ]);
+
+            return this;
         }
 
+        /**
+         * Отобразить интро
+         * @return {System} this
+         */
         showIntro() {
             this.$schedule.hide();
             this.$intro.show();
-            this.onShow();
+            $(window).trigger('onScheduleShow', [ false ]);
+
+            return this;
         }
     }
 

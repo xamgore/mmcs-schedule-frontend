@@ -1,84 +1,127 @@
 (() => {
     'use strict';
 
-    let helpers = window.helpers = {};
-
-    helpers.getNameAbbr = name => {
-        let [ lastName, firstName, secondName ] = name.split(' ');
-        lastName = lastName ? `${lastName} ` : '';
-        firstName = firstName ? `${firstName[0]}.` : '';
-        secondName = secondName ? `${secondName[0]}.` : '';
-        return `${lastName}${firstName}${secondName}`;
-    };
-
-    helpers.getGroupName = ({ gradenum, groupnum, num, name }, gradeNum) => {
-        gradenum = gradenum || gradeNum;
-        groupnum = groupnum || num;
-
-        gradenum = gradenum ? `${gradenum}.` : '';
-        name = name && name !== 'NULL' ? ` (${name})` : '';
-        
-        return `${gradenum}${groupnum}${name}`;
-    };
-
-    helpers.compare = (x, y) => {
-        return JSON.stringify(x) === JSON.stringify(y);
-    };
-
-    helpers.array = {};
-
-    helpers.array.groupBy = (array, key) => {
-        let res = {};
-        array.forEach(function (elem) {
-            if (!elem) {
-                return;
-            }
-
-            let keyVal = JSON.stringify(elem[key]);
-            if (res[keyVal]) {
-                res[keyVal].push(elem);
-            } else {
-                res[keyVal] = [ elem ];
-            }
-        });
-        return res;
-    };
-
-    helpers.array.setLength = (array, length) => {
-        let oldLength = array.length;
-        array.length = length;
-        array.fill(null, oldLength);
-        return array;
-    };
-
-    helpers.array.last = array => {
-        if (array.length) {
-            return array[array.length - 1];
-        }
-    };
-
-    helpers.time = {};
-
-    helpers.time.parse = time => {
-        let [ full, hours, minutes ] = /([0-9]+):([0-9]+)/.exec(time);
-        hours = Number(hours);
-        minutes = Number(minutes);
-        return { hours, minutes };
-    };
-
-    helpers.time.getStamp = time => {
-        return time.hours * 60 + (time.minutes || 0);
-    };
-
-    helpers.time.getString = ({ hours, minutes }) => {
-        if (!minutes) {
-            return `${hours}:00`;
+    class helpers {
+        /**
+         * Получить "Фамилия И.О." по "Фамилия Имя Отчество"
+         * @param  {string} name "Фамилия Имя Отчество"
+         * @return {string}      "Фамилия И.О."
+         */
+        static getNameAbbr(name) {
+            let [ lastName, firstName, secondName ] = name.split(' ');
+            lastName = lastName ? `${lastName} ` : '';
+            firstName = firstName ? `${firstName[0]}.` : '';
+            secondName = secondName ? `${secondName[0]}.` : '';
+            return `${lastName}${firstName}${secondName}`;
         }
 
-        if (minutes < 10) {
-            return `${hours}:0${minutes}`;
+        /**
+         * Получить название группы
+         * @param  {object} group    Группа
+         * @param  {string} gradeNum Номер курса
+         * @return {string}          Название группы
+         */
+        static getGroupName({ gradenum, groupnum, num, name }, gradeNum) {
+            gradenum = gradenum || gradeNum;
+            groupnum = groupnum || num;
+
+            gradenum = gradenum ? `${gradenum}.` : '';
+            name = name && name !== 'NULL' ? ` (${name})` : '';
+            
+            return `${gradenum}${groupnum}${name}`;
         }
 
-        return `${hours}:${minutes}`;
-    };
+        /**
+         * Сравнение объектов
+         * @param  {object} x Объект 1
+         * @param  {object} y Объект 2
+         * @return {bool}     Совпадают ли объекты
+         */
+        static compare(x, y) {
+            return JSON.stringify(x) === JSON.stringify(y);
+        }
+    }
+
+    class array {
+        /**
+         * Сгруппировать массив объектов по ключу
+         * @param  {objects[]} array Массив
+         * @param              key   Ключ
+         * @return {object}          Сгруппированный массив
+         */
+        static groupBy(array, key) {
+            let res = {};
+            array.forEach(function (elem) {
+                if (!elem) return;
+
+                let keyVal = JSON.stringify(elem[key]);
+                if (res[keyVal]) {
+                    res[keyVal].push(elem);
+                } else {
+                    res[keyVal] = [ elem ];
+                }
+            });
+            return res;
+        }
+
+        /**
+         * Задать длину массиву (новые элементы null)
+         * @param  {array}  array  Массив
+         * @param  {number} length Новая длина массива
+         * @return {array}         Массив
+         */
+        static setLength(array, length) {
+            let oldLength = array.length;
+            array.length = length;
+            array.fill(null, oldLength);
+            return array;
+        }
+
+        /**
+         * Получить последний элемент массива
+         * @param  {array} array Массив
+         * @return               Значение
+         */
+        static last(array) {
+            if (array.length) return array[array.length - 1];
+        }
+    }
+
+    class time {
+        /**
+         * Разбор времени
+         * @param  {string} time Время
+         * @return {object}      Часы и минуты
+         */
+        static parse(time) {
+            let [ full, hours, minutes ] = /([0-9]+):([0-9]+)/.exec(time);
+            hours = Number(hours);
+            minutes = Number(minutes);
+            return { hours, minutes };
+        }
+
+        /**
+         * Получить время в минутах
+         * @param  {object} time Часы и минуты
+         * @return {number}      Минуты
+         */
+        static getStamp({ hours, minutes }) {
+            return hours * 60 + (minutes || 0);
+        }
+
+        /**
+         * Получить строку со временем
+         * @param  {object} time Часы и минуты
+         * @return {string}      Время
+         */
+        static getString({ hours, minutes }) {
+            if (!minutes) return `${hours}:00`;
+            if (minutes < 10) return `${hours}:0${minutes}`;
+            return `${hours}:${minutes}`;
+        }
+    }
+
+    window.helpers = helpers;
+    helpers.array = array;
+    helpers.time = time;
 })();
