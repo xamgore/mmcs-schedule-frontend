@@ -37,6 +37,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        abbr {
+            border: 0;
+            cursor: inherit;
+        }
     }
 
     .cell-title {
@@ -45,9 +50,20 @@
     }
 
     .cell-content {
+        position: relative;
+        height: 130px;
         border-top: 0;
-        padding-top: 5px;
         vertical-align: middle;
+
+        .lesson-content {
+            position: absolute;
+            bottom: -23px;
+            left: 50%;
+            width: 120px;
+            margin-left: -9px;
+            transform: rotate(-90deg);
+            transform-origin: top left;
+        }
     }
 
     .cell-empty:before {

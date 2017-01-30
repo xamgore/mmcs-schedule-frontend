@@ -184,7 +184,6 @@
 
                     if (wCell.type === 'empty') {
                         wCell.deleted = true;
-                        week.length--;
                         week.width--;
                     }
                 });
@@ -321,7 +320,6 @@
             this.width = cell.width;
             this.height = cell.height;
             this.vIndex = cell.vIndex;
-            this.length = 0;
             this.isWeek = Boolean(this.width);
             this.isBoth = Boolean(this.height);
             this.empty = false;
@@ -334,7 +332,6 @@
                 // Полная ячейка
                 case 'full':
                     this.cells = [ cell ];
-                    this.length = 1;
                     break;
 
                 // Заголовок ячейки
@@ -347,15 +344,12 @@
 
                         offsetX += fCell.sizeX;
                         this.sizeY = 1 + fCell.sizeY;
-
-                        this.length++;
                     }
                     break;
 
                 // Пустая ячейка
                 case 'empty':
                     this.cells = [ cell ];
-                    this.length = 1;
                     this.empty = true;
                     break;
 
@@ -365,7 +359,7 @@
 
             // Получение недели
             if (week) {
-                while (this.length < this.width) {
+                for (let i = 1; i < this.width; i++) {
                     let [ posX, posY ] = [ this.posX + this.sizeX, this.posY ];
                     let fCell = Cell.getCell(cells, posX, posY, true);
                     if (fCell.posX === posX && fCell.posY === posY) {
@@ -373,7 +367,6 @@
                         if (this.empty) this.empty = fCell.empty;
                     }
                     this.sizeX += fCell.sizeX;
-                    this.length += fCell.length;
                 }
             }
 
@@ -419,7 +412,10 @@
             });
 
             this.sizeY += next.sizeY;
-            if (this.isBoth && !next.isBoth) this.height = this.cells[0].height -= 1;
+            if (this.isBoth && !next.isBoth) {
+                this.height--;
+                this.cells[0].height--;
+            }
             next.cells.forEach(cell => cell.deleted = true);
 
             return this;
@@ -443,7 +439,10 @@
             });
 
             this.sizeX += next.sizeX;
-            if (this.isWeek && !next.isWeek) this.width = this.cells[0].width -= next.length;
+            if (this.isWeek && !next.isWeek) {
+                this.width--;
+                this.cells[0].width--;
+            }
             next.cells.forEach(cell => cell.deleted = true);
 
             return this;

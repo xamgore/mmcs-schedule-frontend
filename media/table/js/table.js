@@ -215,7 +215,7 @@
 
             let colPos = this.rows[0].children().length;
             this.groups.forEach(group => group.draw());
-            this.rows[0].children().eq(colPos).data('width', this.length)
+            this.rows[0].children().eq(colPos).data('width', this.groups.length)
                 .data('height', this.pos === 0 ? this.cell.weeks.length : null).data('vIndex', this.pos);
 
             return this;
