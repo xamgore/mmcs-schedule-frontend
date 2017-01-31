@@ -51,18 +51,24 @@
 
     .cell-content {
         position: relative;
-        height: 130px;
+        height: 140px;
         border-top: 0;
         vertical-align: middle;
 
         .lesson-content {
             position: absolute;
-            bottom: -23px;
+            top: 50%;
             left: 50%;
-            width: 120px;
+            width: 130px;
+            height: 28px;
             margin-left: -9px;
+            margin-top: 65px;
             transform: rotate(-90deg);
             transform-origin: top left;
+
+            :first-child {
+                min-height: 2px;
+            }
         }
     }
 
