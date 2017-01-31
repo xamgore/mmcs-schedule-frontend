@@ -78,7 +78,7 @@
              * @param {string}   room     ID аудитории
              * @param {function} callback
              */
-            getForRoom: (room, callback) => query(`schedule/room/${room}`, null, 'get', callback, null),
+            getForRoom: (room, callback) => query(`APIv1/schedule/room/${room}`, null, 'get', callback, null),
             /**
              * Получить расписание курса
              * @param {string}   course   ID курса

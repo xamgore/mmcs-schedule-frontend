@@ -227,6 +227,7 @@
                 case 'group':
                 case 'teacher':
                 case 'day':
+                case 'room':
                     (new Schedule(type, data)).draw($('<div class="schedule"></div>').appendTo(system.$schedule));
                     break;
             }

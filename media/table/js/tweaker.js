@@ -174,9 +174,9 @@
          * @return {TableTweaker} this
          */
         deleteEmptySubgroups() {
-            for (let i = 0, sz = this.cells.length; i < sz; i++) {
-                let week = new Cell(this.cells, this.cells[i], true);
-                if (!week.ok || week.empty) continue;
+            this.cells.forEach(cell => {
+                let week = new Cell(this.cells, cell, true);
+                if (!week.ok || week.empty) return;
 
                 let oldWidth = week.width;
                 week.cells.forEach(wCell => {
@@ -193,8 +193,9 @@
 
                     wCell.width = week.width;
                     wCell.height = week.height;
+                    wCell.vIndex = week.vIndex;
                     return true;
-                })
+                });
 
                 let widthMul = oldWidth / week.width;
                 let posX = week.posX;
@@ -203,12 +204,10 @@
 
                     wCell.sizeX *= widthMul;
                     wCell.posX = posX;
-
+                    
                     if (wCell.type !== 'title') posX += wCell.sizeX;
                 });
-
-                i += oldWidth - 1;
-            }
+            });
             
             return this;
         }
@@ -459,7 +458,7 @@
         static findCell(cells, x, y, inCell) {
             let fCell = null;
             cells.some(cell => {
-                if (!cell) return false;
+                if (!cell || cell.deleted) return false;
 
                 if (
                     !inCell && cell.posX === x && cell.posY === y ||
