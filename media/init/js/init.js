@@ -1,12 +1,12 @@
 (() => {
     'use strict';
 
-    let system = window.system = new System();
-    let page = new Page();
-    let switcher = new Switcher();
-    let editor = new Editor();
-
     $(() => {
+        let system = window.system = new System();
+        let page = new Page();
+        let switcher = new Switcher();
+        let editor = new Editor();
+
         // Получение элементов на странице
         system.getElements();
 

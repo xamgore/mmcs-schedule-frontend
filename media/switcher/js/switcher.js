@@ -8,15 +8,15 @@
          */
         set() {
             // Добавление селекторов
-            this.type       = new Select('type').hide();
-            this.course     = new Select('course').hide();
-            this.group      = new Select('group').hide();
-            this.day        = new Select('day').hide();
-            this.teacher    = new Select('teacher').hide();
-            this.room       = new Select('room').hide();
+            this.type = new Select('type', system.$switch).hide();
+            this.course = new Select('course', system.$switch).hide();
+            this.group = new Select('group', system.$switch).hide();
+            this.day = new Select('day', system.$switch).hide();
+            this.teacher = new Select('teacher', system.$switch).hide();
+            this.room = new Select('room', system.$switch).hide();
 
             // Действие при сбросе выбора типа расписания
-            this.type.bind([ '' ], () => {
+            this.type.bind([ 'default' ], () => {
                 this.course.hide();
                 this.group.hide();
                 this.day.hide();
@@ -52,17 +52,19 @@
                 this.group.hide();
                 this.day.hide();
 
-                if (course === '') {
+                if (course === 'default') {
                     this.closeSchedule();
                     return;
                 }
 
                 switch (this.type.value) {
                     case 'course':
-                        this.day.fill('Неделя', [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ].map((day, index) => ({
-                            value: index,
-                            text: day
-                        }))).show();
+                        setTimeout(() => {
+                            this.day.fill('Неделя', [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ].map((day, index) => ({
+                                value: index,
+                                text: day
+                            }))).show();
+                        }, 0);
                         break;
 
                     case 'group':
@@ -85,7 +87,7 @@
 
             // Действие при выборе группы
             this.group.bind(group => {
-                if (group === '') {
+                if (group === 'default') {
                     this.closeSchedule();
                     return;
                 }
@@ -95,7 +97,7 @@
 
             // Действие при выборе группы
             this.day.bind(day => {
-                if (day === '') {
+                if (day === 'default') {
                     api.schedule.getForCourse(this.course.value, result => this.openSchedule('course', result));
                 } else {
                     api.schedule.getForDay(this.course.value, day, result => this.openSchedule('day', result));
@@ -120,7 +122,7 @@
 
             // Действие при выборе преподавателя
             this.teacher.bind(teacher => {
-                if (teacher === '') {
+                if (teacher === 'default') {
                     this.closeSchedule();
                     return;
                 }
@@ -148,7 +150,7 @@
 
             // Действие при выборе аудитории
             this.room.bind(room => {
-                if (room === '') {
+                if (room === 'default') {
                     this.closeSchedule();
                     return;
                 }
@@ -160,18 +162,18 @@
             this.type.bind((type, init) => {
                 localStorage.type = type;
                 if (!init) {
-                    localStorage.course = '';
-                    localStorage.teacher = '';
-                    localStorage.room = '';
+                    localStorage.course = 'default';
+                    localStorage.teacher = 'default';
+                    localStorage.room = 'default';
                 }
             });
             this.course.bind((course, init) => {
                 localStorage.course = course;
                 if (!init || localStorage.type !== 'group') {
-                    localStorage.group = '';
+                    localStorage.group = 'default';
                 }
                 if (!init || localStorage.type !== 'course') {
-                    localStorage.day = '';
+                    localStorage.day = 'default';
                 }
             });
             this.group.bind(group => localStorage.group = group);
@@ -244,112 +246,6 @@
         closeSchedule() {
             system.showIntro();
             return this;
-        }
-    }
-
-    class Select {
-        /**
-         * @param  {string} id ID селектора
-         */
-        constructor(id) {
-            this.id = id;
-            this.$select = $(`<select class="select" id="${id}"></select>`).appendTo(system.$switch);
-        }
-
-        /**
-         * Создать опцию для селекта
-         * @param  {string} value    Значение опции
-         * @param  {string} text     Текст опции
-         * @param  {bool}   disabled Отключение опции
-         * @return {string}          HTML опции
-         */
-        static createOption(value, text, disabled) {
-            return $(`<option value="${value}">${text}</option>`).prop('disabled', disabled);
-        }
-
-        /**
-         * Заполнение селекта
-         * @param  {select}   text Текст опции по-умолчанию
-         * @param  {object[]} data Массив опций
-         * @return {Select}        this
-         */
-        fill(text, data) {
-            this.$select.html('');
-
-            Select.createOption('', text).appendTo(this.$select);
-            data.forEach(item => Select.createOption(item.value, item.text, item.disabled).appendTo(this.$select));
-
-            let value = localStorage[this.id];
-            if (value != null) {
-                this.initValue = value;
-            } else {
-                this.value = '';
-            }
-
-            return this;
-        }
-
-        /**
-         * Привязать действие на селектор
-         * @param  {string[]} values   Список опций для которых выполняется, по-умолчанию - для всех
-         * @param  {function} callback
-         * @return {Select}            this
-         */
-        bind(values, callback) {
-            if (typeof values === 'function') {
-                callback = values;
-                values = null;
-            }
-
-            this.$select.change((event, param) => {
-                if (values == null || values.includes(this.value)) callback(this.value, param);
-            });
-
-            return this;
-        }
-
-        /**
-         * Отобразить селектор
-         * @return {Select} this
-         */
-        show() {
-            this.$select.show();
-            return this;
-        }
-
-        /**
-         * Скрыть селектор
-         * @return {Select} this
-         */
-        hide() {
-            this.$select.hide();
-            return this;
-        }
-
-        /**
-         * Получить значение
-         * @return {string} Значение
-         */
-        get value() {
-            return this.$select.val();
-        }
-
-        /**
-         * Задать значение
-         * @param {string} value Значение
-         */
-        set value(value) {
-            this.$select.find(`[value="${value}"]`).prop('selected', true);
-            this.$select.trigger('change');
-        }
-
-        /**
-         * Задать значение с флагом init
-         * @param {string} value Значение
-         */
-        set initValue(value) {
-            this.$select.find(`[value="${value}"]`).prop('selected', true);
-            this.$select.trigger('change', [ true ]);
         }
     }
 
