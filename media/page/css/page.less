@@ -1,231 +1,160 @@
-@font-face {
-    font-family: PTSans;
-    src: url(../fonts/PTSans.woff);
-    font-style: normal;
-    font-weight: normal;
+.container {
+    width: auto !important;
 }
-@font-face {
-    font-family: PTSans;
-    src: url(../fonts/PTSans_bold.woff);
-    font-style: normal;
-    font-weight: bold;
-}
-
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    font: inherit;
-}
-
-
-.clearfix {
-    position: relative;
-
-    &:after {
-        content: '';
-        display: table;
-        clear: both;
-    }
-}
-
 
 html {
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    font: 16px/20px PTSans, sans-serif;
+    position: relative;
+    min-height: 100%;
 }
+
 body {
-    overflow: auto;
-    width: 100%;
-    height: 100%;
-}
-
-
-a {
-    text-decoration: none;
-    color: inherit;
-
-    &:hover {
-        text-decoration: underline;
-    }
-}
-
-
-.page {
     min-width: 1200px;
+    margin-bottom: 50px;
+}
 
-    // Шапка
-    .header {
-        padding: 10px 15px;
+.page_header {
+    padding-top: 10px;
+    padding-bottom: 10px;
 
-        background-color: #47a;
+    background-color: #47a;
 
-        .left {
-            float: left;
+    .title {
+        display: block;
 
-            padding: 10px 0;
+        padding-top: 10px;
 
-            .title {
-                display: block;
+        font-size: 24px;
+        line-height: 25px;
 
-                font-size: 24px;
-                line-height: 25px;
+        color: #fff;
+    }
 
-                color: #fff;
-            }
+    .week {
+        display: block;
 
-            .week {
-                display: block;
+        padding-top: 10px;
 
-                padding-top: 10px;
+        color: #f9f9f9;
+    }
 
-                color: #f9f9f9;
-            }
+    .logo {
+        display: block;
+
+        width: 86px;
+        height: 75px;
+
+        background-image: url(../img/logo_sfedu_white.png);
+    }
+}
+
+.page_nav {
+    background-color: #f3f3f3;
+
+    .select {
+        display: block;
+        position: relative;
+        float: left;
+
+        height: 32px;
+        min-width: 280px;
+        margin: 10px 0;
+        padding: 0 30px 0 10px;
+        border: 1px solid #ccc;
+
+        appearance: none;
+        border-radius: 0;
+        background-image: url(../img/select.png);
+        background-position: right center;
+        background-repeat: no-repeat;
+
+        background-color: #fff;
+
+        &::-ms-expand {
+            display: none;
         }
 
-        .right {
-            float: right;
-
-            .logo {
-                display: block;
-
-                width: 86px;
-                height: 75px;
-
-                background-image: url(../img/logo_sfedu_white.png);
-            }
+        &:not(:last-child) {
+            margin-right: 10px;
         }
     }
 
-    // Селекторы расписаний, кнопки печати и авторизации
-    .nav {
-        padding: 0 15px;
+    .button {
+        display: block;
+        float: left;
 
-        background-color: #f3f3f3;
+        height: 52px;
+        padding: 10px;
 
-        .select {
-            display: block;
-            position: relative;
-            float: left;
+        cursor: pointer;
 
-            height: 32px;
-            min-width: 280px;
-            margin: 10px 0;
-            padding: 0 30px 0 10px;
-            border: 1px solid #ccc;
-
-            appearance: none;
-            border-radius: 0;
-            background-image: url(../img/select.png);
-            background-position: right center;
-            background-repeat: no-repeat;
-
-            background-color: #fff;
-
-            &::-ms-expand {
-                display: none;
-            }
+        &:hover {
+            background-color: #ddd;
         }
+    }
+}
 
-        .left {
-            float: left;
+.page_content {
+    position: relative;
 
-            .select {
-                margin-right: 10px;
-            }
+    padding-top: 17px;
+    padding-bottom: 17px;
+
+    .schedule-group {
+        display: none;
+
+        .schedule:not(:last-child) {
+            margin-bottom: 17px;
         }
+    }
+}
 
-        .right {
-            float: right;
+.page_footer {
+    position: absolute;
+    bottom: 0;
 
-            .button {
-                display: block;
-                float: left;
+    width: 100%;
+    height: 50px;
+    padding-top: 15px;
+    padding-bottom: 15px;
 
-                height: 52px;
-                padding: 10px;
+    background-color: #f3f3f3;
+    color: #333;
 
-                cursor: pointer;
+    span {
+        margin: 0 5px;
+    }
+}
 
-                &:hover {
-                    background-color: #ddd;
+.auth-form > :last-child {
+    margin-bottom: 0;
+}
+
+@media print {
+    .page_header,
+    .page_nav,
+    .page_footer {
+        display: none;
+    }
+
+    .page_content {
+        padding: 0;
+        
+        .schedule {
+            &:not(:last-child) {
+                page-break-after: always;
+            }
+
+            table {
+                margin: 0;
+
+                thead {
+                    display: table-row-group;
+                }
+
+                .cell-blured {
+                    color: inherit;
                 }
             }
         }
     }
-
-    // "Приветственный" текст и расписание
-    .content {
-        position: relative;
-
-        padding: 17px 15px;
-
-        .intro {
-            p {
-                font-size: 30px;
-                line-height: 40px;
-                text-align: center;
-            }
-        }
-
-        .schedule-group {
-            display: none;
-
-            .schedule:not(:last-child) {
-                margin-bottom: 17px;
-            }
-        }
-    }
-
-    // Подвал
-    .footer {
-        position: relative;
-        height: 50px;
-        padding: 15px;
-
-        background-color: #f3f3f3;
-
-        color: #333;
-
-        span {
-            margin: 0 5px;
-        }
-
-        .center {
-            text-align: center;
-        }
-
-        .left {
-            position: absolute;
-            top: 0;
-            left: 0;
-            padding: 15px;
-        }
-
-        .right {
-            position: absolute;
-            top: 0;
-            right: 0;
-            padding: 15px;
-        }
-    }
-}
-
-.overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 10;
-
-    width: 100%;
-    height: 100%;
-
-    background-color: rgba(0, 0, 0, .5);
 }

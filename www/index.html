@@ -8,10 +8,12 @@
 
 <title>Интерактивное расписание мехмата ЮФУ</title>
 
+
 <script src="//code.jquery.com/jquery-3.1.0.min.js"></script>
-<script>
-if (!window.jQuery) document.write(unescape('%3Cscript src="//users.mmcs.sfedu.ru/~cdn/jquery-3.1.0.min.js"%3E%3C/script%3E'));
-</script>
+<script>!window.jQuery && document.write(unescape('%3Cscript src="//users.mmcs.sfedu.ru/~cdn/jquery-3.1.0.min.js"%3E%3C/script%3E'))</script>
+
+<script src="static/bootstrap/js/bootstrap.js"></script>
+<link href="static/bootstrap/css/bootstrap.css" rel="stylesheet">
 
 <link href="static/icons/css/icons.css" rel="stylesheet">
 
@@ -25,7 +27,6 @@ if (!window.jQuery) document.write(unescape('%3Cscript src="//users.mmcs.sfedu.r
 
 <script src="static/page/js/page.js"></script>
 <link href="static/page/css/page.css" rel="stylesheet">
-<link href="static/page/css/print.css" rel="stylesheet" media="print">
 
 <script src="static/switcher/js/switcher.js"></script>
 
@@ -40,43 +41,82 @@ if (!window.jQuery) document.write(unescape('%3Cscript src="//users.mmcs.sfedu.r
 
 <script src="static/init/js/init.js"></script>
 
-<div class="page" id="page">
-    <div class="header clearfix">
-        <div class="left">
+
+<div class="page_header">
+    <div class="container">
+        <div class="pull-left">
             <span class="title">Интерактивное расписание мехмата ЮФУ</span>
             <span class="week" id="week"></span>
         </div>
-        <div class="right">
+        <div class="pull-right">
             <a class="logo" href="http://sfedu.ru/"></a>
-        </div>
-    </div>
-    <div class="nav clearfix">
-        <div class="left">
-            <div class="switch clearfix" id="switch"></div>
-        </div>
-        <div class="right clearfix">
-            <span class="button icon-32 icon-32_print" id="print" title="Печать"></span>
-            <span class="button icon-32 icon-32_editor" id="login" title="Авторизация"></span>
-            <span class="button icon-32 icon-32_menu" id="editmenu" style="display: none" title="Меню редактора"></span>
-            <span class="button icon-32 icon-32_logout" id="logout" style="display: none" title="Выход"></span>
-        </div>
-    </div>
-    <div class="content" id="content">
-        <div class="intro" id="intro">
-            <p>Добро пожаловать в раздел интерактивого расписания!
-            <p>Выберите тип расписания, затем курс, группу, день недели, преподавателя или аудиторию.
-        </div>
-        <div class="schedule-group" id="schedule"></div>
-    </div>
-    <div class="footer">
-        <div class="center">
-            <span><a href="http://vk.com/public67527475">IT-лаборатория мехмата ЮФУ</a> © 2017</span>
-        </div>
-        <div class="right">
-            <span><a href="restapi">REST API</a></span>
-            <span><a href="http://play.google.com/store/apps/details?id=com.nolan.mmcs_schedule">Google Play</a></span>
         </div>
     </div>
 </div>
 
-<div class="overlay" id="overlay"></div>
+<div class="page_nav">
+    <div class="container">
+        <div class="pull-left">
+            <div class="switch" id="switch"></div>
+        </div>
+        <div class="pull-right">
+            <div class="switch" id="editmenu" style="display: none"></div>
+            <span class="button icon-32 icon-32_print" id="print" title="Печать"></span>
+            <span class="button icon-32 icon-32_editor" id="login" title="Авторизация" data-toggle="modal" data-target="#authModal"></span>
+            <div class="modal fade" id="authModal">
+                <div class="modal-dialog" id="authForm">
+                    <form class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Авторизация</h4>
+                        </div>
+                        <div class="modal-body form-horizontal auth-form">
+                            <div class="form-group">
+                                <label for="authLogin" class="col-xs-2 control-label">Логин</label>
+                                <div class="col-xs-10">
+                                    <input type="text" class="form-control" id="authLogin" name="login" placeholder="Логин">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="authPassword" class="col-xs-2 control-label">Пароль</label>
+                                <div class="col-xs-10">
+                                    <input type="password" class="form-control" id="authPassword" name="pass" placeholder="Пароль">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Войти</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <span class="button icon-32 icon-32_logout" id="logout" style="display: none" title="Выход"></span>
+        </div>
+    </div>
+</div>
+
+<div class="page_content" id="content">
+    <div class="container">
+        <div class="jumbotron" id="intro">
+            <h1>Добро пожаловать!</h1>
+            <p>Выберите тип расписания, затем курс, группу, день недели, преподавателя или аудиторию.</p>
+        </div>
+        <div class="schedule-group" id="schedule"></div>
+    </div>
+</div>
+
+<div class="page_footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-4 text-left"></div>
+            <div class="col-xs-4 text-center">
+                <span><a href="http://vk.com/public67527475">IT-лаборатория мехмата ЮФУ</a> © 2017</span>
+            </div>
+            <div class="col-xs-4 text-right">
+                <span><a href="restapi">REST API</a></span>
+                <span><a href="http://play.google.com/store/apps/details?id=com.nolan.mmcs_schedule">Google Play</a></span>
+            </div>
+        </div>
+    </div>
+</div>

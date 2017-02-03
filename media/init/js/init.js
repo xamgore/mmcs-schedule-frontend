@@ -31,11 +31,5 @@
 
         // Обработка кнопки печати
         system.$print.on('click', () => window.print());
-
-        // Поджатие заголовка к низу страницы и выравнивание интро
-        page.setContentHeight();
-        $(window).on('load', page.setContentHeight);
-        $(window).on('resize', page.setContentHeight);
-        $(window).on('onScheduleShow', page.setContentHeight);
     });
 })();
