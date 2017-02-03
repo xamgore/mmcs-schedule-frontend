@@ -11,11 +11,12 @@
             this.$page      = $('#page');
             this.$week      = $('#week');
             this.$switch    = $('#switch');
-            this.$editmenu  = $('#editmenu');
+            this.$editMenu  = $('#editMenu');
             this.$print     = $('#print');
             this.$login     = $('#login');
             this.$logout    = $('#logout');
             this.$authForm  = $('#authForm');
+            this.$authModal = $('#authModal');
             this.$content   = $('#content');
             this.$intro     = $('#intro');
             this.$schedule  = $('#schedule');
