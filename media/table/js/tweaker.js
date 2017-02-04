@@ -15,7 +15,7 @@
             this.height = bodySize.height;
             
             let filled = new Array(this.height);
-            xMath.range(0, this.height).forEach(i => {
+            helpers.range(0, this.height).forEach(i => {
                 filled[i] = new Array(this.width).fill(false);
             });
 
@@ -55,8 +55,8 @@
                 };
                 this.cells.push(cell);
 
-                let xRange = xMath.range(cell.posX, cell.posX + cell.sizeX);
-                let yRange = xMath.range(cell.posY, cell.posY + cell.sizeY);
+                let xRange = helpers.range(cell.posX, cell.posX + cell.sizeX);
+                let yRange = helpers.range(cell.posY, cell.posY + cell.sizeY);
                 xRange.forEach(x => yRange.forEach(y => filled[y][x] = true));
             });
 
@@ -221,7 +221,7 @@
             let $fCells = $fRow.children().slice(1);
 
             let x = 1;
-            let yRange = xMath.range(0, this.height);
+            let yRange = helpers.range(0, this.height);
             let fCells = $fCells.toArray().map(title => {
                 let length = Math.max.apply(Math, yRange.map(y => {
                     let week = Cell.getWeek(this.cells, x, y);
@@ -233,7 +233,7 @@
                 return length;
             });
 
-            let colWidth = 95 / xMath.sum.apply(xMath, fCells);
+            let colWidth = 95 / helpers.sum.apply(helpers, fCells);
             fCells.forEach((length, index) => $fCells.eq(index).css('width', `${colWidth * length}%`));
             $fRow.children().last().css('width', 'auto');
             
@@ -400,7 +400,7 @@
          * @return {Cell}      this
          */
         mergeVertical(next) {
-            xMath.range(0, this.cells.length).forEach(i => {
+            helpers.range(0, this.cells.length).forEach(i => {
                 let tData = this.cells[i];
                 let nData = next.cells[i];
 
@@ -427,7 +427,7 @@
          */
         mergeHorisontal(next) {
             let offsetX = this.posX;
-            xMath.range(0, this.cells.length).forEach(i => {
+            helpers.range(0, this.cells.length).forEach(i => {
                 let tData = this.cells[i];
                 let nData = next.cells[i];
 

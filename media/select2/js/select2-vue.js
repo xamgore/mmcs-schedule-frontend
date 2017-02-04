@@ -1,22 +1,6 @@
 (() => {
     'use strict';
 
-    class Select {
-        /**
-         * Сгенерировать список опций
-         * @param  {select}   text Текст опции по-умолчанию
-         * @param  {object[]} data Массив опций
-         * @return {Select}        this
-         */
-        static getOptions(text, data) {
-            return [ {
-                id: 'default',
-                text: text,
-                disabled: true,
-            } ].concat(data);
-        }
-    }
-
     Vue.component('fieldSelect', {
         template: '<select><slot></slot></select>',
         props: [ 'value', 'options', 'search' ],
@@ -46,6 +30,4 @@
             $(this.$el).off().select2('destroy');
         },
     });
-
-    window.Select = Select;
 })();

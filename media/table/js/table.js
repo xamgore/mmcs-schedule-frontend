@@ -63,8 +63,8 @@
             $wRow.children().first().css('width', '50px');
             $wRow.children().last().css('width', 'auto');
 
-            let width = xMath.sum.apply(xMath, this.cols.map(({ length }) => length)) + 1;
-            let height = xMath.sum.apply(xMath, this.rows.map(({ length }) => length));
+            let width = helpers.sum.apply(helpers, this.cols.map(({ length }) => length)) + 1;
+            let height = helpers.sum.apply(helpers, this.rows.map(({ length }) => length));
             $wRow.find("#bodySize").data({ width, height });
 
             this.$body = $('<tbody></tbody>').appendTo($table);
@@ -193,7 +193,7 @@
             }
 
             this.groups = weekRaw.map(groupRaw => new TableGroup(groupRaw, this));
-            this.length = xMath.sum.apply(xMath, this.groups.map(group => group.length));
+            this.length = helpers.sum.apply(helpers, this.groups.map(group => group.length));
         }
 
         /**
