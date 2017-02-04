@@ -7,202 +7,220 @@
          * @return {Switcher} this
          */
         set() {
-            // Добавление селекторов
-            this.type = new Select('type', system.$switch).hide();
-            this.course = new Select('course', system.$switch).hide();
-            this.group = new Select('group', system.$switch).hide();
-            this.day = new Select('day', system.$switch).hide();
-            this.teacher = new Select('teacher', system.$switch).hide();
-            this.room = new Select('room', system.$switch).hide();
+            let swither = this;
 
-            // Действие при сбросе выбора типа расписания
-            this.type.bind([ 'default' ], () => {
-                this.course.hide();
-                this.group.hide();
-                this.day.hide();
-                this.teacher.hide();
-                this.room.hide();
-                this.closeSchedule();
+            this.selectors = new Vue({
+                el: system.switch,
+                data: {
+                    type: null,
+                    course: null,
+                    day: null,
+                    group: null,
+                    teacher: null,
+                    room: null,
+
+                    types: null,
+                    courses: null,
+                    days: null,
+                    groups: null,
+                    teachers: null,
+                    rooms: null,
+
+                    initState: true,
+                },
+                watch: {
+                    type: function () {
+                        if (!this.type) return;
+
+                        if (!this.initState) {
+                            localStorage.type = this.type;
+                            delete localStorage.course;
+                            delete localStorage.day;
+                            delete localStorage.group;
+                            delete localStorage.teacher;
+                            delete localStorage.room;
+                        }
+
+                        this.course = null;
+                        this.day = null;
+                        this.group = null;
+                        this.teacher = null;
+                        this.room = null;
+
+                        if (this.type === 'default') {
+                            this.initState = false;
+                            swither.closeSchedule();
+                            return;
+                        }
+
+                        switch (this.type) {
+                            case 'course':
+                            case 'group':
+                                api.switcher.getCourses(result => {
+                                    let degreeMap = {
+                                        bachelor: '',
+                                        master: 'Магистратура, ',
+                                        postgraduate: 'Аспирантура, ',
+                                    };
+
+                                    this.courses = Select.getOptions('Курс', result.map(course => ({
+                                        id: course.id,
+                                        text: degreeMap[course.degree] + course.num + ' курс',
+                                    })));
+
+                                    this.course = this.initState && localStorage.course ? localStorage.course : 'default';
+                                });
+                                break;
+
+                            case 'teacher':
+                                api.switcher.getTeachers(result => {
+                                    this.teachers = Select.getOptions('Преподаватель', result.map(teacher => ({
+                                        id: teacher.id,
+                                        text: teacher.name || 'Без имени',
+                                    })));
+
+                                    this.teacher = this.initState && localStorage.teacher ? localStorage.teacher : 'default';
+                                });
+                                break;
+
+                            case 'room':
+                                api.switcher.getRooms(result => {
+                                    this.rooms = Select.getOptions('Аудитория', result.map(room => ({
+                                        id: room.id,
+                                        text: room.name || 'Без названия',
+                                    })));
+
+                                    this.room = this.initState && localStorage.room ? localStorage.room : 'default';
+                                });
+                                break;
+                        }
+                    },
+                    course: function () {
+                        if (!this.course) return;
+
+                        if (!this.initState) {
+                            localStorage.course = this.course;
+                            delete localStorage.day;
+                            delete localStorage.group;
+                        }
+
+                        this.day = null;
+                        this.group = null;
+
+                        if (this.course === 'default') {
+                            this.initState = false;
+                            swither.closeSchedule();
+                            return;
+                        }
+
+                        switch (this.type) {
+                            case 'course':
+                                setTimeout(() => {
+                                    this.days = Select.getOptions('Неделя', [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ].map((day, index) => ({
+                                        id: index,
+                                        text: day,
+                                    })));
+
+                                    this.day = this.initState && localStorage.day ? localStorage.day : 'default';
+                                });
+                                break;
+
+                            case 'group':
+                                api.switcher.getGroups(this.course, result => {
+                                    this.groups = Select.getOptions('Группа', result.map(group => {
+                                        let name = group.num + ' группа';
+                                        if (group.name && group.name !== 'NULL') {
+                                            name = group.name + ', ' + name;
+                                        }
+
+                                        return {
+                                            id: group.id,
+                                            text: name,
+                                        };
+                                    }));
+
+                                    this.group = this.initState && localStorage.group ? localStorage.group : 'default';
+                                });
+                                break;
+                        }
+                    },
+                    day: function() {
+                        if (!this.day) return;
+
+                        if (!this.initState) localStorage.day = this.day;
+                        this.initState = false;
+
+                        if (this.day === 'default') {
+                            api.schedule.getForCourse(this.course, result => swither.openSchedule('course', result));
+                        } else {
+                            api.schedule.getForDay(this.course, this.day, result => swither.openSchedule('day', result));
+                        }
+                    },
+                    group: function() {
+                        if (!this.group) return;
+
+                        if (!this.initState) localStorage.group = this.group;
+                        this.initState = false;
+
+                        if (this.group === 'default') {
+                            swither.closeSchedule();
+                            return;
+                        }
+
+                        api.schedule.getForGroup(this.group, result => swither.openSchedule('group', result));
+                    },
+                    teacher: function () {
+                        if (!this.teacher) return;
+
+                        if (!this.initState) localStorage.teacher = this.teacher;
+                        this.initState = false;
+
+                        if (this.teacher === 'default') {
+                            swither.closeSchedule();
+                            return;
+                        }
+
+                        api.schedule.getForTeacher(this.teacher, result => swither.openSchedule('teacher', result));
+                    },
+                    room: function () {
+                        if (!this.room) return;
+
+                        if (!this.initState) localStorage.room = this.room;
+                        this.initState = false;
+
+                        if (this.room === 'default') {
+                            swither.closeSchedule();
+                            return;
+                        }
+
+                        api.schedule.getForRoom(this.room, result => swither.openSchedule('room', result));
+                    },
+                },
             });
 
-            // Действие при выборе группы в типе расписания
-            this.type.bind([ 'course', 'group' ], () => {
-                this.course.hide();
-                this.group.hide();
-                this.day.hide();
-                this.teacher.hide();
-                this.room.hide();
-
-                api.switcher.getCourses(result => {
-                    let degreeMap = {
-                        bachelor: '',
-                        master: 'Магистратура, ',
-                        postgraduate: 'Аспирантура, ',
-                    };
-
-                    this.course.fill('Выберите курс', result.map(course => ({
-                        value: course.id,
-                        text: degreeMap[course.degree] + course.num + ' курс'
-                    }))).show();
-                });
-            });
-
-            // Действие при выборе курса
-            this.course.bind(course => {
-                this.group.hide();
-                this.day.hide();
-
-                if (course === 'default') {
-                    this.closeSchedule();
-                    return;
-                }
-
-                switch (this.type.value) {
-                    case 'course':
-                        setTimeout(() => {
-                            this.day.fill('Неделя', [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ].map((day, index) => ({
-                                value: index,
-                                text: day
-                            }))).show();
-                        }, 0);
-                        break;
-
-                    case 'group':
-                        api.switcher.getGroups(course, result => {
-                            this.group.fill('Выберите группу', result.map(group => {
-                                let name = group.num + ' группа';
-                                if (group.name && group.name !== 'NULL') {
-                                    name = group.name + ', ' + name;
-                                }
-
-                                return {
-                                    value: group.id,
-                                    text: name
-                                };
-                            })).show();
-                        });
-                        break;
-                }
-            });
-
-            // Действие при выборе группы
-            this.group.bind(group => {
-                if (group === 'default') {
-                    this.closeSchedule();
-                    return;
-                }
-
-                api.schedule.getForGroup(group, result => this.openSchedule('group', result));
-            });
-
-            // Действие при выборе группы
-            this.day.bind(day => {
-                if (day === 'default') {
-                    api.schedule.getForCourse(this.course.value, result => this.openSchedule('course', result));
-                } else {
-                    api.schedule.getForDay(this.course.value, day, result => this.openSchedule('day', result));
-                }
-            });
-
-            // Действие при выборе преподавателя в типе расписания
-            this.type.bind([ 'teacher' ], () => {
-                this.course.hide();
-                this.group.hide();
-                this.day.hide();
-                this.teacher.hide();
-                this.room.hide();
-
-                api.switcher.getTeachers(result => {
-                    this.teacher.fill('Выберите преподавателя', result.map(teacher => ({
-                        value: teacher.id,
-                        text: teacher.name
-                    }))).show();
-                });
-            });
-
-            // Действие при выборе преподавателя
-            this.teacher.bind(teacher => {
-                if (teacher === 'default') {
-                    this.closeSchedule();
-                    return;
-                }
-
-                api.schedule.getForTeacher(teacher, result => {
-                    this.openSchedule('teacher', result);
-                });
-            });
-
-            // Действие при выборе аудитории в типе расписания
-            this.type.bind([ 'room' ], () => {
-                this.course.hide();
-                this.group.hide();
-                this.day.hide();
-                this.teacher.hide();
-                this.room.hide();
-
-                api.switcher.getRooms(result => {
-                  this.room.fill('Выберите Аудиторию', result.map(room => ({
-                        value: room.id,
-                        text: room.name
-                    }))).show();
-                });
-            });
-
-            // Действие при выборе аудитории
-            this.room.bind(room => {
-                if (room === 'default') {
-                    this.closeSchedule();
-                    return;
-                }
-
-                api.schedule.getForRoom(room, result => this.openSchedule('room', result));
-            });
-
-            // localStorage
-            this.type.bind((type, init) => {
-                localStorage.type = type;
-                if (!init) {
-                    localStorage.course = 'default';
-                    localStorage.teacher = 'default';
-                    localStorage.room = 'default';
-                }
-            });
-            this.course.bind((course, init) => {
-                localStorage.course = course;
-                if (!init || localStorage.type !== 'group') {
-                    localStorage.group = 'default';
-                }
-                if (!init || localStorage.type !== 'course') {
-                    localStorage.day = 'default';
-                }
-            });
-            this.group.bind(group => localStorage.group = group);
-            this.day.bind(day => localStorage.day = day);
-            this.teacher.bind(teacher => localStorage.teacher = teacher);
-            this.room.bind(room => localStorage.room = room);
-
-            // Заполнение и отображение селектора типа расписания
-            this.type.fill('Тип расписания', [ {
-                value: 'course',
+            this.selectors.types = Select.getOptions('Тип расписания', [ {
+                id: 'course',
                 text: 'Курс',
             },  {
-                value: 'group',
+                id: 'group',
                 text: 'Группа',
             }, {
-                value: 'teacher',
+                id: 'teacher',
                 text: 'Преподаватель',
             }, {
-                value: 'room',
+                id: 'room',
                 text: 'Аудитория',
             }, {
-                value: 'chair',
+                id: 'chair',
                 text: 'Кафедра',
                 disabled: true,
             }, {
-                value: 'session',
+                id: 'session',
                 text: 'Сессия',
                 disabled: true,
-            } ]).show();
+            } ]);
+
+            this.selectors.type = localStorage.type || 'default';
 
             return this;
         }

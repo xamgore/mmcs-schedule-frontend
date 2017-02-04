@@ -7,20 +7,19 @@
          * @return {System} this
          */
         getElements() {
-            this.$body      = $('body');
-            this.$page      = $('#page');
-            this.$week      = $('#week');
-            this.$switch    = $('#switch');
-            this.$editMenu  = $('#editMenu');
-            this.$print     = $('#print');
-            this.$login     = $('#login');
-            this.$logout    = $('#logout');
-            this.$authForm  = $('#authForm');
-            this.$authModal = $('#authModal');
-            this.$content   = $('#content');
-            this.$intro     = $('#intro');
-            this.$schedule  = $('#schedule');
-            this.$overlay   = $('#overlay');
+            this.$body      = $(this.body       = 'body');
+            this.$page      = $(this.page       = '#page');
+            this.$week      = $(this.week       = '#week');
+            this.$switch    = $(this.switch     = '#switch');
+            this.$edit      = $(this.edit       = '#edit');
+            this.$print     = $(this.print      = '#print');
+            this.$login     = $(this.login      = '#login');
+            this.$logout    = $(this.logout     = '#logout');
+            this.$authForm  = $(this.authForm   = '#authForm');
+            this.$authModal = $(this.authModal  = '#authModal');
+            this.$content   = $(this.content    = '#content');
+            this.$intro     = $(this.intro      = '#intro');
+            this.$schedule  = $(this.schedule   = '#schedule');
 
             return this;
         }

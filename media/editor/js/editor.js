@@ -54,7 +54,7 @@
          * @return {Editor} this
          */
         enable() {
-            system.$editMenu.show();
+            system.$edit.show();
             system.$login.hide();
             system.$logout.show();
 
@@ -66,7 +66,7 @@
          * @return {Editor} this
          */
         disable() {
-            system.$editMenu.hide();
+            system.$edit.hide();
             system.$login.show();
             system.$logout.hide();
 
