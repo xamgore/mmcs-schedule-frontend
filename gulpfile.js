@@ -66,8 +66,8 @@ config.media.types.js = {
         src: `${config.media.src}/**/*.js`,
         dest: `${config.media.dest}`
     },
-    pipe: lazypipe()
-        .pipe(require('gulp-babel'), { presets: [ 'es2015-without-strict' ] }),
+    //pipe: lazypipe()
+    //    .pipe(require('gulp-babel'), { presets: [ 'es2015-without-strict' ] }),
     minify: require('gulp-uglify')
 };
 config.media.types.etc = {
