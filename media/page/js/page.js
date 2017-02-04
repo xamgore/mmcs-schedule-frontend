@@ -8,15 +8,15 @@
         setWeek() {
             switch (system.week) {
                 case 'upper':
-                    system.$week.html('Сейчас верхняя неделя');
+                    $(system.week).html('Сейчас верхняя неделя');
                     break;
 
                 case 'lower':
-                    system.$week.html('Сейчас нижняя неделя');
+                    $(system.week).html('Сейчас нижняя неделя');
                     break;
 
                 default:
-                    system.$week.html('Неделя не известна');
+                    $(system.week).html('Неделя не известна');
             }
         }
     }

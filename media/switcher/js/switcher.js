@@ -232,7 +232,7 @@
          * @return {Switcher}      this
          */
         openSchedule(type, data) {
-            system.$schedule.html('');
+            $(system.schedule).html('');
 
             switch (type) {
                 case 'course':
@@ -241,14 +241,14 @@
                         curricula: data.curricula,
                         groups: data.groups,
                         weekday: weekday,
-                    })).draw($('<div class="schedule"></div>').appendTo(system.$schedule)));
+                    })).draw($('<div class="schedule"></div>').appendTo($(system.schedule))));
                     break;
 
                 case 'group':
                 case 'teacher':
                 case 'day':
                 case 'room':
-                    (new Schedule(type, data)).draw($('<div class="schedule"></div>').appendTo(system.$schedule));
+                    (new Schedule(type, data)).draw($('<div class="schedule"></div>').appendTo($(system.schedule)));
                     break;
             }
 

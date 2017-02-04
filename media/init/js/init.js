@@ -7,12 +7,9 @@
         let switcher = new Switcher();
         let editor = new Editor();
 
-        // Получение элементов на странице
-        system.getElements();
-
         // Курсор во время API запросов
-        $(document).ajaxStart(() => system.$body.css('cursor', 'progress'));
-        $(document).ajaxStop(() => system.$body.css('cursor', 'auto'));
+        $(document).ajaxStart(() => $(system.body).css('cursor', 'progress'));
+        $(document).ajaxStop(() => $(system.body).css('cursor', 'auto'));
 
         // Получение недели и вывод ее в шапке
         api.week.get(week => {
@@ -30,6 +27,6 @@
         editor.set();
 
         // Обработка кнопки печати
-        system.$print.on('click', () => window.print());
+        $(system.print).on('click', () => window.print());
     });
 })();

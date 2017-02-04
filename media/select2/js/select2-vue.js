@@ -2,8 +2,8 @@
     'use strict';
 
     Vue.component('select2', {
-        template: '<select><slot></slot></select>',
         props: [ 'value', 'options', 'search' ],
+        template: '<select><slot></slot></select>',
         mounted: function () {
             let vm = this;
             $(this.$el)
