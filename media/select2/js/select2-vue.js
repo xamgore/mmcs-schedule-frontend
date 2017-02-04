@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    Vue.component('fieldSelect', {
+    Vue.component('select2', {
         template: '<select><slot></slot></select>',
         props: [ 'value', 'options', 'search' ],
         mounted: function () {
