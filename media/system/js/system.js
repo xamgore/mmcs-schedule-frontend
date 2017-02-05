@@ -3,17 +3,8 @@
 
     class System {
         constructor() {
-            this.body       = 'body';
-            this.week       = '#week';
-            this.switch     = '#switch';
-            this.edit       = '#edit';
-            this.print      = '#print';
-            this.login      = '#login';
-            this.logout     = '#logout';
-            this.authForm   = '#authForm';
-            this.authModal  = '#authModal';
-            this.intro      = '#intro';
-            this.schedule   = '#schedule';
+            this.intro = '#intro';
+            this.schedule = '#schedule';
         }
 
         /**

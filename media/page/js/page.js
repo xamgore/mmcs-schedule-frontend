@@ -6,17 +6,19 @@
          * Установить неделю в шапке
          */
         setWeek() {
+            let $week = $('#week');
+
             switch (system.week) {
                 case 'upper':
-                    $(system.week).html('Сейчас верхняя неделя');
+                    $week.html('Сейчас верхняя неделя');
                     break;
 
                 case 'lower':
-                    $(system.week).html('Сейчас нижняя неделя');
+                    $week.html('Сейчас нижняя неделя');
                     break;
 
                 default:
-                    $(system.week).html('Неделя не известна');
+                    $week.html('Неделя не известна');
             }
         }
     }

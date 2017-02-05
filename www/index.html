@@ -75,9 +75,11 @@
         </div>
         <div class="pull-right">
             <span class="button icon-32 icon-32_print pull-left" id="print" title="Печать"></span>
-            <span class="button icon-32 icon-32_edit pull-left" id="edit" style="display: none" title="Редактор" data-toggle="modal" data-target="#editModal"></span>
-            <span class="button icon-32 icon-32_profile pull-left" id="login" style="display: none" title="Авторизация" data-toggle="modal" data-target="#authModal"></span>
-            <span class="button icon-32 icon-32_logout pull-left" id="logout" style="display: none" title="Выход"></span>
+            <div class="pull-left" id="editControl" v-cloak>
+                <span class="button icon-32 icon-32_edit pull-left" id="edit" title="Редактор" data-toggle="modal" data-target="#editModal" v-if="enabled"></span>
+                <span class="button icon-32 icon-32_profile pull-left" id="login" title="Авторизация" data-toggle="modal" data-target="#authModal" v-if="disabled"></span>
+                <span class="button icon-32 icon-32_logout pull-left" id="logout" title="Выход" v-on:click="logout" v-if="enabled"></span>   
+            </div>
         </div>
     </div>
 </div>
@@ -109,22 +111,12 @@
 </div>
 
 
-<modal title="Авторизация" id="authModal" v-cloak>
-    <form class="auth-form form-horizontal" id="authForm">
-        <div class="form-group">
-            <label for="authLogin" class="col-xs-2 control-label">Логин</label>
-            <div class="col-xs-10">
-                <input type="text" class="form-control" id="authLogin" name="login" placeholder="Логин">
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="authPassword" class="col-xs-2 control-label">Пароль</label>
-            <div class="col-xs-10">
-                <input type="password" class="form-control" id="authPassword" name="pass" placeholder="Пароль">
-            </div>
-        </div>
+<modal title="Авторизация" id="authModal" v-on:shown="shown" v-cloak>
+    <form class="auth-form form-horizontal" v-on:submit.prevent="submit">
+        <form-input id="authLogin" name="Логин" v-model="login" type="text"></form-input>
+        <form-input id="authPass" name="Пароль" v-model="pass" type="password"></form-input>
         <button type="submit" class="hidden"></button>
     </form>
-    <button type="submit" class="btn btn-primary" onclick="$(system.authForm).submit()" slot="footer">Войти</button>
+    <button type="button" class="btn btn-primary" v-on:click="submit" slot="footer">Войти</button>
     <button type="button" class="btn btn-default" data-dismiss="modal" slot="footer">Отмена</button>
 </modal>

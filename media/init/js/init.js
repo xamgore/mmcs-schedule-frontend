@@ -8,8 +8,8 @@
         let editor = new Editor();
 
         // Курсор во время API запросов
-        $(document).ajaxStart(() => $(system.body).css('cursor', 'progress'));
-        $(document).ajaxStop(() => $(system.body).css('cursor', 'auto'));
+        $(document).ajaxStart(() => $(document.body).css('cursor', 'progress'));
+        $(document).ajaxStop(() => $(document.body).css('cursor', 'auto'));
 
         // Получение недели и вывод ее в шапке
         api.week.get(week => {
@@ -27,6 +27,6 @@
         editor.set();
 
         // Обработка кнопки печати
-        $(system.print).on('click', () => window.print());
+        $('#print').on('click', () => window.print());
     });
 })();

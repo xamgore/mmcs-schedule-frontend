@@ -10,7 +10,7 @@
             let swither = this;
 
             this.selectors = new Vue({
-                el: system.switch,
+                el: '#switch',
                 data: {
                     type: null,
                     course: null,

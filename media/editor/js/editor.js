@@ -7,47 +7,46 @@
          * @return {Editor} this
          */
         set() {
-            new Vue({
-                el: system.authModal
+            let editor = this;
+
+            editor.controls = new Vue({
+                el: '#editControl',
+                data: {
+                    enabled: false,
+                    disabled: false,
+                },
+                methods: {
+                    logout: function () {
+                        api.auth.logout(() => editor.disable());
+                    },
+                },
             });
-            $(system.authForm).on('submit', event => this.login(event));
-            $(system.logout).on('click', event => this.logout(event));
-            $(system.authModal).on('shown.bs.modal', () => $(system.authForm).find('[name=login]').focus());
+
+            editor.auth = new Vue({
+                el: '#authModal',
+                data: {
+                    login: '',
+                    pass: '',
+                },
+                methods: {
+                    submit: function () {
+                        api.auth.login(this.login, this.pass, success => {
+                            if (success) {
+                                editor.enable();
+                                $(this.$el).modal('hide');
+                            } else {
+                                $(this.$el).addClass('has-error');
+                                setTimeout(() => $(this.$el).removeClass('has-error'), 3000);
+                            }
+                        });
+                    },
+                    shown: function () {
+                        $(this.$el).find('#authLogin').focus();
+                    },
+                },
+            });
 
             api.auth.status(ok => ok ? this.enable() : this.disable());
-
-            return this;
-        }
-
-        /**
-         * Обаботка формы авторизации
-         * @return {Editor} this
-         */
-        login(event) {
-            event.preventDefault();
-
-            let login = $(system.authForm).find('[name=login]').val();
-            let pass = $(system.authForm).find('[name=pass]').val();
-
-            api.auth.login(login, pass, success => {
-                if (success) {
-                    this.enable();
-                    $(system.authModal).modal('hide');
-                } else {
-                    $(system.authForm).addClass('has-error');
-                    setTimeout(() => $(system.authForm).removeClass('has-error'), 3000);
-                }
-            });
-
-            return this;
-        }
-
-        /**
-         * Обработка кнопки выхода
-         * @return {Editor} this
-         */
-        logout() {
-            api.auth.logout(() => this.disable());
 
             return this;
         }
@@ -57,9 +56,8 @@
          * @return {Editor} this
          */
         enable() {
-            $(system.edit).show();
-            $(system.login).hide();
-            $(system.logout).show();
+            this.controls.enabled = true;
+            this.controls.disabled = false;
 
             return this;
         }
@@ -69,9 +67,8 @@
          * @return {Editor} this
          */
         disable() {
-            $(system.edit).hide();
-            $(system.login).show();
-            $(system.logout).hide();
+            this.controls.enabled = false;
+            this.controls.disabled = true;
 
             return this;
         }
