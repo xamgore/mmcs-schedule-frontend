@@ -6,6 +6,18 @@
   display: none;
 }
 
+.select2-container .select2-selection--single {
+    height: 34px;
+
+    .select2-selection__rendered,  {
+        line-height: 32px;
+    }
+
+    .select2-selection__arrow {
+        height: 32px;
+    }
+}
+
 html {
     position: relative;
     min-height: 100%;
@@ -56,22 +68,10 @@ body {
 
     .select2 {
         min-width: 200px;
-        margin: 10px 0;
+        margin: 9px 0;
 
         &:not(:last-child) {
             margin-right: 10px;
-        }
-
-        .select2-selection--single {
-            height: 32px;
-
-            .select2-selection__rendered {
-                line-height: 32px;
-            }
-
-            .select2-selection__arrow {
-                height: 30px;
-            }
         }
     }
 
@@ -95,12 +95,9 @@ body {
     padding-top: 17px;
     padding-bottom: 17px;
 
-    .schedule-group {
-        display: none;
-
-        .schedule:not(:last-child) {
-            margin-bottom: 17px;
-        }
+    .schedule:not(:last-child) {
+        margin-bottom: 17px;
+        page-break-after: always;
     }
 }
 
@@ -121,32 +118,20 @@ body {
     }
 }
 
+.table-list > tbody > tr > td {
+    vertical-align: middle;
+}
+
 @media print {
-    .page_header,
-    .page_nav,
-    .page_footer {
-        display: none;
+    .container {
+        padding: 0;
+    }
+
+    body {
+        margin: 0;
     }
 
     .page_content {
         padding: 0;
-        
-        .schedule {
-            &:not(:last-child) {
-                page-break-after: always;
-            }
-
-            table {
-                margin: 0;
-
-                thead {
-                    display: table-row-group;
-                }
-
-                .cell-blured {
-                    color: inherit;
-                }
-            }
-        }
     }
 }

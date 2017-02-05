@@ -5,6 +5,8 @@
         constructor() {
             this.intro = '#intro';
             this.schedule = '#schedule';
+
+            this.showIntro();
         }
 
         /**

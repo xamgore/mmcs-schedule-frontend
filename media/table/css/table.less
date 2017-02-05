@@ -1,110 +1,127 @@
-.schedule table {
-    width: 100%;
-    margin-bottom: 20px;
+.schedule {
+    table {
+        width: 100%;
 
-	table-layout: fixed;
-	border-collapse: collapse;
+    	table-layout: fixed;
+    	border-collapse: collapse;
 
-	background: #fff;
+    	background: #fff;
 
-    line-height: normal;
-    text-align: center;
-    vertical-align: middle;
+        line-height: normal;
+        text-align: center;
+        vertical-align: middle;
 
-    &:last-child {
-        margin-bottom: 0;
-    }
-
-    .title,
-    .time {
-        background-color: #f1f1f1;
-
-        font-size: 0.9em;
-        font-weight: bold;
-    }
-
-    .service td {
-        border: 0;
-        padding: 0;
-    }
-
-    td {
-        position: relative;
-        
-        border: 1px solid #d7d7d7;
-        padding: 5px;
-
-        * {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        &:last-child {
+            margin-bottom: 0;
         }
 
-        abbr {
+        .title,
+        .time {
+            background-color: #f1f1f1;
+
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .service td {
             border: 0;
-            cursor: inherit;
+            padding: 0;
         }
-    }
 
-    .cell-title {
-        border-bottom: 0;
-        vertical-align: middle;
-    }
+        td {
+            position: relative;
+            
+            border: 1px solid #d7d7d7;
+            padding: 5px;
 
-    .cell-content {
-        position: relative;
-        height: 130px;
-        border-top: 0;
-        padding-top: 0;
-        vertical-align: middle;
+            * {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
 
-        .lesson-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 125px;
-            height: 28px;
-            margin-left: -14px;
-            margin-top: 60px;
-            transform: rotate(-90deg);
-            transform-origin: top left;
-
-            & > :first-child {
-                min-height: 10px; 
+            abbr {
+                border: 0;
+                cursor: inherit;
             }
         }
-    }
 
-    .cell-empty:before {
-        content: '';
-        display: block;
-        height: 40px;
-    }
+        .cell-title {
+            border-bottom: 0;
+            vertical-align: middle;
+        }
 
-    .cell-blured {
-        color: #aaa;
-    }
+        .cell-content {
+            position: relative;
+            height: 130px;
+            border-top: 0;
+            padding-top: 0;
+            vertical-align: middle;
 
-    span {
-        display: block;
-    }
+            .lesson-content {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 125px;
+                height: 28px;
+                margin-left: -14px;
+                margin-top: 60px;
+                transform: rotate(-90deg);
+                transform-origin: top left;
 
-    .subject {
-        font-weight: bold;
-    }
+                & > :first-child {
+                    min-height: 10px; 
+                }
+            }
+        }
 
-    .group {
-        font-size: 0.8em;
-        font-weight: bold;
-    }
+        .cell-empty:before {
+            content: '';
+            display: block;
+            height: 40px;
+        }
 
-    .room {
-        font-size: 0.8em;
-        font-weight: bold;
-        text-align: right;
-    }
+        .cell-blured {
+            color: #aaa;
+        }
 
-    .full {
-        display: none;
+        span {
+            display: block;
+        }
+
+        .subject {
+            font-weight: bold;
+        }
+
+        .group {
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .room {
+            font-size: 0.8em;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .full {
+            display: none;
+        }
+    }
+}
+
+@media print {
+    .schedule table {
+        thead {
+            display: table-row-group;
+        }
+
+        .cell-blured {
+            color: inherit;
+        }
+
+        abbr:after {
+            content: '';
+        }
     }
 }
