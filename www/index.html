@@ -120,3 +120,13 @@
     <button type="button" class="btn btn-primary" v-on:click="submit" slot="footer">Войти</button>
     <button type="button" class="btn btn-default" data-dismiss="modal" slot="footer">Отмена</button>
 </modal>
+
+<modal title="Редактор" size="large" id="editModal" v-cloak>
+    <tabs :tabs="tabs" v-model="tab">
+        <div slot="editTeachers">teachers</div>
+        <div slot="editRooms">rooms</div>
+        <div slot="editCourses">courses</div>
+        <div slot="editGroups">groups</div>
+        <div slot="editLessons">lessons</div>
+    </tabs>
+</modal>

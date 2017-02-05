@@ -14,7 +14,7 @@
                         '<div class="modal-body">' +
                             '<slot></slot>' +
                         '</div>' +
-                        '<div class="modal-footer">' +
+                        '<div class="modal-footer" v-if="$slots.footer">' +
                             '<slot name="footer"></slot>' +
                         '</div>' +
                     '</div>' +
@@ -35,13 +35,36 @@
         },
     });
 
+    Vue.component('tabs', {
+        props: [ 'tabs', 'value' ],
+        template:
+            '<div>' +
+                '<ul class="nav nav-tabs">' +
+                    '<li v-for="tab in tabs"><a :href="\'#\' + tab.id" data-toggle="tab" v-on:click="$emit(\'input\', tab.id)">{{tab.title}}</a></li>' +
+                '</ul>' +
+                '<div class="tab-content">' +
+                    '<div class="tab-pane fade" v-for="tab in tabs" :id="tab.id">' +
+                        '<slot :name="tab.id"></slot>' +
+                    '</div>' +
+                '</div>' +
+            '</div>',
+        mounted: function () {
+            $(this.$el).find(`[href="#${this.value}"]`).tab('show');
+        },
+        watch: {
+            value: function () {
+                $(this.$el).find(`[href="#${this.value}"]`).tab('show');
+            },
+        },
+    });
+
     Vue.component('form-input', {
         props: [ 'id', 'name', 'value', 'type' ],
         template:
             '<div class="form-group">' +
                 '<label :for="id" class="col-xs-3 control-label">{{name}}</label>' +
                 '<div class="col-xs-9">' +
-                    '<input :type="type" class="form-control" :id="id" :value="value" :placeholder="name" v-on:input="input">' +
+                    '<input :type="type" class="form-control" :id="id" :value="value" v-on:input="input">' +
                 '</div>' +
             '</div>',
         methods: {

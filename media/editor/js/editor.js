@@ -46,6 +46,29 @@
                 },
             });
 
+            editor.edit = new Vue({
+                el: '#editModal',
+                data: {
+                    tab: 'editTeachers',
+                    tabs: [ {
+                        id: 'editTeachers',
+                        title: 'Преподаватели',
+                    }, {
+                        id: 'editRooms',
+                        title: 'Аудитории',
+                    }, {
+                        id: 'editCourses',
+                        title: 'Курсы',
+                    }, {
+                        id: 'editGroups',
+                        title: 'Группы',
+                    }, {
+                        id: 'editLessons',
+                        title: 'Занятия',
+                    } ],
+                },
+            });
+
             api.auth.status(ok => ok ? this.enable() : this.disable());
 
             return this;
