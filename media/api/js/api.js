@@ -43,6 +43,35 @@
              */
             list: callback => query('teacher/list', null, 'get', callback, null),
             /**
+             * Добавить преподавателя
+             * @param {string}   name     ФИО
+             * @param {string}   degree   Степень
+             * @param {function} callback
+             */
+            add: (name, degree, callback) => query('teacher', {
+                APIkey: localStorage.APIkey,
+                name, degree,
+            }, 'put', () => callback(true), () => callback(false)),
+            /**
+             * Изменить преподавателя
+             * @param {string}   teacher  ID преподавателя
+             * @param {string}   name     ФИО
+             * @param {string}   degree   Степень
+             * @param {function} callback
+             */
+            update: (teacher, name, degree, callback) => query(`teacher/{$teacher}`, {
+                APIkey: localStorage.APIkey,
+                name, degree,
+            }, 'post', () => callback(true), () => callback(false)),
+            /**
+             * Удалить преподавателя
+             * @param {string}   teacher  ID преподавателя
+             * @param {function} callback
+             */
+            delete: (teacher, callback) => query(`teacher/{$teacher}`, {
+                APIkey: localStorage.APIkey,
+            }, 'delete', () => callback(true), () => callback(false)),
+            /**
              * Получить расписание преподавателя
              * @param {string}   teacher  ID преподавателя
              * @param {function} callback
@@ -57,6 +86,33 @@
              */
             list: callback => query('room/list', null, 'get', callback, null),
             /**
+             * Добавить аудиторию
+             * @param {string}   name     Название
+             * @param {function} callback
+             */
+            add: (name, callback) => query('room', {
+                APIkey: localStorage.APIkey,
+                name,
+            }, 'put', () => callback(true), () => callback(false)),
+            /**
+             * Изменить аудиторию
+             * @param {string}   room     ID аудитории
+             * @param {string}   name     Название
+             * @param {function} callback
+             */
+            update: (room, name, callback) => query(`room/{$room}`, {
+                APIkey: localStorage.APIkey,
+                name,
+            }, 'post', () => callback(true), () => callback(false)),
+            /**
+             * Удалить аудиторию
+             * @param {string}   room     ID аудитории
+             * @param {function} callback
+             */
+            delete: (room, callback) => query(`room/{$room}`, {
+                APIkey: localStorage.APIkey,
+            }, 'delete', () => callback(true), () => callback(false)),
+            /**
              * Получить расписание аудитории
              * @param {string}   room     ID аудитории
              * @param {function} callback
@@ -64,19 +120,48 @@
             schedule: (room, callback) => query(`APIv1/schedule/room/${room}`, null, 'get', callback, null),
         },
         // Секция курсов
-        course: {
+        grade: {
             /**
              * Получить список курсов
              * @param {function} callback
              */
             list: callback => query('APIv1/grade/list', null, 'get', callback, null),
             /**
-             * Получить расписание курса
-             * @param {string}   course   ID курса
-             * @param {function} callback [description]
+             * Добавить курс
+             * @param {string}   num      Номер
+             * @param {string}   degree   Степень обучния
+             * @param {function} callback
              */
-            schedule: (course, callback) => {
-                api.groups.list(course, groups => {
+            add: (num, degree, callback) => query('APIv1/grade', {
+                APIkey: localStorage.APIkey,
+                num, degree,
+            }, 'put', () => callback(true), () => callback(false)),
+            /**
+             * Изменить курс
+             * @param {string}   grade    ID курса
+             * @param {string}   num      Номер
+             * @param {string}   degree   Степень обучния
+             * @param {function} callback
+             */
+            update: (grade, num, degree, callback) => query(`APIv1/grade/{$grade}`, {
+                APIkey: localStorage.APIkey,
+                num, degree,
+            }, 'post', () => callback(true), () => callback(false)),
+            /**
+             * Удалить курс
+             * @param {string}   grade    ID курса
+             * @param {function} callback
+             */
+            delete: (grade, callback) => query(`APIv1/grade/{$grade}`, {
+                APIkey: localStorage.APIkey,
+            }, 'delete', () => callback(true), () => callback(false)),
+            /**
+             * Получить расписание курса
+             * @param {string}   grade    ID курса
+             * @param {function} callback
+             */
+            schedule: (grade, callback) => {
+                api.groups.list(grade, groups => {
                     let data = {
                         lessons: [],
                         curricula: [],
@@ -96,12 +181,12 @@
             },
             /**
              * Получить расписание курса в день
-             * @param {string}   course   ID курса
+             * @param {string}   grade    ID курса
              * @param {string}   day      ID дня
              * @param {function} callback
              */
-            scheduleForDay: (course, day, callback) => {
-                api.course.schedule(course, data => callback({ 
+            scheduleForDay: (grade, day, callback) => {
+                api.grade.schedule(grade, data => callback({ 
                     lessons: data.lessons.filter(({ timeslot }) => timeslot[1] === day),
                     curricula: data.curricula,
                     groups: data.groups,
@@ -112,16 +197,83 @@
         groups: {
             /**
              * Получить список групп
-             * @param {string}   course   ID курса
+             * @param {string}   grade    ID курса
              * @param {function} callback
              */
-            list: (course, callback) => query(`group/list/${course}`, null, 'get', callback, null),
+            list: (grade, callback) => query(`group/list/${grade}`, null, 'get', callback, null),
+            /**
+             * Добавить группу
+             * @param {string}   num      Номер
+             * @param {string}   name     Название
+             * @param {string}   grade    ID курса
+             * @param {function} callback
+             */
+            add: (num, name, grade, callback) => query('group', {
+                APIkey: localStorage.APIkey,
+                num, degree, grade,
+            }, 'put', () => callback(true), () => callback(false)),
+            /**
+             * Изменить группу
+             * @param {string}   group    ID группы
+             * @param {string}   num      Номер
+             * @param {string}   name     Название
+             * @param {function} callback
+             */
+            update: (group, num, name, callback) => query(`group/{$group}`, {
+                APIkey: localStorage.APIkey,
+                num, name,
+            }, 'post', () => callback(true), () => callback(false)),
+            /**
+             * Удалить группу
+             * @param {string}   group    ID группы
+             * @param {function} callback
+             */
+            delete: (group, callback) => query(`group/{$group}`, {
+                APIkey: localStorage.APIkey,
+            }, 'delete', () => callback(true), () => callback(false)),
             /**
              * Получить расписание группы
              * @param {string}   group    ID группы
              * @param {function} callback
              */
             schedule: (group, callback) => query(`schedule/group/${group}`, null, 'get', callback, null),
+        },
+        // Cекция предметов
+        subject: {
+            /**
+             * Получить список предметов
+             * @param {function} callback
+             */
+            list: callback => query('subject/list', null, 'get', callback, null),
+            /**
+             * Добавить предмет
+             * @param {string}   name      Название
+             * @param {string}   abbr      Сокращение
+             * @param {function} callback
+             */
+            add: (name, abbr, callback) => query('subject', {
+                APIkey: localStorage.APIkey,
+                name, abbr,
+            }, 'put', () => callback(true), () => callback(false)),
+            /**
+             * Изменить предмет
+             * @param {string}   subject  ID предмета
+             * @param {string}   name     Название
+             * @param {string}   abbr     Сокращение
+             * @param {function} callback
+             */
+            update: (subject, name, abbr, callback) => query(`subject/{$subject}`, {
+                APIkey: localStorage.APIkey,
+                name, abbr,
+            }, 'post', () => callback(true), () => callback(false)),
+            /**
+             * Удалить предмет
+             * @param {string}   subject  ID предмета
+             * @param {function} callback
+             */
+            delete: (subject, callback) => query(`subject/{$subject}`, {
+                APIkey: localStorage.APIkey,
+            }, 'delete', () => callback(true), () => callback(false)),
         },
         // Секция занятий
         lesson: {},
@@ -167,7 +319,7 @@
      * @param {string}   url      Фдрес
      * @param {object}   data     Передаваемые данные
      * @param {string}   type     Тип запроса (post, get, pop)
-     * @param {function} callback Функция, выполняющаяся при удачном запросе
+     * @param {function} callback
      */
     let query = (url, data, type, callback, errback) => {
         data = data || {};

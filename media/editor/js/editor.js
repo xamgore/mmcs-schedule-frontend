@@ -57,11 +57,14 @@
                         id: 'editRooms',
                         title: 'Аудитории',
                     }, {
-                        id: 'editCourses',
+                        id: 'editGrades',
                         title: 'Курсы',
                     }, {
                         id: 'editGroups',
                         title: 'Группы',
+                    }, {
+                        id: 'editSubjects',
+                        title: 'Предметы',
                     }, {
                         id: 'editLessons',
                         title: 'Занятия',

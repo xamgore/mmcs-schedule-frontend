@@ -13,14 +13,14 @@
                 el: '#switch',
                 data: {
                     type: null,
-                    course: null,
+                    grade: null,
                     day: null,
                     group: null,
                     teacher: null,
                     room: null,
 
                     types: null,
-                    courses: null,
+                    grades: null,
                     days: null,
                     groups: null,
                     teachers: null,
@@ -34,14 +34,14 @@
 
                         if (!this.initState) {
                             localStorage.type = this.type;
-                            delete localStorage.course;
+                            delete localStorage.grade;
                             delete localStorage.day;
                             delete localStorage.group;
                             delete localStorage.teacher;
                             delete localStorage.room;
                         }
 
-                        this.course = null;
+                        this.grade = null;
                         this.day = null;
                         this.group = null;
                         this.teacher = null;
@@ -54,21 +54,21 @@
                         }
 
                         switch (this.type) {
-                            case 'course':
+                            case 'grade':
                             case 'group':
-                                api.course.list(result => {
+                                api.grade.list(result => {
                                     let degreeMap = {
                                         bachelor: '',
                                         master: 'Магистратура, ',
                                         postgraduate: 'Аспирантура, ',
                                     };
 
-                                    this.courses = Select.getOptions('Курс', result.map(course => ({
-                                        id: course.id,
-                                        text: degreeMap[course.degree] + course.num + ' курс',
+                                    this.grades = Select.getOptions('Курс', result.map(grade => ({
+                                        id: grade.id,
+                                        text: degreeMap[grade.degree] + grade.num + ' курс',
                                     })));
 
-                                    this.course = this.initState && localStorage.course ? localStorage.course : 'default';
+                                    this.grade = this.initState && localStorage.grade ? localStorage.grade : 'default';
                                 });
                                 break;
 
@@ -95,11 +95,11 @@
                                 break;
                         }
                     },
-                    course: function () {
-                        if (!this.course) return;
+                    grade: function () {
+                        if (!this.grade) return;
 
                         if (!this.initState) {
-                            localStorage.course = this.course;
+                            localStorage.grade = this.grade;
                             delete localStorage.day;
                             delete localStorage.group;
                         }
@@ -107,14 +107,14 @@
                         this.day = null;
                         this.group = null;
 
-                        if (this.course === 'default') {
+                        if (this.grade === 'default') {
                             this.initState = false;
                             swither.closeSchedule();
                             return;
                         }
 
                         switch (this.type) {
-                            case 'course':
+                            case 'grade':
                                 setTimeout(() => {
                                     this.days = Select.getOptions('Неделя', [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ].map((day, index) => ({
                                         id: index,
@@ -126,7 +126,7 @@
                                 break;
 
                             case 'group':
-                                api.groups.list(this.course, result => {
+                                api.groups.list(this.grade, result => {
                                     this.groups = Select.getOptions('Группа', result.map(group => {
                                         let name = group.num + ' группа';
                                         if (group.name && group.name !== 'NULL') {
@@ -151,9 +151,9 @@
                         this.initState = false;
 
                         if (this.day === 'default') {
-                            api.course.schedule(this.course, result => swither.openSchedule('course', result));
+                            api.grade.schedule(this.grade, result => swither.openSchedule('grade', result));
                         } else {
-                            api.course.scheduleForDay(this.course, this.day, result => swither.openSchedule('day', result));
+                            api.grade.scheduleForDay(this.grade, this.day, result => swither.openSchedule('day', result));
                         }
                     },
                     group: function() {
@@ -199,7 +199,7 @@
             });
 
             this.selectors.types = Select.getOptions('Тип расписания', [ {
-                id: 'course',
+                id: 'grade',
                 text: 'Курс',
             },  {
                 id: 'group',
@@ -235,7 +235,7 @@
             $(system.schedule).html('');
 
             switch (type) {
-                case 'course':
+                case 'grade':
                     [ 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ' ].forEach((weekday, index) => (new Schedule('day', { 
                         lessons: data.lessons.filter(({ timeslot }) => timeslot[1] == index),
                         curricula: data.curricula,

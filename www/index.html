@@ -66,7 +66,7 @@
         <div class="pull-left">
             <div class="switch" id="switch" v-cloak>
                 <select2 v-model="type" :options="types" v-if="type"></select2>
-                <select2 v-model="course" :options="courses" v-if="course"></select2>
+                <select2 v-model="grade" :options="grades" v-if="grade"></select2>
                 <select2 v-model="day" :options="days" v-if="day"></select2>
                 <select2 v-model="group" :options="groups" v-if="group"></select2>
                 <select2 v-model="teacher" :options="teachers" v-if="teacher" :search="true"></select2>
@@ -127,6 +127,7 @@
         <div slot="editRooms">rooms</div>
         <div slot="editCourses">courses</div>
         <div slot="editGroups">groups</div>
+        <div slot="editSubjects">subjects</div>
         <div slot="editLessons">lessons</div>
     </tabs>
 </modal>
