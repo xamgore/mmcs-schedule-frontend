@@ -49,7 +49,7 @@
             editor.edit = new Vue({
                 el: '#editModal',
                 data: {
-                    tab: 'editTeachers',
+                    tab: '',
                     tabs: [ {
                         id: 'editTeachers',
                         title: 'Преподаватели',
@@ -69,6 +69,18 @@
                         id: 'editLessons',
                         title: 'Занятия',
                     } ],
+
+                    teachers: [],
+                },
+                methods: {
+                    shownTab: function (id) {
+                        switch (id) {
+                            case 'editTeachers':
+                                this.teachers = [];
+                                api.teacher.list(teachers => this.teachers = teachers);
+                                break;
+                        }
+                    },
                 },
             });
 

@@ -121,11 +121,29 @@
     <button type="button" class="btn btn-default" data-dismiss="modal" slot="footer">Отмена</button>
 </modal>
 
-<modal title="Редактор" size="large" id="editModal" v-cloak>
-    <tabs :tabs="tabs" v-model="tab">
-        <div slot="editTeachers">teachers</div>
+<modal title="Редактор" size="large" id="editModal" v-on:shown.once="tab = 'editTeachers'" v-cloak>
+    <tabs :tabs="tabs" v-model="tab" v-on:shown="shownTab">
+        <div slot="editTeachers">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <td>ФИО</td>
+                        <td>Степень</td>
+                        <td>Действия</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="teacher in teachers">
+                        <td>{{teacher.name}}</td>
+                        <td>{{teacher.degree}}</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>  
+        </div>
+
         <div slot="editRooms">rooms</div>
-        <div slot="editCourses">courses</div>
+        <div slot="editGrades">grades</div>
         <div slot="editGroups">groups</div>
         <div slot="editSubjects">subjects</div>
         <div slot="editLessons">lessons</div>
