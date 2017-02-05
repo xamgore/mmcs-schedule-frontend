@@ -67,10 +67,10 @@
             <div class="switch" id="switch" v-cloak>
                 <select2 v-model="type" :options="types" v-if="type"></select2>
                 <select2 v-model="course" :options="courses" v-if="course"></select2>
-                <select2 v-model="group" :options="groups" v-if="group"></select2>
                 <select2 v-model="day" :options="days" v-if="day"></select2>
-                <select2 v-model="teacher" :options="teachers" v-if="teacher"></select2>
-                <select2 v-model="room" :options="rooms" v-if="room"></select2>
+                <select2 v-model="group" :options="groups" v-if="group"></select2>
+                <select2 v-model="teacher" :options="teachers" v-if="teacher" :search="true"></select2>
+                <select2 v-model="room" :options="rooms" v-if="room" :search="true"></select2>
             </div>
         </div>
         <div class="pull-right">

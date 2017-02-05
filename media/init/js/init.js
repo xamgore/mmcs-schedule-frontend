@@ -18,7 +18,7 @@
         });
 
         // Получение времен для расписания
-        api.times.get(times => system.times = times);
+        api.time.list(times => system.times = times);
 
         // Настройка селекторов
         switcher.set();

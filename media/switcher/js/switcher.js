@@ -56,7 +56,7 @@
                         switch (this.type) {
                             case 'course':
                             case 'group':
-                                api.switcher.getCourses(result => {
+                                api.course.list(result => {
                                     let degreeMap = {
                                         bachelor: '',
                                         master: 'Магистратура, ',
@@ -73,7 +73,7 @@
                                 break;
 
                             case 'teacher':
-                                api.switcher.getTeachers(result => {
+                                api.teacher.list(result => {
                                     this.teachers = Select.getOptions('Преподаватель', result.map(teacher => ({
                                         id: teacher.id,
                                         text: teacher.name || 'Без имени',
@@ -84,7 +84,7 @@
                                 break;
 
                             case 'room':
-                                api.switcher.getRooms(result => {
+                                api.room.list(result => {
                                     this.rooms = Select.getOptions('Аудитория', result.map(room => ({
                                         id: room.id,
                                         text: room.name || 'Без названия',
@@ -126,7 +126,7 @@
                                 break;
 
                             case 'group':
-                                api.switcher.getGroups(this.course, result => {
+                                api.groups.list(this.course, result => {
                                     this.groups = Select.getOptions('Группа', result.map(group => {
                                         let name = group.num + ' группа';
                                         if (group.name && group.name !== 'NULL') {
@@ -151,9 +151,9 @@
                         this.initState = false;
 
                         if (this.day === 'default') {
-                            api.schedule.getForCourse(this.course, result => swither.openSchedule('course', result));
+                            api.course.schedule(this.course, result => swither.openSchedule('course', result));
                         } else {
-                            api.schedule.getForDay(this.course, this.day, result => swither.openSchedule('day', result));
+                            api.course.scheduleForDay(this.course, this.day, result => swither.openSchedule('day', result));
                         }
                     },
                     group: function() {
@@ -167,7 +167,7 @@
                             return;
                         }
 
-                        api.schedule.getForGroup(this.group, result => swither.openSchedule('group', result));
+                        api.groups.schedule(this.group, result => swither.openSchedule('group', result));
                     },
                     teacher: function () {
                         if (!this.teacher) return;
@@ -180,7 +180,7 @@
                             return;
                         }
 
-                        api.schedule.getForTeacher(this.teacher, result => swither.openSchedule('teacher', result));
+                        api.teacher.schedule(this.teacher, result => swither.openSchedule('teacher', result));
                     },
                     room: function () {
                         if (!this.room) return;
@@ -193,7 +193,7 @@
                             return;
                         }
 
-                        api.schedule.getForRoom(this.room, result => swither.openSchedule('room', result));
+                        api.room.schedule(this.room, result => swither.openSchedule('room', result));
                     },
                 },
             });

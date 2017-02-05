@@ -4,7 +4,7 @@
     let ulrPrefix = '//users.mmcs.sfedu.ru:3000/';
 
     window.api = {
-        // Секция получения информации о неделе
+        // Секция недели
         week: {
             /**
              * Получить неделю (верхняя/нижняя)
@@ -27,65 +27,56 @@
                 });
             },
         },
-        // Секция получения информации о временах пар
-        times: {
+        // Секция времен пар
+        time: {
             /**
              * Получить список времен
              * @param {function} callback
              */
-            get: callback => query('time/list', null, 'get', callback, null),
+            list: callback => query('time/list', null, 'get', callback, null),
         },
-        // Секция получения информации для переключателей
-        switcher: {
-            /**
-             * Получить список курсов
-             * @param {function} callback
-             */
-            getCourses: callback => query('APIv1/grade/list', null, 'get', callback, null),
-            /**
-             * Получить список групп
-             * @param {string}   course   ID курса
-             * @param {function} callback
-             */
-            getGroups: (course, callback) => query(`group/list/${course}`, null, 'get', callback, null),
+        // Секция преподавателей
+        teacher: {
             /**
              * Получить список преподавателей
              * @param {function} callback
              */
-            getTeachers: callback => query('teacher/list', null, 'get', callback, null),
-            /**
-             * Получить список аудиторий
-             * @param {function} callback
-             */
-            getRooms: callback => query('room/list', null, 'get', callback, null),
-        },
-        // Секция получения расписаний
-        schedule: {
-            /**
-             * Получить расписание группы
-             * @param {string}   group    ID группы
-             * @param {function} callback
-             */
-            getForGroup: (group, callback) => query(`schedule/group/${group}`, null, 'get', callback, null),
+            list: callback => query('teacher/list', null, 'get', callback, null),
             /**
              * Получить расписание преподавателя
              * @param {string}   teacher  ID преподавателя
              * @param {function} callback
              */
-            getForTeacher: (teacher, callback) => query(`APIv1/schedule/teacher/${teacher}`, null, 'get', callback, null),
+            schedule: (teacher, callback) => query(`APIv1/schedule/teacher/${teacher}`, null, 'get', callback, null),
+        },
+        // Секция аудиторий
+        room: {
+            /**
+             * Получить список аудиторий
+             * @param {function} callback
+             */
+            list: callback => query('room/list', null, 'get', callback, null),
             /**
              * Получить расписание аудитории
              * @param {string}   room     ID аудитории
              * @param {function} callback
              */
-            getForRoom: (room, callback) => query(`APIv1/schedule/room/${room}`, null, 'get', callback, null),
+            schedule: (room, callback) => query(`APIv1/schedule/room/${room}`, null, 'get', callback, null),
+        },
+        // Секция курсов
+        course: {
+            /**
+             * Получить список курсов
+             * @param {function} callback
+             */
+            list: callback => query('APIv1/grade/list', null, 'get', callback, null),
             /**
              * Получить расписание курса
              * @param {string}   course   ID курса
              * @param {function} callback [description]
              */
-            getForCourse: (course, callback) => {
-                api.switcher.getGroups(course, groups => {
+            schedule: (course, callback) => {
+                api.groups.list(course, groups => {
                     let data = {
                         lessons: [],
                         curricula: [],
@@ -93,7 +84,7 @@
                     };
                     let queryCount = 0;
                     data.groups.forEach(({ id }) => {
-                        api.schedule.getForGroup(id, ({ lessons, curricula }) => {
+                        api.groups.schedule(id, ({ lessons, curricula }) => {
                             lessons.forEach(lesson => lesson.groupid = id);
                             Array.prototype.push.apply(data.lessons, lessons);
                             Array.prototype.push.apply(data.curricula, curricula);
@@ -109,14 +100,31 @@
              * @param {string}   day      ID дня
              * @param {function} callback
              */
-            getForDay: (course, day, callback) => {
-                api.schedule.getForCourse(course, data => callback({ 
+            scheduleForDay: (course, day, callback) => {
+                api.course.schedule(course, data => callback({ 
                     lessons: data.lessons.filter(({ timeslot }) => timeslot[1] === day),
                     curricula: data.curricula,
                     groups: data.groups,
                 }));
             },
         },
+        // Секция групп
+        groups: {
+            /**
+             * Получить список групп
+             * @param {string}   course   ID курса
+             * @param {function} callback
+             */
+            list: (course, callback) => query(`group/list/${course}`, null, 'get', callback, null),
+            /**
+             * Получить расписание группы
+             * @param {string}   group    ID группы
+             * @param {function} callback
+             */
+            schedule: (group, callback) => query(`schedule/group/${group}`, null, 'get', callback, null),
+        },
+        // Секция занятий
+        lesson: {},
         // Секция авторизации
         auth: {
             /**
