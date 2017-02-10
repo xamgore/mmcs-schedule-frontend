@@ -140,19 +140,12 @@
             this.row = row;
             this.col = col;
 
-            if (!cellRaw) {
-                this.empty = true;
-                this.vLength = 2;
-                this.hLength = 1;
-                return;
-            }
-
-            this.weeks = cellRaw.map((weekRaw, pos) => new TableWeek(weekRaw, this, pos));
+            this.weeks = cellRaw ? cellRaw.map((weekRaw, pos) => new TableWeek(weekRaw, this, pos)) : [ new TableWeek(null, this, 0) ];
             this.vLength = this.weeks.length * 2;
             this.hLength = Math.max.apply(Math, this.weeks.map(week => week.length));
 
             if (this.vLength >= lengths.length || this.hLength >= lengths.length) {
-                this.empty = true;
+                this.weeks = [ new TableWeek(null, this, 0) ];
                 this.vLength = 2;
                 this.hLength = 1;
                 console.log(new Error('Very big cell'), cellRaw);
@@ -164,13 +157,10 @@
          * @return {TableCell} this
          */
         draw() {
-            if (this.empty) {
-                $(`<td rowspan=${this.row.length} colspan=${this.col.length}></td>`)
-                    .data('width', 1).data('height', 1).data('vIndex', 1).appendTo(this.row.rows[0]);
-                return this;
-            }
-
+            let row = this.row.rows[0];
+            let colPos = row.children().length;
             this.weeks.forEach(week => week.draw());
+            row.children().eq(colPos).data('height', this.row.length).data('weeksNumber', this.weeks.length);
 
             return this;
         }
@@ -186,14 +176,8 @@
             this.cell = cell;
             this.pos = pos;
 
-            if (!weekRaw) {
-                this.empty = true;
-                this.length = 1;
-                return;
-            }
-
-            this.groups = weekRaw.map(groupRaw => new TableGroup(groupRaw, this));
-            this.length = helpers.sum.apply(helpers, this.groups.map(group => group.length));
+            this.curicula = weekRaw ? weekRaw.map(curiculumRaw => new TableCuriculum(curiculumRaw, this)) : [ new TableCuriculum(null, this) ];
+            this.length = this.curicula.length;
         }
 
         /**
@@ -206,40 +190,32 @@
             let rowPos = this.pos * this.rowSize;
             this.rows = [ this.cell.row.rows[rowPos], this.cell.row.rows[rowPos + 1] ];
 
-            if (this.empty) {
-                $(`<td rowspan=${this.rowSize} colspan=${this.colSize} class="cell-empty"></td>`)
-                    .data('width', 1).data('height', this.pos === 0 ? this.cell.weeks.length : null).data('vIndex', this.pos)
-                    .appendTo(this.rows[0]);
-                return this;
-            }
-
             let colPos = this.rows[0].children().length;
-            this.groups.forEach(group => group.draw());
-            this.rows[0].children().eq(colPos).data('width', this.groups.length)
-                .data('height', this.pos === 0 ? this.cell.weeks.length : null).data('vIndex', this.pos);
+            this.curicula.forEach(group => group.draw());
+            this.rows[0].children().eq(colPos).data('width', this.cell.col.length).data('weeksPos', this.pos);
 
             return this;
         }
     }
 
-    class TableGroup {
+    class TableCuriculum {
         /**
-         * @param {object} groupRaw Группа занятий
-         * @param {object} week     Неделя
+         * @param {object} curiculumRaw Предмет
+         * @param {object} week         Неделя
          */
-        constructor(groupRaw, week) {
+        constructor(curiculumRaw, week) {
             this.week = week;
 
-            if (!groupRaw) {
-                this.empty = true;
-                this.length = 1;
+            if (!curiculumRaw) {
+                this.title = '';
+                this.content = '';
+                this.lessonID = null;
                 return;
             }
 
-            this.title = groupRaw.title;
-            this.length = groupRaw.contents.length;
-            this.contents = groupRaw.contents;
-            this.lessonID = groupRaw.lessonID;
+            this.title = curiculumRaw.title;
+            this.content = curiculumRaw.content;
+            this.lessonID = curiculumRaw.lessonID;
         }
 
         /**
@@ -247,19 +223,8 @@
          * @return {TableWeek} this
          */
         draw() {
-            if (this.empty) {
-                $(`<td rowspan=${this.week.rowSize} colspan=${this.week.colSize}></td>`).appendTo(this.week.rows[0]);
-                return this;
-            }
-
-            let className = `lesson_${this.lessonID}`;
-
-            if (this.length > 1) {
-                $(`<td colspan=${this.week.colSize * this.length} class="cell-title ${className}">${this.title}</td>`).appendTo(this.week.rows[0]);
-                this.contents.forEach(content => $(`<td rowspan=${this.week.rowSize - 1} colspan=${this.week.colSize} class="cell-content ${className}">${content}</td>`).appendTo(this.week.rows[1]));
-            } else {
-                $(`<td rowspan=${this.week.rowSize} colspan=${this.week.colSize} class="cell-full ${className}">${this.title}${this.contents[0]}</td>`).appendTo(this.week.rows[0]);
-            }
+            $(`<td colspan=${this.week.colSize} class="cell-title lesson_${this.lessonID}">${this.title}</td>`).appendTo(this.week.rows[0]);
+            $(`<td rowspan=${this.week.rowSize - 1} colspan=${this.week.colSize} class="cell-content lesson_${this.lessonID}">${this.content}</td>`).appendTo(this.week.rows[1]);
 
             return this;
         }

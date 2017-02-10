@@ -116,10 +116,28 @@
                         switch (this.type) {
                             case 'grade':
                                 setTimeout(() => {
-                                    this.days = Select.getOptions('Неделя', [ 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота' ].map((day, index) => ({
-                                        id: index,
-                                        text: day,
-                                    })));
+                                    this.days = [ {
+                                        id: 'default',
+                                        text: 'Неделя',
+                                    }, {
+                                        id: '0',
+                                        text: 'Понедельник',
+                                    }, {
+                                        id: '1',
+                                        text: 'Вторник',
+                                    }, {
+                                        id: '2',
+                                        text: 'Среда',
+                                    }, {
+                                        id: '3',
+                                        text: 'Четверг',
+                                    }, {
+                                        id: '4',
+                                        text: 'Пятница',
+                                    }, {
+                                        id: '5',
+                                        text: 'Суббота',
+                                    } ];
 
                                     this.day = this.initState && localStorage.day ? localStorage.day : 'default';
                                 });

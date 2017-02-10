@@ -11,56 +11,47 @@
             this.$body = this.$table.children('tbody');
 
             let bodySize = this.$header.find("#bodySize").data();
-            this.width = bodySize.width;
-            this.height = bodySize.height;
-            
-            let filled = new Array(this.height);
-            helpers.range(0, this.height).forEach(i => {
-                filled[i] = new Array(this.width).fill(false);
-            });
+            this.sizeX = bodySize.width;
+            this.sizeY = bodySize.height;
 
             function getType($cell) {
                 if ($cell.hasClass('cell-title')) return 'title';
                 if ($cell.hasClass('cell-content')) return 'content';
-                if ($cell.hasClass('cell-full')) return 'full';
                 if ($cell.hasClass('time')) return 'time';
-                return 'empty';
             }
+
+            this.cellsMap = new CellsMap([], 0, 0, this.sizeX, this.sizeY);
 
             let [ posX, posY ] = [ 0, 0 ];
 
-            this.cells = [];
             let $cells = this.$body.find('td');
             $cells.toArray().forEach(cellDOM => {
-                while (filled[posY][posX]) {
+                while (this.cellsMap.getCell(posX, posY)) {
                     posX++;
-                    if (posX >= this.width) {
+                    if (posX >= this.sizeX) {
                         posX = 0;
                         posY++;
                     }
                 }
+
+                let $cell = $(cellDOM);
 
                 let cell = {
                     posX: posX,
                     posY: posY,
                     sizeX: cellDOM.colSpan,
                     sizeY: cellDOM.rowSpan,
-                    width: $(cellDOM).data('width'),
-                    height: $(cellDOM).data('height'),
-                    vIndex: $(cellDOM).data('vIndex'),
-                    type: getType($(cellDOM)),
+                    sizeXBoth: $cell.data('width'),
+                    sizeYBoth: $cell.data('height'),
+                    weeksNumber: $cell.data('weeksNumber'),
+                    weeksPos: $cell.data('weeksPos'),
+                    type: getType($cell),
                     domClass: cellDOM.className,
-                    html: $(cellDOM).html(),
-                    deleted: false,
+                    html: $cell.html(),
                 };
-                this.cells.push(cell);
 
-                let xRange = helpers.range(cell.posX, cell.posX + cell.sizeX);
-                let yRange = helpers.range(cell.posY, cell.posY + cell.sizeY);
-                xRange.forEach(x => yRange.forEach(y => filled[y][x] = true));
+                this.cellsMap.import(new CellsMap([ cell ], cell.posX, cell.posY, cell.sizeX, cell.sizeY));
             });
-
-            $cells.remove();
         }
 
         /**
@@ -68,17 +59,20 @@
          * @return {TableTweaker} this
          */
         draw() {
+            this.$body.find('td').remove();
             let $rows = this.$body.children();
-            this.cells.forEach(cell => {
-                if (cell.deleted) return;
+            for (let y = 0; y < this.sizeY; y++) for (let x = 0; x < this.sizeX; x++) {
+                let cell = this.cellsMap.getCell(x, y, true);
+                if (!cell) continue;
 
-                let $cell = $('<td></td>').attr({
+                $('<td></td>').attr({
                     class: cell.domClass,
                     colspan: cell.sizeX,
                     rowspan: cell.sizeY,
-                }).html(cell.html).data('width', cell.width).data('height', cell.height)
-                    .data('vIndex', cell.vIndex).appendTo($rows.eq(cell.posY));
-            });
+                }).html(cell.html).data('width', cell.sizeXBoth).data('height', cell.sizeYBoth)
+                    .data('weeksNumber', cell.weeksNumber).data('weeksPos', cell.weeksPos)
+                    .appendTo($rows.eq(cell.posY));
+            }
 
             return this;
         }
@@ -87,41 +81,42 @@
          * Объединение главных ячеек по вертикали
          * @return {TableTweaker} this
          */
-        mergeBoths() {
-            for (let i = 0, sz = this.cells.length; i < sz; i++) {
-                let current = new Cell(this.cells, this.cells[i], true, true);
+        mergeBothsVertical() {
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let current = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'both');
                 if (!current.ok || current.empty) continue;
 
-                let next = Cell.getBoth(this.cells, current.posX, current.posY + current.sizeY);
+                let next = new Cell(this.cellsMap, this.cellsMap.getCell(x, y + current.sizeY, true), 'both');
                 if (!next.ok || current.sizeX !== next.sizeX || current.html() !== next.html()) continue;
 
                 current.mergeVertical(next);
+                this.cellsMap.import(current.cellsMap);
 
-                i--;
+                y--;
             }
             
             return this;
         }
 
         /**
-         * Объединение недель по горизонтали
+         * Объединение главных ячеек по горизонтали
          * @return {TableTweaker} this
          */
-        mergeWeeks() {
-            let dividers = new Array(this.cells.length).fill(1);
-            for (let i = 0, sz = this.cells.length; i < sz; i++) {
-                let current = new Cell(this.cells, this.cells[i], true);
+        mergeBothsHorisontal() {
+            let dividers = new Array(this.sizeX * this.sizeY).fill(1);
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let current = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'week');
                 if (!current.ok || current.empty) continue;
 
-                let next = Cell.getWeek(this.cells, current.posX + current.sizeX, current.posY);
+                let next = new Cell(this.cellsMap, this.cellsMap.getCell(x + current.sizeX, y, true), 'week');
                 if (!next.ok || current.sizeY !== next.sizeY || current.html() !== next.html()) continue;
 
                 current.mergeHorisontal(next);
+                this.cellsMap.import(current.cellsMap);
 
-                dividers[i]++;
-                current.cells[0].divider = dividers[i];
+                current.cells[0].divider = ++dividers[x * this.sizeX + y];
 
-                i--;
+                y--;
             }
             
             return this;
@@ -132,17 +127,18 @@
          * @return {TableTweaker} this
          */
         mergeCellsVertical() {
-            for (let i = 0, sz = this.cells.length; i < sz; i++) {
-                let current = new Cell(this.cells, this.cells[i]);
-                if (!current.ok || current.empty) continue;
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let current = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true));
+                if (!current.ok) continue;
 
-                let both = Cell.getBoth(this.cells, current.posX, current.posY);
-                let next = Cell.getCell(both.cells, current.posX, current.posY + current.sizeY);
+                let both = Cell.getBoth(this.cellsMap, current.posX, current.posY);
+                let next = new Cell(both.cellsMap, both.cellsMap.getCell(x, y + current.sizeY, true));
                 if (!next.ok || current.sizeX !== next.sizeX || current.html() !== next.html()) continue;
 
                 current.mergeVertical(next);
+                this.cellsMap.import(current.cellsMap);
 
-                i--;
+                y--;
             }
             
             return this;
@@ -153,19 +149,63 @@
          * @return {TableTweaker} this
          */
         mergeCellsHorisontal() {
-            for (let i = 0, sz = this.cells.length; i < sz; i++) {
-                let current = new Cell(this.cells, this.cells[i]);
-                if (!current.ok || current.empty) continue;
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let current = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true));
+                if (!current.ok) continue;
 
-                let week = Cell.getWeek(this.cells, current.posX, current.posY);
-                let next = Cell.getCell(week.cells, current.posX + current.sizeX, current.posY);
+                let both = Cell.getBoth(this.cellsMap, current.posX, current.posY);
+                let next = new Cell(both.cellsMap, both.cellsMap.getCell(x + current.sizeX, y, true));
                 if (!next.ok || current.sizeY !== next.sizeY || current.html() !== next.html()) continue;
 
                 current.mergeHorisontal(next);
+                this.cellsMap.import(current.cellsMap);
 
-                i--;
+                y--;
             }
             
+            return this;
+        }
+
+        /**
+         * Объединение заголовков ячеек
+         * @return {TableTweaker} this
+         */
+        mergeTitles() {
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let week = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'week');
+                if (!week.ok) continue;
+
+                let previous = week.cells[0];
+                let cells = week.cells.filter(cell => cell.posX !== week.posX && cell.posY === week.posY);
+                cells.forEach(current => {
+                    if (current.html && current.domClass === previous.domClass && current.html === previous.html) {
+                        previous.sizeX += current.sizeX;
+                        current.sizeX = 0;
+                    } else {
+                        previous = current;
+                    }
+                });
+
+                week.cellsMap = new CellsMap(week.cells, week.posX, week.posY, week.sizeX, week.sizeY);
+                this.cellsMap.import(week.cellsMap);
+            }
+
+            return this;
+        }
+
+        /**
+         * Сгенерировать ячейки типа full
+         * @return {TableTweaker} this
+         */
+        createFulls() {
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let cell = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true));
+                if (!cell.ok || cell.cells.length !== 2) continue;
+
+                let cellRaw = cell.createFull();
+                this.cellsMap.import(new CellsMap([ cellRaw ], cellRaw.posX, cellRaw.posY, cellRaw.sizeX, cellRaw.sizeY));
+            }
+
             return this;
         }
 
@@ -174,68 +214,56 @@
          * @return {TableTweaker} this
          */
         deleteEmptySubgroups() {
-            this.cells.forEach(cell => {
-                let week = new Cell(this.cells, cell, true);
-                if (!week.ok || week.empty) return;
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let week = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'week');
+                if (!week.ok || week.empty) continue;
 
-                let oldWidth = week.width;
-                week.cells.forEach(wCell => {
-                    if (!wCell || wCell.deleted) return;
+                let oldLength = 0;
+                let newLength = 0;
+                week.cells.forEach(cellRaw => {
+                    if (cellRaw.posY !== week.posY) return true;
+                    
+                    let cell = new Cell(week.cellsMap, cellRaw);
+                    if (!cell.ok) return;
 
-                    if (wCell.type === 'empty') {
-                        wCell.deleted = true;
-                        week.width--;
+                    oldLength++;
+
+                    if (cell.empty) {
+                        cell.cells.forEach(cellRaw => cellRaw.sizeX = 0);
+                    } else {
+                        newLength++;
                     }
                 });
 
-                week.cells.some(wCell => {
-                    if (!wCell || wCell.deleted) return;
+                week.cells.some(cellRaw => {
+                    let cell = new Cell(week.cellsMap, cellRaw);
+                    if (!cell.ok || !cellRaw.sizeX) return;
 
-                    wCell.width = week.width;
-                    wCell.height = week.height;
-                    wCell.vIndex = week.vIndex;
+                    cellRaw.sizeXBoth = week.cells[0].sizeXBoth;
+                    cellRaw.sizeYBoth = week.cells[0].sizeYBoth;
                     return true;
                 });
 
-                let widthMul = oldWidth / week.width;
-                let posX = week.posX;
-                week.cells.forEach(wCell => {
-                    if (!wCell || wCell.deleted) return;
+                let widthMul = oldLength / newLength;
+                let offsetX = week.posX;
+                let curY = week.posY;
+                week.cells.forEach(cell => {
+                    if (!cell.sizeX) return;
 
-                    wCell.sizeX *= widthMul;
-                    wCell.posX = posX;
-                    
-                    if (wCell.type !== 'title') posX += wCell.sizeX;
+                    if (curY !== cell.posY) {
+                        offsetX = week.posX;
+                        curY = cell.posY;
+                    }
+
+                    cell.posX = offsetX;
+                    cell.sizeX *= widthMul;
+
+                    offsetX += cell.sizeX;
                 });
-            });
-            
-            return this;
-        }
 
-        /**
-         * Пересчет ширины
-         * @return {TableTweaker} this
-         */
-        fixWidth() {
-            let $fRow = this.$header.children().first();
-            let $fCells = $fRow.children().slice(1);
-
-            let x = 1;
-            let yRange = helpers.range(0, this.height);
-            let fCells = $fCells.toArray().map(title => {
-                let length = Math.max.apply(Math, yRange.map(y => {
-                    let week = Cell.getWeek(this.cells, x, y);
-                    if (!week.ok) return 0;
-                    let divider = week.cells[0].divider || 1;
-                    return week.width / divider;
-                })) || 1;
-                x += Number($(title).attr('colspan'));
-                return length;
-            });
-
-            let colWidth = 95 / helpers.sum.apply(helpers, fCells);
-            fCells.forEach((length, index) => $fCells.eq(index).css('width', `${colWidth * length}%`));
-            $fRow.children().last().css('width', 'auto');
+                week.cellsMap = new CellsMap(week.cells, week.posX, week.posY, week.sizeX, week.sizeY);
+                this.cellsMap.import(week.cellsMap);
+            }
             
             return this;
         }
@@ -274,113 +302,207 @@
         }
 
         /**
-         * Заблюривание ячеек
-         * @param  {number}       pos    Номер игнорируемой ячейки
-         * @param  {number}       length Количество ячеек, когда будет применяться блюр
-         * @return {TableTweaker}        this
+         * Пересчет ширины
+         * @return {TableTweaker} this
          */
-        blurWeeks(pos, length) {
-            this.cells.forEach(cell => {
-                let both = new Cell(this.cells, cell, true, true);
-                if (!both.ok || both.height !== length) return;
+        fixWidth() {
+            let $fRow = this.$header.children().first();
+            let $fCells = $fRow.children().slice(1);
 
-                both.cells.forEach(cell => {
-                    let week = new Cell(both.cells, cell, true);
-                    if (!week.ok || week.vIndex == pos) return;
+            let x = 1;
+            let yRange = helpers.range(0, this.sizeY);
+            let fCells = $fCells.toArray().map(title => {
+                let weeks = [];
+                for (let y = 0; y < this.sizeY; y++) {
+                    let week = Cell.getWeek(this.cellsMap, x, y);
+                    if (!week.ok) continue;
+                    let width = week.cells.filter(cell => cell.posY == week.posY).length;
+                    let divider = week.cells[0].divider || 1;
+                    weeks.push(Math.max(1, width / divider));
+                }
+                let weight = Math.max.apply(Math, weeks);
+                x += Number($(title).attr('colspan'));
+                return weight;
+            });
+
+            let colWidth = 95 / helpers.sum.apply(helpers, fCells);
+            fCells.forEach((weight, index) => $fCells.eq(index).css('width', `${colWidth * weight}%`));
+            $fRow.children().last().css('width', 'auto');
+            
+            return this;
+        }
+
+        /**
+         * Заблюривание недель
+         * @param  {number}       weeksPos    Номер игнорируемой недели
+         * @param  {number}       weeksNumber Количество недель, когда будет применяться блюр
+         * @return {TableTweaker}             this
+         */
+        blurWeeks(weeksPos, weeksNumber) {
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let both = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'both');
+                if (!both.ok || both.cells[0].weeksNumber !== weeksNumber) continue;
+
+                for (let bx = 0; bx < this.sizeX; bx++) for (let by = 0; by < this.sizeY; by++) {
+                    let week = new Cell(both.cellsMap, both.cellsMap.getCell(bx, by, true), 'week');
+                    if (!week.ok || week.cells[0].weeksPos === weeksPos) continue;
 
                     week.cells.forEach(cell => cell.domClass += ' cell-blured');
-                });
-            });
+                }
+            }
             
             return this;
         }
     }
 
+    class CellsMap {
+        /**
+         * @param {object[]} cells   Массив ячеек
+         * @param {number}   offsetX Отступ области по X
+         * @param {number}   offsetY Отступ области по Y
+         * @param {number}   sizeX   Размер области по X
+         * @param {number}   sizeY   Размер области по Y
+         */
+        constructor(cells, offsetX, offsetY, sizeX, sizeY) {
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            this.sizeX = sizeX;
+            this.sizeY = sizeY;
+
+            this.map = new Array(this.sizeY);
+            for (let y = 0; y < this.sizeY; y++) this.map[y] = new Array(this.sizeX).fill(null);
+
+            cells.forEach(cell => {
+                let xBegin = Math.max(this.offsetX, cell.posX);
+                let xEnd = Math.min(this.offsetX + this.sizeX, cell.posX + cell.sizeX);
+                let yBegin = Math.max(this.offsetY, cell.posY);
+                let yEnd = Math.min(this.offsetY + this.sizeY, cell.posY + cell.sizeY);
+                for (let x = xBegin; x < xEnd; x++) for (let y = yBegin; y < yEnd; y++) {
+                    this.setCell(cell, x, y);
+                }
+            });
+        }
+
+        /**
+         * Импорт области в текущую
+         * @param  {CellsMap} cellsMap Импортируемая область
+         * @return {CellsMap}          this
+         */
+        import(cellsMap) {
+            let xBegin = Math.max(this.offsetX, cellsMap.offsetX);
+            let xEnd = Math.min(this.offsetX + this.sizeX, cellsMap.offsetX + cellsMap.sizeX);
+            let yBegin = Math.max(this.offsetY, cellsMap.offsetY);
+            let yEnd = Math.min(this.offsetY + this.sizeY, cellsMap.offsetY + cellsMap.sizeY);
+            for (let x = xBegin; x < xEnd; x++) for (let y = yBegin; y < yEnd; y++) {
+                this.setCell(cellsMap.getCell(x, y), x, y);
+            }
+
+            return this;
+        }
+
+        /**
+         * Экспорт области
+         * @param  {number}   offsetX Отступ области по X
+         * @param  {number}   offsetY Отступ области по Y
+         * @param  {number}   sizeX   Размер области по X
+         * @param  {number}   sizeY   Размер области по Y
+         * @return {CellsMap}         Область
+         */
+        export(offsetX, offsetY, sizeX, sizeY) {
+            return new CellsMap([], offsetX, offsetY, sizeX, sizeY).import(this);
+        }
+
+        /**
+         * Задать ячейку
+         * @param  {object} cell Ячейка
+         * @param  {number} x    Позиция по X
+         * @param  {number} y    Позиция по Y
+         * @return {object}      Ячейка
+         */
+        setCell(cell, x, y) {
+            return this.map[y - this.offsetY][x - this.offsetX] = cell;
+        }
+
+        /**
+         * Получить ячейку
+         * @param  {number} x      Позиция по X
+         * @param  {number} y      Позиция по Y
+         * @param  {bool}   strict Получить ячейку только при совпадении координат
+         * @return {object}        Ячейка
+         */
+        getCell(x, y, strict) {
+            if (x < this.offestX || x - this.offsetX >= this.sizeX || y < this.offsetY || y - this.offsetY >= this.sizeY) return null;
+            let cell = this.map[y - this.offsetY][x - this.offsetX];
+            if (strict && (!cell || cell.posX !== x || cell.posY !== y)) return null;
+            return cell;
+        }
+
+        /**
+         * Получить массив всех ячеек
+         * @return {object[]} Ячейки
+         */
+        getCells() {
+            let cells = [];
+            let xBegin = this.offsetX;
+            let xEnd = this.offsetX + this.sizeX;
+            let yBegin = this.offsetY;
+            let yEnd = this.offsetY + this.sizeY;
+            for (let y = yBegin; y < yEnd; y++) for (let x = xBegin; x < xEnd; x++) {
+                let cell = this.getCell(x, y, true);
+                if (cell) cells.push(cell);
+            }
+            return cells;
+        }
+    }
+
     class Cell {
         /**
-         * @param {object[]} cells Массив ячеек, в которой требуется искать компоненты для этой
-         * @param {object}   cell  Ячейка
-         * @param {object}   week  Получить неделю
-         * @param {object}   both  Получить главную я чейку (требуется флаг week)
+         * @param {CellsMap} cellsMap Область ячейки (для составления главной ячейки и поиска компонентов текущей)
+         * @param {object}   cell     Ячейка
+         * @param {string}   type     Тип ячейки [ 'cell', 'weel', 'both' ]
          */
-        constructor(cells, cell, week, both) {
+        constructor(cellsMap, cell, type) {
             // Флаг корректности
             this.ok = false;
 
             // Проверка на существование
-            if (!cell || cell.deleted) return;
+            if (!cell) return;
 
             // Перенос свойств из ячейки
-            this.cells = null;
             this.posX = cell.posX;
             this.posY = cell.posY;
             this.sizeX = cell.sizeX;
             this.sizeY = cell.sizeY;
-            this.width = cell.width;
-            this.height = cell.height;
-            this.vIndex = cell.vIndex;
-            this.isWeek = Boolean(this.width);
-            this.isBoth = Boolean(this.height);
-            this.empty = false;
 
-            // Проверка на возможность получения недели / главной ячейки
-            if (week && !this.isWeek) return;
-            if (both && !this.isBoth) return;
+            this.type = type || 'cell';
 
-            switch (cell.type) {
-                // Полная ячейка
-                case 'full':
-                    this.cells = [ cell ];
+            switch (this.type) {
+                case 'both':
+                    if (!cell.sizeXBoth || !cell.sizeYBoth) return;
+                    this.isBoth = true;
+                    this.sizeX = cell.sizeXBoth;
+                    this.sizeY = cell.sizeYBoth;
                     break;
 
-                // Заголовок ячейки
-                case 'title':
-                    this.cells = [ cell ];
-                    let offsetX = 0;
-                    while (offsetX < this.sizeX) {
-                        let fCell = Cell.findCell(cells, this.posX + offsetX, this.posY + 1);
-                        this.cells.push(fCell);
-
-                        offsetX += fCell.sizeX;
-                        this.sizeY = 1 + fCell.sizeY;
-                    }
+                case 'week':
+                    if (!cell.sizeXBoth || cell.type !== 'title') return;
+                    this.isWeek = true;
+                    this.sizeX = cell.sizeXBoth;
+                    this.sizeY = 1 + cellsMap.getCell(this.posX, this.posY + 1, true).sizeY;
                     break;
 
-                // Пустая ячейка
-                case 'empty':
-                    this.cells = [ cell ];
-                    this.empty = true;
+                case 'cell':
+                    if (cell.type !== 'title') return;
+                    this.sizeY = 1 + cellsMap.getCell(this.posX, this.posY + 1, true).sizeY;
                     break;
 
                 default:
                     return;
             }
 
-            // Получение недели
-            if (week) {
-                for (let i = 1; i < this.width; i++) {
-                    let [ posX, posY ] = [ this.posX + this.sizeX, this.posY ];
-                    let fCell = Cell.getCell(cells, posX, posY, true);
-                    if (fCell.posX === posX && fCell.posY === posY) {
-                        this.cells = this.cells.concat(fCell.cells);
-                        if (this.empty) this.empty = fCell.empty;
-                    }
-                    this.sizeX += fCell.sizeX;
-                }
-            }
-
-            // Получение полной ячейки
-            if (both) {
-                for (let i = 1; i < this.height; i++) {
-                    let [ posX, posY ] = [ this.posX, this.posY + this.sizeY ];
-                    let fCell = Cell.getWeek(cells, posX, posY);
-                    if (fCell.posX === posX && fCell.posY === posY) {
-                        this.cells = this.cells.concat(fCell.cells);
-                        if (this.empty) this.empty = fCell.empty;
-                    }
-                    this.sizeY += fCell.sizeY;
-                }
-            }
+            this.cellsMap = cellsMap.export(this.posX, this.posY, this.sizeX, this.sizeY);
+            this.cells = this.cellsMap.getCells();
+            this.empty = this.cells.every(cell => cell.html === '');
 
             // Флаг корректности
             this.ok = true;
@@ -391,7 +513,7 @@
          * @return {string} HTML
          */
         html() {
-            return this.ok ? this.cells.map(cell => cell.html).join('\n') : '';
+            return this.ok ? this.cells.map(cell => `${cell.html}_${cell.domClass}`).join('\n') : '';
         }
 
         /**
@@ -400,22 +522,29 @@
          * @return {Cell}      this
          */
         mergeVertical(next) {
-            helpers.range(0, this.cells.length).forEach(i => {
+            let offsetY = this.posY;
+            let newOffsetY = Infinity;
+            let curY = this.posY;
+            for (let i = 0; i < this.cells.length; i++) {
                 let tData = this.cells[i];
                 let nData = next.cells[i];
 
-                if (tData.type === 'title') return;
+                if (curY !== tData.posY) {
+                    offsetY = newOffsetY;
+                    newOffsetY = Infinity;
+                    curY = tData.posY;
+                }
 
-                tData.sizeY += nData.sizeY;
-                if (tData.type === 'content') tData.sizeY++;
-            });
+                tData.posY = offsetY;
+                if (tData.type === 'content') tData.sizeY += nData.sizeY + 1;
+
+                newOffsetY = Math.min(newOffsetY, tData.posY + tData.sizeY);
+            }
 
             this.sizeY += next.sizeY;
-            if (this.isBoth && !next.isBoth) {
-                this.height--;
-                this.cells[0].height--;
-            }
-            next.cells.forEach(cell => cell.deleted = true);
+            if (this.isBoth && next.isBoth) this.cells[0].sizeYBoth = this.sizeY;
+
+            this.cellsMap = new CellsMap(this.cells, this.posX, this.posY, this.sizeX, this.sizeY);
 
             return this;
         }
@@ -427,98 +556,80 @@
          */
         mergeHorisontal(next) {
             let offsetX = this.posX;
-            helpers.range(0, this.cells.length).forEach(i => {
+            let curY = this.posY;
+            for (let i = 0; i < this.cells.length; i++) {
                 let tData = this.cells[i];
                 let nData = next.cells[i];
+
+                if (curY !== tData.posY) {
+                    offsetX = this.posX;
+                    curY = tData.posY;
+                }
 
                 tData.posX = offsetX;
                 tData.sizeX += nData.sizeX;
 
-                if (tData.type !== 'title') offsetX = tData.posX + tData.sizeX;
-            });
+                offsetX = tData.posX + tData.sizeX;
+            }
 
             this.sizeX += next.sizeX;
-            if (this.isWeek && !next.isWeek) {
-                this.width--;
-                this.cells[0].width--;
-            }
-            next.cells.forEach(cell => cell.deleted = true);
+            if (this.isBoth && next.isBoth || this.isWeek && next.isWeek) this.cells[0].sizeXBoth = this.sizeX;
+
+            this.cellsMap = new CellsMap(this.cells, this.posX, this.posY, this.sizeX, this.sizeY);
 
             return this;
         }
 
         /**
-         * Поиск ячейки
-         * @param  {object[]} cells  Ячейки, среди которых происходит поиск
-         * @param  {number}   x      Положение ячейки по X
-         * @param  {number}   y      Положение ячейки по Y
-         * @param  {bool}     inCell Поиск ячейки, которая содержит указанную позицию, иначе только ВЛ-вершину
-         * @return {object}          Найденая ячейка или null
+         * Получить ячейку типа full
+         * @return {object} Ячейка
          */
-        static findCell(cells, x, y, inCell) {
-            let fCell = null;
-            cells.some(cell => {
-                if (!cell || cell.deleted) return false;
-
-                if (
-                    !inCell && cell.posX === x && cell.posY === y ||
-                    inCell && x >= cell.posX && x < cell.posX + cell.sizeX && y >= cell.posY && y < cell.posY + cell.sizeY
-                ) {
-                    fCell = cell;
-                    return true;
-                }
-            });
-            return fCell;
-        }
-
-        /**
-         * Получение ячейки
-         * @param  {object[]} cells  Ячейки, среди которых происходит поиск
-         * @param  {number}   x      Положение ячейки по X
-         * @param  {number}   y      Положение ячейки по Y
-         * @param  {bool}     inCell Поиск ячейки, которая содержит указанную позицию, иначе только ВЛ-вершину
-         * @return {Cell}            Найденная ячейка или Cell(null)
-         */
-        static getCell(cells, x, y, inCell) {
-            return new Cell(cells, Cell.findCell(cells, x, y, inCell));
-        }
-
-        /**
-         * Получение недели
-         * @param  {object[]} cells  Ячейки, среди которых происходит поиск
-         * @param  {number}   x      Положение ячейки по X
-         * @param  {number}   y      Положение ячейки по Y
-         * @return {Cell}            Найденная ячейка или Cell(null)
-         */
-        static getWeek(cells, x, y) {
-            let fCell = new Cell(cells, null);
-            cells.some(cellData => {
-                let cell = new Cell(cells, cellData, true);
-                if (cell.ok && x >= cell.posX && x < cell.posX + cell.sizeX && y >= cell.posY && y < cell.posY + cell.sizeY) {
-                    fCell = cell;
-                    return true;
-                }
-            });
-            return fCell;
+        createFull() {
+            let cell = Object.assign(this.cells[0]);
+            cell.sizeY += this.cells[1].sizeY;
+            cell.domClass = cell.domClass.replace('cell-title', 'cell-full');
+            cell.html += this.cells[1].html;
+            return cell;
         }
 
         /**
          * Получение главной ячейки
-         * @param  {object[]} cells  Ячейки, среди которых происходит поиск
-         * @param  {number}   x      Положение ячейки по X
-         * @param  {number}   y      Положение ячейки по Y
-         * @return {Cell}            Найденная ячейка или Cell(null)
+         * @param  {CellsMap} cellsMap Ячейки, среди которых происходит поиск
+         * @param  {number}   x        Положение ячейки по X
+         * @param  {number}   y        Положение ячейки по Y
+         * @return {Cell}              Найденная ячейка или Cell(null)
          */
-        static getBoth(cells, x, y) {
-            let fCell = new Cell(cells, null);
-            cells.some(cellData => {
-                let cell = new Cell(cells, cellData, true, true);
-                if (cell.ok && x >= cell.posX && x < cell.posX + cell.sizeX && y >= cell.posY && y < cell.posY + cell.sizeY) {
+        static getBoth(cellsMap, x, y) {
+            let fCell = null;
+            cellsMap.getCells().some(cell => {
+                if (!cell || cell.deleted) return false;
+
+                if (cell.sizeXBoth && cell.sizeYBoth && x >= cell.posX && x < cell.posX + cell.sizeXBoth && y >= cell.posY && y < cell.posY + cell.sizeYBoth) {
                     fCell = cell;
                     return true;
                 }
             });
-            return fCell;
+            return new Cell(cellsMap, fCell, 'both');
+        }
+
+        /**
+         * Получение недели
+         * @param  {CellsMap} cellsMap Ячейки, среди которых происходит поиск
+         * @param  {number}   x        Положение ячейки по X
+         * @param  {number}   y        Положение ячейки по Y
+         * @return {Cell}              Найденная ячейка или Cell(null)
+         */
+        static getWeek(cellsMap, x, y) {
+            let fCell = null;
+            cellsMap.getCells().some(cell => {
+                if (!cell || cell.deleted) return false;
+
+                if (cell.sizeXBoth && x >= cell.posX && x < cell.posX + cell.sizeXBoth && y >= cell.posY && y < cell.posY + cell.sizeY) {
+                    fCell = cell;
+                    return true;
+                }
+            });
+            return new Cell(cellsMap, fCell, 'week');
         }
     }
 

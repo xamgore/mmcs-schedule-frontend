@@ -59,13 +59,6 @@
 
             curricula = helpers.array.groupBy(curricula, 'lessonid');
 
-            switch (this.type) {
-                case 'teacher':
-                case 'room':
-                    groups = helpers.array.groupBy(groups, 'uberid');
-                    break;
-            }
-
             times = times.map(({ cbeg, cend }) => ({
                 begin: helpers.time.getStamp(cbeg),
                 end: helpers.time.getStamp(cend),
@@ -84,11 +77,16 @@
                     break;
             }
 
+            let groupsGrouped = helpers.array.groupBy(groups, 'uberid');
+            let groupNames = {};
+            Object.keys(groupsGrouped).forEach(key => {
+                groupNames[key] = groupsGrouped[key].map(group => helpers.getGroupName(group)).join(', ');
+            });
+
             this.lessons = [];
             lessons.forEach(lesson => {
                 try {
-                    let groupsForLesson = groups && groups.hasOwnProperty(lesson.uberid) ? groups[lesson.uberid] : [];
-                    this.lessons.push(new ScheduleLesson(this.type, lesson, curricula[lesson.id], groupsForLesson, times, titles));
+                    this.lessons.push(new ScheduleLesson(this.type, lesson, curricula[lesson.id], groupNames[lesson.uberid], times, titles));
                 } catch (error) {
                     console.log(error, lesson);
                 }
@@ -109,14 +107,11 @@
 
             this.lessons.forEach(lesson => {
                 let { row, col } = lesson.pos;
-                if (this.data[row][col]) {
-                    this.data[row][col].push(lesson);
-                } else {
-                    this.data[row][col] = [ lesson ];
-                }
+                if (!this.data[row][col]) this.data[row][col] = [];
+                this.data[row][col].push(lesson);
             });
 
-            this.data = this.data.map(row => row.map(cell => (new ScheduleCell(this.type, cell)).toArray()));
+            this.data = this.data.map(row => row.map(cell => new ScheduleCell(this.type, cell).toArray()));
 
             return this;
         }
@@ -129,28 +124,27 @@
         draw($block) {
             let $table = $('<table></table>').appendTo($block);
 
-            (new Table(this.data, this.times, this.header, this.weekday)).draw($table);
+            new Table(this.data, this.times, this.header, this.weekday).draw($table);
 
             let tweaker = new TableTweaker($table);
             switch (this.type) {
-                case 'group':
-                    tweaker.mergeCellsVertical();
-                    break;
-
                 case 'day':
-                    tweaker.mergeWeeks();
-                    tweaker.mergeCellsVertical();
                     tweaker.setGroupsHeader();
+                    tweaker.mergeBothsHorisontal();
                     break;
 
                 case 'teacher':
                 case 'room':
                     tweaker.deleteEmptySubgroups();
-                    tweaker.mergeCellsVertical();
                     break;
             }
+            //tweaker.mergeBothsVertical();
+            tweaker.mergeCellsVertical();
+            tweaker.mergeCellsHorisontal();
+            tweaker.mergeTitles();
             tweaker.fixWidth();
             if (system.week) tweaker.blurWeeks([ 'upper', 'lower' ].indexOf(system.week), 2);
+            tweaker.createFulls();
             tweaker.draw();
 
             return this;
@@ -159,69 +153,36 @@
 
     class ScheduleLesson {
         /**
-         * @param {string} type      Тип расписания
-         * @param {object} lesson    Информация о занятии
-         * @param {array}  curricula Дисциплины занятия
-         * @param {array}  groups    Группы занятия
-         * @param {array}  times     Массив времен
-         * @param {array}  titles    Массив заголовков
+         * @param {string}   type         Тип расписания
+         * @param {object}   lessonRaw    Заняфтие
+         * @param {object[]} curriculaRaw Предметы
+         * @param {string}   groupName    Название группы
+         * @param {object[]} times        Времена пар
+         * @param {string[]} columns      Столбцы
          */
-        constructor(type, lesson, curricula, groups, times, titles) {
+        constructor(type, lessonRaw, curriculaRaw, groupName, times, columns) {
             this.type = type;
-            this.id = lesson.id;
+            this.id = lessonRaw.id;
 
-            this.build(lesson, curricula, groups, times, titles);
-        }
-
-        /**
-         * Построение занятия
-         * @param  {object}         lesson    Информация о занятии
-         * @param  {array}          curricula Дисциплины занятия
-         * @param  {array}          groups    Группы занятия
-         * @param  {array}          times     Массив времен
-         * @param  {array}          titles    Массив заголовков
-         * @return {ScheduleLesson}           this
-         */
-        build(lesson, curriculaRaw, groups, times, titles) {
             if (!curriculaRaw) throw new Error('Lesson has empty curricula');
 
-            this.setTimeAndPos(lesson.timeslot, lesson.groupid, times, titles);
+            this.setTimeAndPos(lessonRaw.timeslot, lessonRaw.groupid, times, columns);
 
-            let curricula = new Array(lesson.subcount).fill(null);
-            let groupName = groups.map(group => helpers.getGroupName(group)).join(', ');
-            curriculaRaw.forEach(curriculum => {
-                curricula[curriculum.subnum - 1] = {
-                    subject: {
-                        name: curriculum.subjectname,
-                        abbr: curriculum.subjectabbr || curriculum.subjectname,
-                    },
-                    teacher: {
-                        name: curriculum.teachername,
-                        abbr: helpers.getNameAbbr(curriculum.teachername),
-                        degree: curriculum.teacherdegree,
-                    },
-                    room: {
-                        name: curriculum.roomname,
-                    },
-                    group: {
-                        name: groupName,
-                    },
-                };
-            });
+            this.buildCuricula(lessonRaw.subcount, curriculaRaw, groupName);
 
-            this.mergeCurricula(curricula);
-
-            return this;
+            this.mergeRooms();
+            this.mergeGroups();
         }
 
         /**
          * Устновка времени и позиции занятия
-         * @param  {object}         timeslot Timeslot занятия
-         * @param  {array}          times    Массив времен
-         * @param  {array}          titles   Массив заголовков
+         * @param  {string}         timeslot Timeslot
+         * @param  {string}         groupID  ID группы
+         * @param  {object[]}       times    Времена пар
+         * @param  {string[]}       columns  Столбцы
          * @return {ScheduleLesson}          this
          */
-        setTimeAndPos(timeslot, groupID, times, titles) {
+        setTimeAndPos(timeslot, groupID, times, columns) {
             let [ day, begin, end, week ] = timeslot.replace(/[\(\)]/g, '').split(',');
 
             this.time = {
@@ -230,17 +191,19 @@
             };
 
             let row, col;
+
+            times.some((time, index) => {
+                if (helpers.compare(time, this.time)) {
+                    row = index;
+                    return true;
+                }
+            });
+
             switch (this.type) {
                 case 'group':
                 case 'teacher':
                 case 'room':
-                    times.some((time, index) => {
-                        if (helpers.compare(time, this.time)) {
-                            row = index;
-                            return true;
-                        }
-                    });
-                    titles.some((title, index) => {
+                    columns.some((title, index) => {
                         if (title == day) {
                             col = index;
                             return true;
@@ -249,13 +212,7 @@
                     break;
 
                 case 'day':
-                    times.some((time, index) => {
-                        if (helpers.compare(time, this.time)) {
-                            row = index;
-                            return true;
-                        }
-                    });
-                    titles.some((title, index) => {
+                    columns.some((title, index) => {
                         if (title == groupID) {
                             col = index;
                             return true;
@@ -272,64 +229,107 @@
         }
 
         /**
-         * Объединение группы занятий
-         * @param  {object[]}       curricula Группа занятий
-         * @return {ScheduleLesson}           this
+         * Построение занятия
+         * @param  {number}         count        Количество предметов
+         * @param  {object[]}       curriculaRaw Предметы
+         * @param  {string}         groupName    Имя группы
+         * @return {ScheduleLesson}              this
          */
-        mergeCurricula(curricula) {
-            this.groups = [];
-
-            curricula.forEach(curriculum => {
-                if (!curriculum) {
-                    this.groups.push(null);
-                    return;
-                }
-
-                let lastGroup = helpers.array.last(this.groups);
-                if (lastGroup && helpers.compare(lastGroup.subject, curriculum.subject)) {
-                    lastGroup.curricula.push(curriculum);
-                } else {
-                    this.groups.push({
-                        subject: curriculum.subject,
-                        curricula: [curriculum]
-                    });
-                }
+        buildCuricula(count, curriculaRaw, groupName) {
+            this.curricula = new Array(count).fill(null);
+            curriculaRaw.forEach(curriculumRaw => {
+                this.curricula[curriculumRaw.subnum - 1] = {
+                    subject: {
+                        name: curriculumRaw.subjectname,
+                        abbr: curriculumRaw.subjectabbr || curriculumRaw.subjectname,
+                    },
+                    teacher: {
+                        name: curriculumRaw.teachername,
+                        abbr: helpers.getNameAbbr(curriculumRaw.teachername),
+                        degree: curriculumRaw.teacherdegree,
+                    },
+                    room: {
+                        name: curriculumRaw.roomname,
+                    },
+                    group: {
+                        name: groupName,
+                    },
+                };
             });
+        }
 
+        /**
+         * Объединение предметов по аудиториям
+         * @return {ScheduleLesson} this
+         */
+        mergeRooms() {
             switch (this.type) {
                 case 'group':
                 case 'day':
                 case 'teacher':
-                    this.groups = this.groups.map(group => {
-                        if (!group) return null;
+                    let oldCurricula = this.curricula;
+                    this.curricula = [];
 
-                        let newCurricula = [];
-                        group.curricula.forEach(curriculum => {
-                            if (!curriculum) {
-                                newCurricula.push(null);
-                                return;
-                            }
+                    oldCurricula.forEach(curriculum => {
+                        if (!curriculum) {
+                            this.curricula.push(null);
+                            return;
+                        }
 
-                            let lastCurriculum = helpers.array.last(newCurricula);
-                            if (
-                                lastCurriculum &&
-                                helpers.compare(lastCurriculum.teacher, curriculum.teacher) &&
-                                helpers.compare(lastCurriculum.group, curriculum.group)
-                            ) {
-                                lastCurriculum.room.name += `, ${curriculum.room.name}`;
-                            } else {
-                                newCurricula.push(curriculum);
-                            }
-                        });
+                        let lastCurriculum = helpers.array.last(this.curricula);
 
-                        return {
-                            subject: group.subject,
-                            curricula: newCurricula,
-                            length: group.curricula.length
-                        };
+                        if (
+                            lastCurriculum &&
+                            helpers.compare(curriculum.subject, lastCurriculum.subject) &&
+                            helpers.compare(curriculum.teacher, lastCurriculum.teacher) &&
+                            helpers.compare(curriculum.group, lastCurriculum.group)
+                        ) {
+                            lastCurriculum.room.name += `, ${curriculum.room.name}`;
+                        } else {
+                            this.curricula.push(curriculum);
+                        }
                     });
+
                     break;
             }
+
+            return this;
+        }
+
+        /**
+         * Объединение предметов по группам
+         * @return {ScheduleLesson} this
+         */
+        mergeGroups() {
+            switch (this.type) {
+                case 'room':
+                    let oldCurricula = this.curricula;
+                    this.curricula = [];
+
+                    oldCurricula.forEach(curriculum => {
+                        if (!curriculum) {
+                            this.curricula.push(null);
+                            return;
+                        }
+
+                        let lastCurriculum = helpers.array.last(this.curricula);
+
+                        if (
+                            lastCurriculum &&
+                            helpers.compare(curriculum.subject, lastCurriculum.subject) &&
+                            helpers.compare(curriculum.teacher, lastCurriculum.teacher) &&
+                            helpers.compare(curriculum.room, lastCurriculum.room)
+                        ) {
+                            lastCurriculum.group.name += `, ${curriculum.group.name}`;
+                        } else {
+                            this.curricula.push(curriculum);
+                        }
+                    });
+
+                    break;
+            }
+
+            return this;
         }
     }
 
@@ -346,63 +346,35 @@
                 return;
             }
 
-            this.build(lessons);
-        }
-
-        /**
-         * Построение данных ячейки
-         * @param  {array}        lessons Занятия
-         * @return {ScheduleCell}         this
-         */
-        build(lessons) {
             let upper = [];
             let lower = [];
-            let hasFull = false;
-            let hasNotFull = false;
 
             lessons.forEach(lesson => {
-                lesson.groups.forEach(group => group && (group.lessonID = lesson.id));
+                lesson.curricula.forEach(curriculum => curriculum && (curriculum.lessonID = lesson.id));
 
                 switch (lesson.pos.week) {
                     case 'full':
-                        helpers.array.setLength(upper, Math.max(upper.length, lower.length));
-                        helpers.array.setLength(lower, Math.max(upper.length, lower.length));
-                        upper = upper.concat(lesson.groups);
-                        lower = lower.concat(lesson.groups);
-
-                        hasFull = true;
-
+                        let length = Math.max(upper.length, lower.length);
+                        helpers.array.setLength(upper, length);
+                        helpers.array.setLength(lower, length);
+                        upper = upper.concat(lesson.curricula);
+                        lower = lower.concat(lesson.curricula);
                         break;
 
                     case 'upper':
-                        upper = upper.concat(lesson.groups);
-
-                        if (hasFull) helpers.array.setLength(lower, upper.length);
-
-                        hasNotFull = true;
-
+                        upper = upper.concat(lesson.curricula);
                         break;
 
                     case 'lower':
-                        lower = lower.concat(lesson.groups);
-
-                        if (hasFull) helpers.array.setLength(upper, upper.length);
-
-                        hasNotFull = true;
-
+                        lower = lower.concat(lesson.curricula);
                         break;
                 }
             });
 
-            upper = this.buildLesson(upper);
-            lower = this.buildLesson(lower);
+            upper = upper.length ? this.buildLesson(upper) : null;
+            lower = lower.length ? this.buildLesson(lower) : null;
 
-            if (!upper.length) upper = null;
-            if (!lower.length) lower = null;
-
-            this.data = hasNotFull ? [ upper, lower ] : [ upper ];
-
-            return this;
+            this.data = helpers.compare(upper, lower) ? [ upper ] : [ upper, lower ];
         }
 
         /**
@@ -414,70 +386,54 @@
             switch (this.type) {
                 case 'group':
                 case 'day':
-                    return week.map(group => {
-                        if (!group) return null;
+                    return week.map(curriculum => {
+                        if (!curriculum) return null;
 
-                        let title = '<span class="lesson-titie">' +
-                            `<span class="subject full">${group.subject.name}</span>` +
-                            '<span class="subject short">' +
-                                `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
-                            '</span>' +
-                        '</span>';
-
-                        let contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
-                            '<span class="teacher">' +
-                                `<abbr title="${curriculum.teacher.name}">${curriculum.teacher.abbr}</abbr>` +
-                            '</span>' +
-                            `<span class="room">${curriculum.room.name}</span>` +
-                        '</span>');
-
-                        let lessonID = group.lessonID;
-
-                        return { title, contents, lessonID };
+                        return {
+                            title: '<span class="lesson-titie">' +
+                                `<span class="subject full">${curriculum.subject.name}</span>` +
+                                `<span class="subject short"><abbr title="${curriculum.subject.name}">${curriculum.subject.abbr}</abbr></span>` +
+                            '</span>',
+                            content: '<span class="lesson-content">' +
+                                `<span class="teacher"><abbr title="${curriculum.teacher.name}">${curriculum.teacher.abbr}</abbr></span>` +
+                                `<span class="room"><abbr title="${curriculum.room.name}">${curriculum.room.name}</abbr></span>` +
+                            '</span>',
+                            lessonID: curriculum.lessonID,
+                        };
                     });
 
                 case 'teacher':
-                    return week.map(group => {
-                        if (!group) return null;
+                    return week.map(curriculum => {
+                        if (!curriculum) return null;
 
-                        let title = '<span class="lesson-titie">' +
-                            `<span class="subject full">${group.subject.name}</span>` +
-                            '<span class="subject short">' +
-                                `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
-                            '</span>' +
-                        '</span>';
-
-                        let contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
-                            `<span class="group">${curriculum.group.name}</span>` +
-                            `<span class="room">${curriculum.room.name}</span>` +
-                        '</span>');
-
-                        let lessonID = group.lessonID;
-
-                        return { title, contents, lessonID };
+                        return {
+                            title: '<span class="lesson-titie">' +
+                                `<span class="subject full">${curriculum.subject.name}</span>` +
+                                `<span class="subject short"><abbr title="${curriculum.subject.name}">${curriculum.subject.abbr}</abbr></span>` +
+                            '</span>',
+                            content: '<span class="lesson-content">' +
+                                `<span class="group"><abbr title="${curriculum.group.name}">${curriculum.group.name}</abbr></span>` +
+                                `<span class="room"><abbr title="${curriculum.room.name}">${curriculum.room.name}</abbr></span>` +
+                            '</span>',
+                            lessonID: curriculum.lessonID,
+                        };
                     });
 
                 case 'room':
-                    return week.map(group => {
-                        if (!group) return null;
+                    return week.map(curriculum => {
+                        if (!curriculum) return null;
 
-                        let title = '<span class="lesson-titie">' +
-                            `<span class="subject full">${group.subject.name}</span>` +
-                            '<span class="subject short">' +
-                                `<abbr title="${group.subject.name}">${group.subject.abbr}</abbr>` +
-                            '</span>' +
-                        '</span>';
-
-                        let contents = group.curricula.map(curriculum => '<span class="lesson-content">' +
-                            '<span class="teacher">' +
-                                `<abbr title="${curriculum.teacher.name}">${curriculum.teacher.abbr}</abbr>` +
-                            '</span>' +
-                            `<span class="group">${curriculum.group.name}</span>` +
-                        '</span>');
-
-                        let lessonID = group.lessonID;
-
-                        return { title, contents, lessonID };
+                        return {
+                            title: '<span class="lesson-titie">' +
+                                `<span class="subject full">${curriculum.subject.name}</span>` +
+                                `<span class="subject short"><abbr title="${curriculum.subject.name}">${curriculum.subject.abbr}</abbr></span>` +
+                            '</span>',
+                            content: '<span class="lesson-content">' +
+                                `<span class="teacher"><abbr title="${curriculum.teacher.name}">${curriculum.teacher.abbr}</abbr></span>` +
+                                `<span class="group"><abbr title="${curriculum.group.name}">${curriculum.group.name}</abbr></span>` +
+                            '</span>',
+                            lessonID: curriculum.lessonID,
+                        };
                     });
             }
         }
