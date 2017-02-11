@@ -44,7 +44,6 @@
                     sizeXBoth: $cell.data('width'),
                     sizeYBoth: $cell.data('height'),
                     weeksNumber: $cell.data('weeksNumber'),
-                    weeksPos: $cell.data('weeksPos'),
                     type: getType($cell),
                     domClass: cellDOM.className,
                     html: $cell.html(),
@@ -70,8 +69,7 @@
                     colspan: cell.sizeX,
                     rowspan: cell.sizeY,
                 }).html(cell.html).data('width', cell.sizeXBoth).data('height', cell.sizeYBoth)
-                    .data('weeksNumber', cell.weeksNumber).data('weeksPos', cell.weeksPos)
-                    .appendTo($rows.eq(cell.posY));
+                    .data('weeksNumber', cell.weeksNumber).appendTo($rows.eq(cell.posY));
             }
 
             return this;
@@ -103,7 +101,27 @@
          * @return {TableTweaker} this
          */
         mergeBothsHorisontal() {
-            let dividers = new Array(this.sizeX * this.sizeY).fill(1);
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let current = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'both');
+                if (!current.ok || current.empty) continue;
+
+                let next = new Cell(this.cellsMap, this.cellsMap.getCell(x + current.sizeX, y, true), 'both');
+                if (!next.ok || current.sizeY !== next.sizeY || current.html() !== next.html()) continue;
+
+                current.mergeHorisontal(next);
+                this.cellsMap.import(current.cellsMap);
+
+                y--;
+            }
+            
+            return this;
+        }
+
+        /**
+         * Объединение недель по горизонтали
+         * @return {TableTweaker} this
+         */
+        mergeWeeksHorisontal() {
             for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
                 let current = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'week');
                 if (!current.ok || current.empty) continue;
@@ -113,8 +131,6 @@
 
                 current.mergeHorisontal(next);
                 this.cellsMap.import(current.cellsMap);
-
-                current.cells[0].divider = ++dividers[x * this.sizeX + y];
 
                 y--;
             }
@@ -309,19 +325,24 @@
             let $fRow = this.$header.children().first();
             let $fCells = $fRow.children().slice(1);
 
-            let x = 1;
-            let yRange = helpers.range(0, this.sizeY);
+            let boths = [];
+            for (let x = 1; x < this.sizeX; x++) for (let y = 0; y < this.sizeY; y++) {
+                let both = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'both');
+                if (both.ok) boths.push(both);
+            }
+
+            let offsetX = 1;
             let fCells = $fCells.toArray().map(title => {
-                let weeks = [];
-                for (let y = 0; y < this.sizeY; y++) {
-                    let week = Cell.getWeek(this.cellsMap, x, y);
-                    if (!week.ok) continue;
-                    let width = week.cells.filter(cell => cell.posY == week.posY).length;
-                    let divider = week.cells[0].divider || 1;
-                    weeks.push(Math.max(1, width / divider));
-                }
+                let sizeX = Number(title.colSpan);
+                let weeks = new Array(this.sizeY).fill(0);
+                boths.forEach(both => {
+                    if (both.posX >= offsetX && both.posX < offsetX + sizeX) both.cells.forEach(cell => {
+                        if (cell.type === 'title') weeks[cell.posY] += sizeX / both.sizeX ;
+                    });
+                });
                 let weight = Math.max.apply(Math, weeks);
-                x += Number($(title).attr('colspan'));
+
+                offsetX += sizeX;
                 return weight;
             });
 
@@ -343,12 +364,13 @@
                 let both = new Cell(this.cellsMap, this.cellsMap.getCell(x, y, true), 'both');
                 if (!both.ok || both.cells[0].weeksNumber !== weeksNumber) continue;
 
-                for (let bx = 0; bx < this.sizeX; bx++) for (let by = 0; by < this.sizeY; by++) {
-                    let week = new Cell(both.cellsMap, both.cellsMap.getCell(bx, by, true), 'week');
-                    if (!week.ok || week.cells[0].weeksPos === weeksPos) continue;
+                let sizeY = both.sizeY / weeksNumber;
+                let posY = both.posY + weeksPos * sizeY;
 
-                    week.cells.forEach(cell => cell.domClass += ' cell-blured');
-                }
+                both.cells.forEach(cellRaw => {
+                    let cell = new Cell(both.cellsMap, cellRaw);
+                    if (cell.ok && cell.posY !== posY && cell.sizeY === sizeY) cell.cells.forEach(cell => cell.domClass += ' cell-blured')
+                });
             }
             
             return this;
@@ -610,26 +632,6 @@
                 }
             });
             return new Cell(cellsMap, fCell, 'both');
-        }
-
-        /**
-         * Получение недели
-         * @param  {CellsMap} cellsMap Ячейки, среди которых происходит поиск
-         * @param  {number}   x        Положение ячейки по X
-         * @param  {number}   y        Положение ячейки по Y
-         * @return {Cell}              Найденная ячейка или Cell(null)
-         */
-        static getWeek(cellsMap, x, y) {
-            let fCell = null;
-            cellsMap.getCells().some(cell => {
-                if (!cell || cell.deleted) return false;
-
-                if (cell.sizeXBoth && x >= cell.posX && x < cell.posX + cell.sizeXBoth && y >= cell.posY && y < cell.posY + cell.sizeY) {
-                    fCell = cell;
-                    return true;
-                }
-            });
-            return new Cell(cellsMap, fCell, 'week');
         }
     }
 

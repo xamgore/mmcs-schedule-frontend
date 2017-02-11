@@ -192,7 +192,7 @@
 
             let colPos = this.rows[0].children().length;
             this.curicula.forEach(group => group.draw());
-            this.rows[0].children().eq(colPos).data('width', this.cell.col.length).data('weeksPos', this.pos);
+            this.rows[0].children().eq(colPos).data('width', this.cell.col.length);
 
             return this;
         }

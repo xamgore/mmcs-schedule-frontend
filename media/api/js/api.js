@@ -11,20 +11,7 @@
              * @param {function} callback
              */
             get: callback => {
-                query('time/week', null, 'get', result => {
-                    switch (Number(result.type)) {
-                        case 0:
-                            callback('upper');
-                            break;
-
-                        case 1:
-                            callback('lower');
-                            break;
-
-                        default:
-                            callback(null);
-                    }
-                });
+                query('time/week', null, 'get', result => callback(Number(result.type)));
             },
         },
         // Секция времен пар

@@ -127,10 +127,15 @@
             new Table(this.data, this.times, this.header, this.weekday).draw($table);
 
             let tweaker = new TableTweaker($table);
+            tweaker.mergeCellsVertical();
+            tweaker.mergeCellsHorisontal();
+            tweaker.mergeTitles();
+            if (system.week) tweaker.blurWeeks(system.weekID, system.weeks.length);
             switch (this.type) {
                 case 'day':
                     tweaker.setGroupsHeader();
                     tweaker.mergeBothsHorisontal();
+                    tweaker.mergeWeeksHorisontal();
                     break;
 
                 case 'teacher':
@@ -139,11 +144,7 @@
                     break;
             }
             //tweaker.mergeBothsVertical();
-            tweaker.mergeCellsVertical();
-            tweaker.mergeCellsHorisontal();
-            tweaker.mergeTitles();
             tweaker.fixWidth();
-            if (system.week) tweaker.blurWeeks([ 'upper', 'lower' ].indexOf(system.week), 2);
             tweaker.createFulls();
             tweaker.draw();
 

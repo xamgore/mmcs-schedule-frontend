@@ -6,6 +6,8 @@
             this.intro = '#intro';
             this.schedule = '#schedule';
 
+            this.weeks = [ 'upper', 'lower' ];
+
             this.showIntro();
         }
 
@@ -31,6 +33,14 @@
             $(window).trigger('onScheduleShow', [ false ]);
 
             return this;
+        }
+
+        /**
+         * Получить неделю
+         * @return {string} Неделя
+         */
+        get week() {
+            return this.weeks[this.weekID] || null;
         }
     }
 

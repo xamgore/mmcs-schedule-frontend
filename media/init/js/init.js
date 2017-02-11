@@ -12,8 +12,8 @@
         $(document).ajaxStop(() => $(document.body).css('cursor', 'auto'));
 
         // Получение недели и вывод ее в шапке
-        api.week.get(week => {
-            system.week = week;
+        api.week.get(weekID => {
+            system.weekID = weekID;
             page.setWeek();
         });
 
