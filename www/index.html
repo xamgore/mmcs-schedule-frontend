@@ -155,8 +155,8 @@
                 </tbody>
                 <tbody v-for="teacher in teachers">
                     <tr v-if="!teacher.edit">
-                        <td>{{teacher.name}}</td>
-                        <td>{{teacher.degree}}</td>
+                        <td>{{ teacher.name }}</td>
+                        <td>{{ teacher.degree }}</td>
                         <td>
                             <button type="button" class="btn btn-default" title="Редактировать" @click="editTeachers_edit(teacher)"><span class="glyphicon glyphicon-pencil"></span></button>
                             <button type="button" class="btn btn-danger" title="Удалить" @click="editTeachers_delete(teacher)"><span class="glyphicon glyphicon-remove"></span></button>
@@ -192,7 +192,7 @@
                 </tbody>
                 <tbody v-for="room in rooms">
                     <tr v-if="!room.edit">
-                        <td>{{room.name}}</td>
+                        <td>{{ room.name }}</td>
                         <td>
                             <button type="button" class="btn btn-default" title="Редактировать" @click="editRooms_edit(room)"><span class="glyphicon glyphicon-pencil"></span></button>
                             <button type="button" class="btn btn-danger" title="Удалить" @click="editRooms_delete(room)"><span class="glyphicon glyphicon-remove"></span></button>
