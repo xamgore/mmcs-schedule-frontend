@@ -70,10 +70,93 @@
                     } ],
 
                     teachers: [],
+                    newTeacher: {
+                        name: '',
+                        degree: '',
+                    },
                 },
                 methods: {
-                    shownTab: function (id) {
-                        switch (id) {
+                    shownOnce: function () {
+                        this.tab = 'editTeachers';
+                    },
+
+                    editTeachers_insert(insertTeacher) {
+                        let teachersPos = 0;
+                        this.teachers.some((teacher, index) => {
+                            if (teacher.name > insertTeacher.name && teacher.degree > insertTeacher.degree) {
+                                teachersPos = index;
+                                return true;
+                            }
+                        });
+                        this.teachers.splice(teachersPos, 0, insertTeacher);
+                    },
+                    editTeachers_add: function () {
+                        api.teacher.add(this.newTeacher.name, this.newTeacher.degree, id => {
+                            if (id) {
+                                this.editTeachers_insert({
+                                    id: id,
+                                    name: this.newTeacher.name,
+                                    degree: this.newTeacher.degree,
+                                });
+
+                                this.newTeacher.name = '';
+                                this.newTeacher.degree = '';
+
+                                alerts.success('Преподаватель добавлен');
+                            } else {
+                                alerts.danger('Ошибка добаления преподавателя');
+                            }
+                        });
+                    },
+                    editTeachers_edit: function (teacher) {
+                        teacher.old = JSON.parse(JSON.stringify(teacher));
+                        
+                        teacher.edit = true;
+
+                        this.$forceUpdate();
+                    },
+                    editTeachers_save: function (teacher) {
+                        let teachersPos = this.teachers.indexOf(teacher);
+
+                        api.teacher.update(teacher.id, teacher.name, teacher.degree, success => {
+                            if (success) {
+                                this.teachers.splice(teachersPos, 1);
+                                this.editTeachers_insert({
+                                    id: teacher.id,
+                                    name: teacher.name,
+                                    degree: teacher.degree,
+                                });
+
+                                alerts.success('Преподаватель изменен');
+                            } else {
+                                alerts.danger('Ошибка изменения преподавателя');
+                            }
+                        });
+                    },
+                    editTeachers_cancel: function (teacher) {
+                        let teachersPos = this.teachers.indexOf(teacher);
+
+                        this.teachers[teachersPos] = teacher.old;
+
+                        this.$forceUpdate();
+                    },
+                    editTeachers_delete: function (teacher) {
+                        let teachersPos = this.teachers.indexOf(teacher);
+
+                        api.teacher.delete(teacher.id, success => {
+                            if (success) {
+                                this.teachers.splice(teachersPos, 1);
+
+                                alerts.success('Преподаватель удален');
+                            } else {
+                                alerts.danger('Ошибка удаления преподавателя');
+                            }
+                        });
+                    },
+                },
+                watch: {
+                    tab: function () {
+                        switch (this.tab) {
                             case 'editTeachers':
                                 this.teachers = [];
                                 api.teacher.list(teachers => this.teachers = teachers);
@@ -84,6 +167,8 @@
             });
 
             api.auth.status(ok => ok ? this.enable() : this.disable());
+
+            window.editor = this;
 
             return this;
         }

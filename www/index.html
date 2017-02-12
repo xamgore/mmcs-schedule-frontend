@@ -133,10 +133,10 @@
     <button type="button" class="btn btn-default" data-dismiss="modal" slot="footer">Отмена</button>
 </modal>
 
-<modal title="Редактор" size="large" id="editModal" v-on:shown.once="tab = 'editTeachers'" v-cloak>
-    <tabs :tabs="tabs" v-model="tab" v-on:shown="shownTab">
+<modal title="Редактор" size="large" id="editModal" @shown.once="shownOnce" v-cloak>
+    <tabs :tabs="tabs" v-model="tab">
         <div slot="editTeachers">
-            <table class="table table-striped table-hover table-list">
+            <table class="table table-list">
                 <thead>
                     <tr>
                         <td>ФИО</td>
@@ -145,12 +145,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="teacher in teachers">
+                    <tr>
+                        <td><input type="text" class="form-control" v-model="newTeacher.name"></td>
+                        <td><input type="text" class="form-control" v-model="newTeacher.degree"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Добавить" @click="editTeachers_add()"><span class="glyphicon glyphicon-ok"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody v-for="teacher in teachers">
+                    <tr v-if="!teacher.edit">
                         <td>{{teacher.name}}</td>
                         <td>{{teacher.degree}}</td>
                         <td>
-                            <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-pencil"></span></button>
-                            <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span></button>
+                            <button type="button" class="btn btn-default" title="Редактировать" @click="editTeachers_edit(teacher)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            <button type="button" class="btn btn-danger" title="Удалить" @click="editTeachers_delete(teacher)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                    <tr v-if="teacher.edit">
+                        <td><input type="text" class="form-control" v-model="teacher.name"></td>
+                        <td><input type="text" class="form-control" v-model="teacher.degree"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Сохранить" @click="editTeachers_save(teacher)"><span class="glyphicon glyphicon-ok"></span></button>
+                            <button type="button" class="btn btn-default" title="Удалить" @click="editTeachers_cancel(teacher)"><span class="glyphicon glyphicon-remove"></span></button>
                         </td>
                     </tr>
                 </tbody>

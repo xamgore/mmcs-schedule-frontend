@@ -35,10 +35,7 @@
              * @param {string}   degree   Степень
              * @param {function} callback
              */
-            add: (name, degree, callback) => query('teacher', {
-                APIkey: localStorage.APIkey,
-                name, degree,
-            }, 'put', () => callback(true), () => callback(false)),
+            add: (name, degree, callback) => query('teacher', { name, degree }, 'put', result => callback(result.res), () => callback(null)),
             /**
              * Изменить преподавателя
              * @param {string}   teacher  ID преподавателя
@@ -46,18 +43,13 @@
              * @param {string}   degree   Степень
              * @param {function} callback
              */
-            update: (teacher, name, degree, callback) => query(`teacher/{$teacher}`, {
-                APIkey: localStorage.APIkey,
-                name, degree,
-            }, 'post', () => callback(true), () => callback(false)),
+            update: (teacher, name, degree, callback) => query(`teacher/${teacher}`, { name, degree }, 'post', () => callback(true), () => callback(false)),
             /**
              * Удалить преподавателя
              * @param {string}   teacher  ID преподавателя
              * @param {function} callback
              */
-            delete: (teacher, callback) => query(`teacher/{$teacher}`, {
-                APIkey: localStorage.APIkey,
-            }, 'delete', () => callback(true), () => callback(false)),
+            delete: (teacher, callback) => query(`teacher/${teacher}`, null, 'delete', () => callback(true), () => callback(false)),
             /**
              * Получить расписание преподавателя
              * @param {string}   teacher  ID преподавателя
@@ -77,28 +69,20 @@
              * @param {string}   name     Название
              * @param {function} callback
              */
-            add: (name, callback) => query('room', {
-                APIkey: localStorage.APIkey,
-                name,
-            }, 'put', () => callback(true), () => callback(false)),
+            add: (name, callback) => query('room', { name } , 'put', result => callback(result.res), () => callback(null)),
             /**
              * Изменить аудиторию
              * @param {string}   room     ID аудитории
              * @param {string}   name     Название
              * @param {function} callback
              */
-            update: (room, name, callback) => query(`room/{$room}`, {
-                APIkey: localStorage.APIkey,
-                name,
-            }, 'post', () => callback(true), () => callback(false)),
+            update: (room, name, callback) => query(`room/${room}`, { name }, 'post', () => callback(true), () => callback(false)),
             /**
              * Удалить аудиторию
              * @param {string}   room     ID аудитории
              * @param {function} callback
              */
-            delete: (room, callback) => query(`room/{$room}`, {
-                APIkey: localStorage.APIkey,
-            }, 'delete', () => callback(true), () => callback(false)),
+            delete: (room, callback) => query(`room/${room}`, null, 'delete', () => callback(true), () => callback(false)),
             /**
              * Получить расписание аудитории
              * @param {string}   room     ID аудитории
@@ -119,10 +103,7 @@
              * @param {string}   degree   Степень обучния
              * @param {function} callback
              */
-            add: (num, degree, callback) => query('APIv1/grade', {
-                APIkey: localStorage.APIkey,
-                num, degree,
-            }, 'put', () => callback(true), () => callback(false)),
+            add: (num, degree, callback) => query('APIv1/grade', { num, degree }, 'put', result => callback(result.res), () => callback(null)),
             /**
              * Изменить курс
              * @param {string}   grade    ID курса
@@ -130,18 +111,13 @@
              * @param {string}   degree   Степень обучния
              * @param {function} callback
              */
-            update: (grade, num, degree, callback) => query(`APIv1/grade/{$grade}`, {
-                APIkey: localStorage.APIkey,
-                num, degree,
-            }, 'post', () => callback(true), () => callback(false)),
+            update: (grade, num, degree, callback) => query(`APIv1/grade/${grade}`, { num, degree }, 'post', () => callback(true), () => callback(false)),
             /**
              * Удалить курс
              * @param {string}   grade    ID курса
              * @param {function} callback
              */
-            delete: (grade, callback) => query(`APIv1/grade/{$grade}`, {
-                APIkey: localStorage.APIkey,
-            }, 'delete', () => callback(true), () => callback(false)),
+            delete: (grade, callback) => query(`APIv1/grade/${grade}`, null, 'delete', () => callback(true), () => callback(false)),
             /**
              * Получить расписание курса
              * @param {string}   grade    ID курса
@@ -195,10 +171,7 @@
              * @param {string}   grade    ID курса
              * @param {function} callback
              */
-            add: (num, name, grade, callback) => query('group', {
-                APIkey: localStorage.APIkey,
-                num, degree, grade,
-            }, 'put', () => callback(true), () => callback(false)),
+            add: (num, name, grade, callback) => query('group', { num, degree, grade }, 'put', result => callback(result.res), () => callback(null)),
             /**
              * Изменить группу
              * @param {string}   group    ID группы
@@ -206,18 +179,13 @@
              * @param {string}   name     Название
              * @param {function} callback
              */
-            update: (group, num, name, callback) => query(`group/{$group}`, {
-                APIkey: localStorage.APIkey,
-                num, name,
-            }, 'post', () => callback(true), () => callback(false)),
+            update: (group, num, name, callback) => query(`group/${group}`, { num, name }, 'post', () => callback(true), () => callback(false)),
             /**
              * Удалить группу
              * @param {string}   group    ID группы
              * @param {function} callback
              */
-            delete: (group, callback) => query(`group/{$group}`, {
-                APIkey: localStorage.APIkey,
-            }, 'delete', () => callback(true), () => callback(false)),
+            delete: (group, callback) => query(`group/${group}`, nul, 'delete', () => callback(true), () => callback(false)),
             /**
              * Получить расписание группы
              * @param {string}   group    ID группы
@@ -238,10 +206,7 @@
              * @param {string}   abbr      Сокращение
              * @param {function} callback
              */
-            add: (name, abbr, callback) => query('subject', {
-                APIkey: localStorage.APIkey,
-                name, abbr,
-            }, 'put', () => callback(true), () => callback(false)),
+            add: (name, abbr, callback) => query('subject', { name, abbr }, 'put', result => callback(result.res), () => callback(null)),
             /**
              * Изменить предмет
              * @param {string}   subject  ID предмета
@@ -249,18 +214,13 @@
              * @param {string}   abbr     Сокращение
              * @param {function} callback
              */
-            update: (subject, name, abbr, callback) => query(`subject/{$subject}`, {
-                APIkey: localStorage.APIkey,
-                name, abbr,
-            }, 'post', () => callback(true), () => callback(false)),
+            update: (subject, name, abbr, callback) => query(`subject/${subject}`, { name, abbr }, 'post', () => callback(true), () => callback(false)),
             /**
              * Удалить предмет
              * @param {string}   subject  ID предмета
              * @param {function} callback
              */
-            delete: (subject, callback) => query(`subject/{$subject}`, {
-                APIkey: localStorage.APIkey,
-            }, 'delete', () => callback(true), () => callback(false)),
+            delete: (subject, callback) => query(`subject/${subject}`, null, 'delete', () => callback(true), () => callback(false)),
         },
         // Секция занятий
         lesson: {},
@@ -271,9 +231,7 @@
              * @param {function} callback
              */
             status: callback => {
-                query('APIv1/auth/status', {
-                    APIKey: localStorage.APIKey
-                }, 'get', ({ status }) => callback(status === 'manager'), null);
+                query('APIv1/auth/status', null, 'get', ({ status }) => callback(status === 'manager'), null);
             },
             /**
              * Авторизоваться
@@ -282,10 +240,7 @@
              * @param {function} callback
              */
             login: (login, pass, callback) => {
-                query('APIv1/auth/login', {
-                    login: login,
-                    pass: pass
-                }, 'get', ({ APIKey }) => {
+                query('APIv1/auth/login', { login, pass }, 'get', ({ APIKey }) => {
                     localStorage.APIKey = APIKey;
                     callback(true);
                 }, () => callback(false));
@@ -309,17 +264,16 @@
      * @param {function} callback
      */
     let query = (url, data, type, callback, errback) => {
+        url = `${ulrPrefix}${url}?APIKey=${localStorage.APIKey}`;
         data = data || {};
-        type = type || 'post';
+        type = (type || 'POST').toUpperCase();
         callback = callback || (() => {});
         errback = errback || (() => {});
 
-        $.ajax(ulrPrefix + url, {
-            data: data,
-            dataType: 'json',
-            method: type.toUpperCase(),
-            success: result => callback(result),
-            error: () => errback(),
-        });
+        let dataType = 'json';
+        let success = result => callback(result);
+        let error = () => errback();
+
+        $.ajax({ url, data, type, dataType, success, error });
     };
 })();
