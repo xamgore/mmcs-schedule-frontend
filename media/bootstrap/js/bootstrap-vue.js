@@ -40,7 +40,7 @@
         template:
             '<div>' +
                 '<ul class="nav nav-tabs">' +
-                    '<li v-for="tab in tabs"><a :href="\'#\' + tab.id" data-toggle="tab" v-on:click="$emit(\'input\', tab.id)">{{tab.title}}</a></li>' +
+                    '<li v-for="tab in tabs"><a :href="\'#\' + tab.id" data-toggle="tab" @click="$emit(\'input\', tab.id)">{{tab.title}}</a></li>' +
                 '</ul>' +
                 '<div class="tab-content">' +
                     '<div class="tab-pane fade" v-for="tab in tabs" :id="tab.id">' +
@@ -68,7 +68,7 @@
             '<div class="form-group">' +
                 '<label :for="id" class="col-xs-3 control-label">{{name}}</label>' +
                 '<div class="col-xs-9">' +
-                    '<input :type="type" class="form-control" :id="id" :value="value" v-on:input="input">' +
+                    '<input :type="type" class="form-control" :id="id" :value="value" @input="input">' +
                 '</div>' +
             '</div>',
         methods: {

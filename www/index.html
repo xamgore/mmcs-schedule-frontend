@@ -78,7 +78,7 @@
             <div class="pull-left" id="editControl" v-cloak>
                 <span class="button icon-32 icon-32_edit pull-left" id="edit" title="Редактор" data-toggle="modal" data-target="#editModal" v-if="enabled"></span>
                 <span class="button icon-32 icon-32_profile pull-left" id="login" title="Авторизация" data-toggle="modal" data-target="#authModal" v-if="disabled"></span>
-                <span class="button icon-32 icon-32_logout pull-left" id="logout" title="Выход" v-on:click="logout" v-if="enabled"></span>   
+                <span class="button icon-32 icon-32_logout pull-left" id="logout" title="Выход" @click="logout" v-if="enabled"></span>   
             </div>
         </div>
     </div>
@@ -115,21 +115,21 @@
     <div v-for="alert in alerts">
         <transition name="alert">
             <div :class="'alert alert-' + alert.type + ' alert-dismissable'" v-if="!alert.deleted">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true" v-on:click='delete(alert)'>&times;</button>
-                {{alert.message}}
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true" @click='delete(alert)'>&times;</button>
+                <span v-html="alert.message"></span>
             </div>
         </transition>
     </div>
 </div>
 
 
-<modal title="Авторизация" id="authModal" v-on:shown="shown" v-cloak>
-    <form class="auth-form form-horizontal" v-on:submit.prevent="submit">
+<modal title="Авторизация" id="authModal" @shown="shown" v-cloak>
+    <form class="auth-form form-horizontal" @submit.prevent="submit">
         <form-input id="authLogin" name="Логин" v-model="login" type="text"></form-input>
         <form-input id="authPass" name="Пароль" v-model="pass" type="password"></form-input>
         <button type="submit" class="hidden"></button>
     </form>
-    <button type="button" class="btn btn-primary" v-on:click="submit" slot="footer">Войти</button>
+    <button type="button" class="btn btn-primary" @click="submit" slot="footer">Войти</button>
     <button type="button" class="btn btn-default" data-dismiss="modal" slot="footer">Отмена</button>
 </modal>
 
