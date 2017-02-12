@@ -118,6 +118,23 @@ body {
     }
 }
 
+.page_alerts {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 300px;
+    z-index: 10000;
+
+    .alert {
+        margin: 20px;
+
+        &-leave-active {
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+    }
+}
+
 .table-list > tbody > tr > td {
     vertical-align: middle;
 }

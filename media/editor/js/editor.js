@@ -35,8 +35,7 @@
                                 editor.enable();
                                 $(this.$el).modal('hide');
                             } else {
-                                $(this.$el).addClass('has-error');
-                                setTimeout(() => $(this.$el).removeClass('has-error'), 3000);
+                                alerts.danger('Неверный логин или пароль')
                             }
                         });
                     },

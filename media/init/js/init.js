@@ -4,6 +4,7 @@
     $(() => {
         let system = window.system = new System();
         let page = new Page();
+        let alerts = window.alerts = new Alerts();
         let switcher = new Switcher();
         let editor = new Editor();
 

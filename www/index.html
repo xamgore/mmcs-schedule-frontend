@@ -35,6 +35,8 @@
 <script src="static/page/js/page.js"></script>
 <link href="static/page/css/page.css" rel="stylesheet">
 
+<script src="static/alerts/js/alerts.js"></script>
+
 <script src="static/switcher/js/switcher.js"></script>
 
 <script src="static/schedule/js/schedule.js"></script>
@@ -105,6 +107,18 @@
                 <span><a href="https://icons8.com/">Icons8</a></span>
             </div>
         </div>
+    </div>
+</div>
+
+
+<div class="page_alerts" id="alerts" v-cloak>
+    <div v-for="alert in alerts">
+        <transition name="alert">
+            <div :class="'alert alert-' + alert.type + ' alert-dismissable'" v-if="!alert.deleted">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true" v-on:click='delete(alert)'>&times;</button>
+                {{alert.message}}
+            </div>
+        </transition>
     </div>
 </div>
 
