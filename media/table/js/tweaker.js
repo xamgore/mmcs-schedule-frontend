@@ -260,21 +260,19 @@
                     return true;
                 });
 
-                let widthMul = oldLength / newLength;
-                let offsetX = week.posX;
-                let curY = week.posY;
+
+                let widthMul = oldLength / newLength;    
+                let offsetsX = new Array(week.sizeY).fill(week.posX);
                 week.cells.forEach(cell => {
                     if (!cell.sizeX) return;
 
-                    if (curY !== cell.posY) {
-                        offsetX = week.posX;
-                        curY = cell.posY;
-                    }
-
-                    cell.posX = offsetX;
+                    cell.posX = offsetsX[cell.posY - week.posY];
                     cell.sizeX *= widthMul;
 
-                    offsetX += cell.sizeX;
+                    let yBegin = cell.posY - week.posY;
+                    let yEnd = cell.posY - week.posY + cell.sizeY;
+                    let offsetX = cell.posX + cell.sizeX;
+                    for (let y = yBegin; y < yEnd; y++) offsetsX[y] = offsetX;
                 });
 
                 week.cellsMap = new CellsMap(week.cells, week.posX, week.posY, week.sizeX, week.sizeY);
@@ -369,7 +367,9 @@
 
                 both.cells.forEach(cellRaw => {
                     let cell = new Cell(both.cellsMap, cellRaw);
-                    if (cell.ok && cell.posY !== posY && cell.sizeY === sizeY) cell.cells.forEach(cell => cell.domClass += ' cell-blured')
+                    if (cell.ok && cell.posY !== posY && cell.sizeY === sizeY) {
+                        cell.cells.forEach(cell => cell.domClass += ' cell-blured');
+                    }
                 });
             }
             
@@ -453,7 +453,11 @@
          * @return {object}        Ячейка
          */
         getCell(x, y, strict) {
-            if (x < this.offestX || x - this.offsetX >= this.sizeX || y < this.offsetY || y - this.offsetY >= this.sizeY) return null;
+            if (
+                x < this.offestX || x - this.offsetX >= this.sizeX ||
+                y < this.offsetY || y - this.offsetY >= this.sizeY
+            ) return null;
+
             let cell = this.map[y - this.offsetY][x - this.offsetX];
             if (strict && (!cell || cell.posX !== x || cell.posY !== y)) return null;
             return cell;
@@ -469,7 +473,7 @@
             let xEnd = this.offsetX + this.sizeX;
             let yBegin = this.offsetY;
             let yEnd = this.offsetY + this.sizeY;
-            for (let y = yBegin; y < yEnd; y++) for (let x = xBegin; x < xEnd; x++) {
+            for (let x = xBegin; x < xEnd; x++) for (let y = yBegin; y < yEnd; y++) {
                 let cell = this.getCell(x, y, true);
                 if (cell) cells.push(cell);
             }
@@ -544,23 +548,18 @@
          * @return {Cell}      this
          */
         mergeVertical(next) {
-            let offsetY = this.posY;
-            let newOffsetY = Infinity;
-            let curY = this.posY;
+            let offsetsY = new Array(this.sizeX).fill(this.posY);
             for (let i = 0; i < this.cells.length; i++) {
                 let tData = this.cells[i];
                 let nData = next.cells[i];
 
-                if (curY !== tData.posY) {
-                    offsetY = newOffsetY;
-                    newOffsetY = Infinity;
-                    curY = tData.posY;
-                }
-
-                tData.posY = offsetY;
+                tData.posY = offsetsY[tData.posX - this.posX];
                 if (tData.type === 'content') tData.sizeY += nData.sizeY + 1;
 
-                newOffsetY = Math.min(newOffsetY, tData.posY + tData.sizeY);
+                let xBegin = tData.posX - this.posX;
+                let xEnd = tData.posX - this.posX + tData.sizeX;
+                let offsetY = tData.posY + tData.sizeY;
+                for (let x = xBegin; x < xEnd; x++) offsetsY[x] = offsetY;
             }
 
             this.sizeY += next.sizeY;
@@ -577,21 +576,18 @@
          * @return {Cell}      this
          */
         mergeHorisontal(next) {
-            let offsetX = this.posX;
-            let curY = this.posY;
+            let offsetsX = new Array(this.sizeY).fill(this.posX);
             for (let i = 0; i < this.cells.length; i++) {
                 let tData = this.cells[i];
                 let nData = next.cells[i];
 
-                if (curY !== tData.posY) {
-                    offsetX = this.posX;
-                    curY = tData.posY;
-                }
-
-                tData.posX = offsetX;
+                tData.posX = offsetsX[tData.posY - this.posY];
                 tData.sizeX += nData.sizeX;
 
-                offsetX = tData.posX + tData.sizeX;
+                let yBegin = tData.posY - this.posY;
+                let yEnd = tData.posY - this.posY + tData.sizeY;
+                let offsetX = tData.posX + tData.sizeX;
+                for (let y = yBegin; y < yEnd; y++) offsetsX[y] = offsetX;
             }
 
             this.sizeX += next.sizeX;
@@ -626,7 +622,10 @@
             cellsMap.getCells().some(cell => {
                 if (!cell || cell.deleted) return false;
 
-                if (cell.sizeXBoth && cell.sizeYBoth && x >= cell.posX && x < cell.posX + cell.sizeXBoth && y >= cell.posY && y < cell.posY + cell.sizeYBoth) {
+                if (
+                    cell.sizeXBoth && x >= cell.posX && x < cell.posX + cell.sizeXBoth &&
+                    cell.sizeYBoth && y >= cell.posY && y < cell.posY + cell.sizeYBoth
+                ) {
                     fCell = cell;
                     return true;
                 }

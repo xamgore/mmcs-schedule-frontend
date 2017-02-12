@@ -17,7 +17,7 @@
         }
 
         /**
-         * Подготовка времени пар
+         * Построение времен пар
          * @param  {array}    times Массив времен
          * @return {Schedule}       this
          */
@@ -127,22 +127,14 @@
             new Table(this.data, this.times, this.header, this.weekday).draw($table);
 
             let tweaker = new TableTweaker($table);
+            if (this.type === 'teacher' || this.type === 'room') tweaker.deleteEmptySubgroups();
             tweaker.mergeCellsVertical();
             tweaker.mergeCellsHorisontal();
             tweaker.mergeTitles();
             if (system.week) tweaker.blurWeeks(system.weekID, system.weeks.length);
-            switch (this.type) {
-                case 'day':
-                    tweaker.setGroupsHeader();
-                    tweaker.mergeBothsHorisontal();
-                    tweaker.mergeWeeksHorisontal();
-                    break;
-
-                case 'teacher':
-                case 'room':
-                    tweaker.deleteEmptySubgroups();
-                    break;
-            }
+            if (this.type === 'day') tweaker.setGroupsHeader();
+            if (this.type === 'day') tweaker.mergeBothsHorisontal();
+            if (this.type === 'day') tweaker.mergeWeeksHorisontal();
             //tweaker.mergeBothsVertical();
             tweaker.fixWidth();
             tweaker.createFulls();
