@@ -74,6 +74,11 @@
                         name: '',
                         degree: '',
                     },
+
+                    rooms: [],
+                    newRoom: {
+                        name: '',
+                    },
                 },
                 methods: {
                     shownOnce: function () {
@@ -153,6 +158,74 @@
                             }
                         });
                     },
+
+                    editRooms_insert(insertRoom) {
+                        let roomsPos = 0;
+                        this.rooms.some((room, index) => {
+                            if (room.name > insertRoom.name) {
+                                roomsPos = index;
+                                return true;
+                            }
+                        });
+                        this.rooms.splice(roomsPos, 0, insertRoom);
+                    },
+                    editRooms_add: function () {
+                        api.room.add(this.newRoom.name, id => {
+                            if (id) {
+                                this.editRooms_insert({
+                                    id: id,
+                                    name: this.newRoom.name,
+                                });
+
+                                this.newRoom.name = '';
+
+                                alerts.success('Аудитория добавлена');
+                            } else {
+                                alerts.danger('Ошибка добаления аудитории');
+                            }
+                        });
+                    },
+                    editRooms_edit: function (room) {
+                        room.old = JSON.parse(JSON.stringify(room));
+                        
+                        room.edit = true;
+
+                        this.$forceUpdate();
+                    },
+                    editRooms_save: function (room) {
+                        let roomsPos = this.rooms.indexOf(room);
+
+                        api.room.update(room.id, room.name, success => {
+                            if (success) {
+                                this.rooms.splice(roomsPos, 1);
+                                this.editRooms_insert(JSON.parse(JSON.stringify(room)));
+
+                                alerts.success('Аудитория изменена');
+                            } else {
+                                alerts.danger('Ошибка изменения аудитории');
+                            }
+                        });
+                    },
+                    editRooms_cancel: function (room) {
+                        let roomsPos = this.rooms.indexOf(room);
+
+                        this.rooms[roomsPos] = room.old;
+
+                        this.$forceUpdate();
+                    },
+                    editRooms_delete: function (room) {
+                        let roomsPos = this.rooms.indexOf(room);
+
+                        api.room.delete(room.id, success => {
+                            if (success) {
+                                this.rooms.splice(roomsPos, 1);
+
+                                alerts.success('Аудитория удалена');
+                            } else {
+                                alerts.danger('Ошибка удаления аудитории');
+                            }
+                        });
+                    },
                 },
                 watch: {
                     tab: function () {
@@ -160,6 +233,11 @@
                             case 'editTeachers':
                                 this.teachers = [];
                                 api.teacher.list(teachers => this.teachers = teachers);
+                                break;
+
+                            case 'editRooms':
+                                this.rooms = [];
+                                api.room.list(rooms => this.rooms = rooms);
                                 break;
                         }
                     },

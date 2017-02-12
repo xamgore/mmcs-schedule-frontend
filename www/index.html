@@ -171,10 +171,44 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>  
+            </table>
         </div>
 
-        <div slot="editRooms">rooms</div>
+        <div slot="editRooms">
+            <table class="table table-list">
+                <thead>
+                    <tr>
+                        <td>Название</td>
+                        <td>Действия</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" class="form-control" v-model="newRoom.name"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Добавить" @click="editRooms_add()"><span class="glyphicon glyphicon-ok"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody v-for="room in rooms">
+                    <tr v-if="!room.edit">
+                        <td>{{room.name}}</td>
+                        <td>
+                            <button type="button" class="btn btn-default" title="Редактировать" @click="editRooms_edit(room)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            <button type="button" class="btn btn-danger" title="Удалить" @click="editRooms_delete(room)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                    <tr v-if="room.edit">
+                        <td><input type="text" class="form-control" v-model="room.name"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Сохранить" @click="editRooms_save(room)"><span class="glyphicon glyphicon-ok"></span></button>
+                            <button type="button" class="btn btn-default" title="Удалить" @click="editRooms_cancel(room)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
         <div slot="editGrades">grades</div>
         <div slot="editGroups">groups</div>
         <div slot="editSubjects">subjects</div>
