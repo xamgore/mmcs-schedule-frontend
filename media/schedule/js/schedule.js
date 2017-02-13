@@ -154,14 +154,15 @@
          * @param {string[]} columns      Столбцы
          */
         constructor(type, lessonRaw, curriculaRaw, groupName, times, columns) {
+            if (!curriculaRaw) throw new Error('Lesson has empty curricula');
+
             this.type = type;
             this.id = lessonRaw.id;
-
-            if (!curriculaRaw) throw new Error('Lesson has empty curricula');
+            this.subcount = lessonRaw.subcount;
 
             this.setTimeAndPos(lessonRaw.timeslot, lessonRaw.groupid, times, columns);
 
-            this.buildCuricula(lessonRaw.subcount, curriculaRaw, groupName);
+            this.buildCuricula(curriculaRaw, groupName);
 
             this.mergeRooms();
             this.mergeGroups();
@@ -216,20 +217,20 @@
 
             if (row == null || col == null) throw new Error('Сan not find lesson position');
 
-            this.pos = { row, col, week };
+            this.pos = { row, col };
+            this.week = week;
 
             return this;
         }
 
         /**
          * Построение занятия
-         * @param  {number}         count        Количество предметов
          * @param  {object[]}       curriculaRaw Предметы
          * @param  {string}         groupName    Имя группы
          * @return {ScheduleLesson}              this
          */
-        buildCuricula(count, curriculaRaw, groupName) {
-            this.curricula = new Array(count).fill(null);
+        buildCuricula(curriculaRaw, groupName) {
+            this.curricula = new Array(this.subcount).fill(null);
             curriculaRaw.forEach(curriculumRaw => {
                 this.curricula[curriculumRaw.subnum - 1] = {
                     subject: {
@@ -260,29 +261,19 @@
                 case 'group':
                 case 'day':
                 case 'teacher':
-                    let oldCurricula = this.curricula;
-                    this.curricula = [];
-
-                    oldCurricula.forEach(curriculum => {
-                        if (!curriculum) {
-                            this.curricula.push(null);
-                            return;
-                        }
-
-                        let lastCurriculum = helpers.array.last(this.curricula);
+                    this.curricula.forEach((curriculum, index) => {
+                        let lastCurriculum = this.curricula[index - 1];
+                        if (!curriculum || !lastCurriculum) return;
 
                         if (
-                            lastCurriculum &&
                             helpers.compare(curriculum.subject, lastCurriculum.subject) &&
                             helpers.compare(curriculum.teacher, lastCurriculum.teacher) &&
                             helpers.compare(curriculum.group, lastCurriculum.group)
                         ) {
                             lastCurriculum.room.name += `, ${curriculum.room.name}`;
-                        } else {
-                            this.curricula.push(curriculum);
-                        }
+                            this.curricula.splice(index, 1, lastCurriculum);
+                        }                  
                     });
-
                     break;
             }
 
@@ -296,29 +287,19 @@
         mergeGroups() {
             switch (this.type) {
                 case 'room':
-                    let oldCurricula = this.curricula;
-                    this.curricula = [];
-
-                    oldCurricula.forEach(curriculum => {
-                        if (!curriculum) {
-                            this.curricula.push(null);
-                            return;
-                        }
-
-                        let lastCurriculum = helpers.array.last(this.curricula);
+                    this.curricula.forEach((curriculum, index) => {
+                        let lastCurriculum = this.curricula[index - 1];
+                        if (!curriculum || !lastCurriculum) return;
 
                         if (
-                            lastCurriculum &&
                             helpers.compare(curriculum.subject, lastCurriculum.subject) &&
                             helpers.compare(curriculum.teacher, lastCurriculum.teacher) &&
                             helpers.compare(curriculum.room, lastCurriculum.room)
                         ) {
                             lastCurriculum.group.name += `, ${curriculum.group.name}`;
-                        } else {
-                            this.curricula.push(curriculum);
-                        }
+                            this.curricula.splice(index, 1, lastCurriculum);
+                        }                       
                     });
-
                     break;
             }
 
@@ -345,21 +326,27 @@
             lessons.forEach(lesson => {
                 lesson.curricula.forEach(curriculum => curriculum && (curriculum.lessonID = lesson.id));
 
-                switch (lesson.pos.week) {
+                switch (lesson.week) {
                     case 'full':
-                        let length = Math.max(upper.length, lower.length);
-                        helpers.array.setLength(upper, length);
-                        helpers.array.setLength(lower, length);
-                        upper = upper.concat(lesson.curricula);
-                        lower = lower.concat(lesson.curricula);
+                        helpers.array.setLength(upper, lesson.subcount);
+                        helpers.array.setLength(lower, lesson.subcount);
+                        lesson.curricula.forEach((curriculum, index) => {
+                            if (curriculum) upper[index] = lower[index] = curriculum;
+                        });
                         break;
 
                     case 'upper':
-                        upper = upper.concat(lesson.curricula);
+                        helpers.array.setLength(upper, lesson.subcount);
+                        lesson.curricula.forEach((curriculum, index) => {
+                            if (curriculum) upper[index] = curriculum;
+                        });
                         break;
 
                     case 'lower':
-                        lower = lower.concat(lesson.curricula);
+                        helpers.array.setLength(lower, lesson.subcount);
+                        lesson.curricula.forEach((curriculum, index) => {
+                            if (curriculum) lower[index] = curriculum;
+                        });
                         break;
                 }
             });
