@@ -250,7 +250,46 @@
         </div>
 
         <div slot="editGroups">groups</div>
-        <div slot="editSubjects">subjects</div>
+
+        <div slot="editSubjects">
+            <table class="table table-list">
+                <thead>
+                    <tr>
+                        <td>Название</td>
+                        <td>Сокращение</td>
+                        <td style="width: 110px">Действия</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" class="form-control" v-model="newSubject.name"></td>
+                        <td><input type="text" class="form-control" v-model="newSubject.abbr"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Добавить" @click="editSubjects_add()"><span class="glyphicon glyphicon-ok"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody v-for="subject in subjects">
+                    <tr v-if="!subject.edit">
+                        <td>{{ subject.name }}</td>
+                        <td>{{ subject.abbr }}</td>
+                        <td>
+                            <button type="button" class="btn btn-default" title="Редактировать" @click="editSubjects_edit(subject)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            <button type="button" class="btn btn-danger" title="Удалить" @click="editSubjects_delete(subject)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                    <tr v-if="subject.edit">
+                        <td><input type="text" class="form-control" v-model="subject.name"></td>
+                        <td><input type="text" class="form-control" v-model="subject.abbr"></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Сохранить" @click="editSubjects_save(subject)"><span class="glyphicon glyphicon-ok"></span></button>
+                            <button type="button" class="btn btn-default" title="Удалить" @click="editSubjects_cancel(subject)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <div slot="editLessons">lessons</div>
     </tabs>
 </modal>

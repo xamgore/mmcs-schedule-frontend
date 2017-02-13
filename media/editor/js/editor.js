@@ -96,6 +96,12 @@
                         num: '',
                         degree: 'bachelor',
                     },
+
+                    subjects: [],
+                    newSubject: {
+                        name: '',
+                        abbr: '',
+                    },
                 },
                 methods: {
                     shownOnce: function () {
@@ -303,6 +309,61 @@
                             }
                         });
                     },
+
+                    editSubjects_add: function () {
+                        api.subject.add(this.newSubject.name, this.newSubject.abbr, id => {
+                            if (id) {
+                                this.subjects.push({
+                                    id: id,
+                                    name: this.newSubject.name,
+                                    abbr: this.newSubject.abbr,
+                                });
+
+                                this.newSubject.name = '';
+                                this.newSubject.abbr = '';
+
+                                alerts.success('Предмет добавлен');
+                            } else {
+                                alerts.danger('Ошибка добаления предмета');
+                            }
+                        });
+                    },
+                    editSubjects_edit: function (subject) {
+                        subject.old = JSON.parse(JSON.stringify(subject));
+                        
+                        subject.edit = true;
+
+                        this.$forceUpdate();
+                    },
+                    editSubjects_save: function (subject) {
+                        api.subject.update(subject.id, subject.name, subject.abbr, success => {
+                            if (success) {
+                                this.subjects.splice(this.subjects.indexOf(subject), 1, {
+                                    id: subject.id,
+                                    name: subject.name,
+                                    abbr: subject.abbr,
+                                });
+
+                                alerts.success('Предмет изменен');
+                            } else {
+                                alerts.danger('Ошибка изменения предмета');
+                            }
+                        });
+                    },
+                    editSubjects_cancel: function (subject) {
+                        this.subjects.splice(this.subjects.indexOf(subject), 1, subject.old);
+                    },
+                    editSubjects_delete: function (subject) {
+                        api.subject.delete(subject.id, success => {
+                            if (success) {
+                                this.subjects.splice(this.subjects.indexOf(subject), 1);
+
+                                alerts.success('Предмет удален');
+                            } else {
+                                alerts.danger('Ошибка удаления предмета');
+                            }
+                        });
+                    },
                 },
                 watch: {
                     tab: function () {
@@ -320,6 +381,11 @@
                             case 'editGrades':
                                 this.grades = [];
                                 api.grade.list(grades => this.grades = grades);
+                                break;
+
+                            case 'editSubjects':
+                                this.subjects = [];
+                                api.subject.list(subjects => this.subjects = subjects);
                                 break;
                         }
                     },
