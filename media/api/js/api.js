@@ -96,7 +96,13 @@
              * Получить список курсов
              * @param {function} callback
              */
-            list: callback => query('APIv1/grade/list', null, 'get', callback, null),
+            list: callback => query('APIv1/grade/list', null, 'get', grades => {
+                callback(grades.map(grade => ({
+                    id: grade.id,
+                    num: String(grade.num),
+                    degree: grade.degree,
+                })));
+            }, null),
             /**
              * Добавить курс
              * @param {string}   num      Номер

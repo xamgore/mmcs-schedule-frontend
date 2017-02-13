@@ -274,7 +274,7 @@
                                 });
 
                                 this.newGrade.num = '';
-                                this.newGrade.degree = '';
+                                this.newGrade.degree = 'bachelor';
 
                                 alerts.success('Курс добавлен');
                             } else {
