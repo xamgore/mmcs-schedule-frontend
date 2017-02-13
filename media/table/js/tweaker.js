@@ -334,8 +334,8 @@
                 let sizeX = Number(title.colSpan);
                 let weeks = new Array(this.sizeY).fill(0);
                 boths.forEach(both => {
-                    if (both.posX >= offsetX && both.posX < offsetX + sizeX) both.cells.forEach(cell => {
-                        if (cell.type === 'title') weeks[cell.posY] += sizeX / both.sizeX ;
+                    if (offsetX >= both.posX && offsetX < both.posX + both.sizeX) both.cells.forEach(cell => {
+                        if (cell.type === 'title') weeks[cell.posY] += sizeX / both.sizeX;
                     });
                 });
                 let weight = Math.max.apply(Math, weeks);
