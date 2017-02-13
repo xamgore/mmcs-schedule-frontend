@@ -202,7 +202,7 @@
                                 text: grade.name,
                             });
                         });
-                        
+
                         this.newGroup.gradeid = '1';
                     });
 
@@ -247,9 +247,13 @@
                 })),
             };
             let methods = {
-                shownOnce: function () {
+                show: function() {
+                    this[`${this.tab}_load`]();
+                },
+                showOnce: function () {
                     this.tab = tabID(tabs[0]);
                 },
+                _load: function () {},
             };
 
             tabs.forEach(tab => {
@@ -328,8 +332,8 @@
                 el: '#editModal',
                 data, methods,
                 watch: {
-                    tab: function (tab) {
-                        this[`${tab}_load`]();
+                    tab: function () {
+                        this[`${this.tab}_load`]();
                     },
                 },
             });

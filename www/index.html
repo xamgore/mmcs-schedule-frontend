@@ -134,7 +134,7 @@
     <button type="button" class="btn btn-default" data-dismiss="modal" slot="footer">Отмена</button>
 </modal>
 
-<modal title="Редактор" size="large" id="editModal" @shown.once="shownOnce" v-cloak>
+<modal title="Редактор" size="large" id="editModal" @show="show" @show.once="showOnce" v-cloak>
     <tabs :tabs="tabs" v-model="tab">
         <div slot="editTeachers">
             <table class="table table-list">
