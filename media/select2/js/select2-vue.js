@@ -10,6 +10,8 @@
                 .select2({
                     minimumResultsForSearch: this.search ? 0 : -1,
                     data: this.options,
+                    theme: 'bootstrap',
+                    width: 'auto',
                 })
                 .val(this.value).change()
                 .on('change', function () {
@@ -22,7 +24,10 @@
             },
             options: function (options) {
                 $(this.$el).select2({
+                    minimumResultsForSearch: this.search ? 0 : -1,
                     data: options,
+                    theme: 'bootstrap',
+                    width: 'auto',
                 });
             },
         },
