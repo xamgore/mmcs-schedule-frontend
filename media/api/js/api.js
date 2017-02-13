@@ -150,7 +150,7 @@
                             Array.prototype.push.apply(data.lessons, lessons);
                             Array.prototype.push.apply(data.curricula, curricula);
                             queryCount++;
-                            if (queryCount == data.groups.length) callback(data);
+                            if (queryCount === data.groups.length) callback(data);
                         });
                     });
                 });
@@ -171,6 +171,23 @@
         },
         // Секция групп
         group: {
+            /**
+             * Получить список групп
+             * @param {function} callback
+             */
+            list: callback => {
+                api.grade.list(grades => {
+                    let groups = [];
+                    let queryCount = 0;
+                    grades.forEach(({ id }) => {
+                        api.group.listGrade(id, gradeGroups => {
+                            groups.push.apply(groups, gradeGroups);
+                            queryCount++;
+                            if (queryCount === grades.length) callback(groups);
+                        });
+                    });
+                });
+            },
             /**
              * Получить список групп для курса
              * @param {string}   grade    ID курса

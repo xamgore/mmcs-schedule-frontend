@@ -127,7 +127,12 @@
 
                 defaultData: true,
                 customData: {
-                    gradeDegrees: [ {
+                    gradeDegrees: {
+                        'bachelor': 'Бакалавриат',
+                        'master': 'Магистратура',
+                        'postgraduate': 'Асписрантура',
+                    },
+                    gradeDegreesSelect: [ {
                         id: 'bachelor',
                         text: 'Бакалавриат',
                     }, {
@@ -145,13 +150,7 @@
                 },
 
                 defaultMethods: true,
-                customMethods: {
-                    getDegree: function (degree) {
-                        let degrees = {};
-                        this.gradeDegrees.forEach(degree => degrees[degree.id] = degree.text);
-                        return degrees[degree];
-                    },
-                },
+                customMethods: {},
                 messages: {
                     addSusccess: 'Курс добавлен',
                     addError: 'Ошибка добаления курса',
@@ -162,6 +161,54 @@
                 },
             
                 loadTab: null,
+            }, {
+                id: 'group',
+                title: 'Группы',
+
+                defaultData: true,
+                customData: {
+                    groupGrades: {},
+                    groupGradesSelect: [],
+                },
+                fields: [ 'num', 'name', 'grade' ],
+                defaultValues: {
+                    num: '',
+                    name: '',
+                    gradeid: '1'
+                },
+
+                defaultMethods: true,
+                customMethods: {},
+                messages: {
+                    addSusccess: 'Группа добавлена',
+                    addError: 'Ошибка добаления группы',
+                    editSusccess: 'Группа изменена',
+                    editError: 'Ошибка изменения группы',
+                    delteSusccess: 'Группа удалена',
+                    deleteError: 'Ошибка удаления группы',
+                },
+            
+                loadTab: function () {
+                    this.grades = [];
+                    api.grade.list(grades => {
+                        this.grades = grades;
+
+                        this.groupGrades = {};
+                        this.groupGradesSelect = [];
+                        this.grades.forEach(grade => {
+                            this.groupGrades[grade.id] = grade.name;
+                            this.groupGradesSelect.push({
+                                id: grade.id,
+                                text: grade.name,
+                            });
+                        });
+                        
+                        this.newGroup.gradeid = '1';
+                    });
+
+                    this.groups = [];
+                    api.group.list(groups => this.groups = groups);
+                },
             }, {
                 id: 'subject',
                 title: 'Предметы',
@@ -270,7 +317,7 @@
                         });
                     };
                 }
-                methods[`${methodsPrefix}load`] = function () {
+                methods[`${methodsPrefix}load`] = tab.loadTab || function () {
                     this[listName] = [];
                     api[name].list(result => this[listName] = result);
                 };

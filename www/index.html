@@ -222,7 +222,7 @@
                 <tbody>
                     <tr>
                         <td><input type="text" class="form-control" v-model="newGrade.num"></td>
-                        <td><select2 v-model="newGrade.degree" :options="gradeDegrees"></select2></td>
+                        <td><select2 v-model="newGrade.degree" :options="gradeDegreesSelect"></select2></td>
                         <td>
                             <button type="button" class="btn btn-primary" title="Добавить" @click="editGrades_add()"><span class="glyphicon glyphicon-ok"></span></button>
                         </td>
@@ -231,7 +231,7 @@
                 <tbody v-for="grade in grades">
                     <tr v-if="!grade.edit">
                         <td>{{ grade.num }}</td>
-                        <td>{{ editGrades_getDegree(grade.degree) }}</td>
+                        <td>{{ gradeDegrees[grade.degree] }}</td>
                         <td>
                             <button type="button" class="btn btn-default" title="Редактировать" @click="editGrades_edit(grade)"><span class="glyphicon glyphicon-pencil"></span></button>
                             <button type="button" class="btn btn-danger" title="Удалить" @click="editGrades_delete(grade)"><span class="glyphicon glyphicon-remove"></span></button>
@@ -239,7 +239,7 @@
                     </tr>
                     <tr v-if="grade.edit">
                         <td><input type="text" class="form-control" v-model="grade.num"></td>
-                        <td><select2 v-model="grade.degree" :options="gradeDegrees"></select2></td>
+                        <td><select2 v-model="grade.degree" :options="gradeDegreesSelect"></select2></td>
                         <td>
                             <button type="button" class="btn btn-primary" title="Сохранить" @click="editGrades_save(grade)"><span class="glyphicon glyphicon-ok"></span></button>
                             <button type="button" class="btn btn-default" title="Удалить" @click="editGrades_cancel(grade)"><span class="glyphicon glyphicon-remove"></span></button>
@@ -249,7 +249,48 @@
             </table>
         </div>
 
-        <div slot="editGroups">groups</div>
+        <div slot="editGroups">
+            <table class="table table-list">
+                <thead>
+                    <tr>
+                        <td>Номер</td>
+                        <td>Название</td>
+                        <td>Курс</td>
+                        <td style="width: 110px">Действия</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" class="form-control" v-model="newGroup.num"></td>
+                        <td><input type="text" class="form-control" v-model="newGroup.name"></td>
+                        <td><select2 v-model="newGroup.gradeid" :options="groupGradesSelect"></select2></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Добавить" @click="editGroups_add()"><span class="glyphicon glyphicon-ok"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody v-for="group in groups">
+                    <tr v-if="!group.edit">
+                        <td>{{ group.num }}</td>
+                        <td>{{ group.name }}</td>
+                        <td>{{ groupGrades[group.gradeid] }}</td>
+                        <td>
+                            <button type="button" class="btn btn-default" title="Редактировать" @click="editGroups_edit(group)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            <button type="button" class="btn btn-danger" title="Удалить" @click="editGroups_delete(group)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                    <tr v-if="group.edit">
+                        <td><input type="text" class="form-control" v-model="group.num"></td>
+                        <td><input type="text" class="form-control" v-model="group.name"></td>
+                        <td><select2 v-model="group.gradeid" :options="groupGradesSelect"></select2></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Сохранить" @click="editGroups_save(group)"><span class="glyphicon glyphicon-ok"></span></button>
+                            <button type="button" class="btn btn-default" title="Удалить" @click="editGroups_cancel(group)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
         <div slot="editSubjects">
             <table class="table table-list">
@@ -289,7 +330,5 @@
                 </tbody>
             </table>
         </div>
-
-        <div slot="editLessons">lessons</div>
     </tabs>
 </modal>
