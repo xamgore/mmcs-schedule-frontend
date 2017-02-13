@@ -79,6 +79,23 @@
                     newRoom: {
                         name: '',
                     },
+
+                    grades: [],
+                    gradeDegrees: [ {
+                        id: 'bachelor',
+                        text: 'Бакалавриат',
+                    }, {
+                        id: 'master',
+                        text: 'Магистратура',
+                    }, {
+                        id: 'postgraduate',
+                        text: 'Асписрантура',
+                    } ],
+                    gradeDegreesSelect: [],
+                    newGrade: {
+                        num: '',
+                        degree: 'bachelor',
+                    },
                 },
                 methods: {
                     shownOnce: function () {
@@ -226,6 +243,90 @@
                             }
                         });
                     },
+
+                    editGrades_insert(insertGrade) {
+                        let gradesPos = 0;
+                        this.grades.some((grade, index) => {
+                            if (grade.num > insertGrade.num && grade.degree > insertGrade.degree) {
+                                gradesPos = index;
+                                return true;
+                            }
+                        });
+                        this.grades.splice(gradesPos, 0, insertGrade);
+                    },
+                    editGrages_getDegree(degreeID) {
+                        let degreeName = '';
+                        this.gradeDegrees.some(degree => {
+                            if (degree.id === degreeID) {
+                                degreeName = degree.text;
+                                return true;
+                            }
+                        });
+                        return degreeName;
+                    },
+                    editGrades_add: function () {
+                        api.grade.add(this.newGrade.num, this.newGrade.degree, id => {
+                            if (id) {
+                                this.editGrades_insert({
+                                    id: id,
+                                    num: this.newGrade.num,
+                                    degree: this.newGrade.degree,
+                                });
+
+                                this.newGrade.num = '';
+                                this.newGrade.degree = '';
+
+                                alerts.success('Курс добавлен');
+                            } else {
+                                alerts.danger('Ошибка добаления курса');
+                            }
+                        });
+                    },
+                    editGrades_edit: function (grade) {
+                        grade.old = JSON.parse(JSON.stringify(grade));
+                        
+                        grade.edit = true;
+
+                        this.$forceUpdate();
+                    },
+                    editGrades_save: function (grade) {
+                        let gradesPos = this.grades.indexOf(grade);
+
+                        api.grade.update(grade.id, grade.num, grade.degree, success => {
+                            if (success) {
+                                this.grades.splice(gradesPos, 1);
+                                this.editGrades_insert({
+                                    id: grade.id,
+                                    num: grade.num,
+                                    degree: grade.degree,
+                                });
+
+                                alerts.success('Курс изменен');
+                            } else {
+                                alerts.danger('Ошибка изменения курса');
+                            }
+                        });
+                    },
+                    editGrades_cancel: function (grade) {
+                        let gradesPos = this.grades.indexOf(grade);
+
+                        this.grades[gradesPos] = grade.old;
+
+                        this.$forceUpdate();
+                    },
+                    editGrades_delete: function (grade) {
+                        let gradesPos = this.grades.indexOf(grade);
+
+                        api.grade.delete(grade.id, success => {
+                            if (success) {
+                                this.grades.splice(gradesPos, 1);
+
+                                alerts.success('Курс удален');
+                            } else {
+                                alerts.danger('Ошибка удаления курса');
+                            }
+                        });
+                    },
                 },
                 watch: {
                     tab: function () {
@@ -238,6 +339,11 @@
                             case 'editRooms':
                                 this.rooms = [];
                                 api.room.list(rooms => this.rooms = rooms);
+                                break;
+
+                            case 'editGrades':
+                                this.grades = [];
+                                api.grade.list(grades => this.grades = grades);
                                 break;
                         }
                     },

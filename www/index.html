@@ -105,6 +105,7 @@
                 <span><a href="restapi">REST API</a></span>
                 <span><a href="http://play.google.com/store/apps/details?id=com.nolan.mmcs_schedule">Google Play</a></span>
                 <span><a href="https://icons8.com/">Icons8</a></span>
+                <span><a href="http://raxee.ru/">Raxee</a></span>
             </div>
         </div>
     </div>
@@ -208,8 +209,45 @@
                 </tbody>
             </table>
         </div>
-        
-        <div slot="editGrades">grades</div>
+
+        <div slot="editGrades">
+            <table class="table table-list">
+                <thead>
+                    <tr>
+                        <td>Номер</td>
+                        <td>Степень обучения</td>
+                        <td>Действия</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" class="form-control" v-model="newGrade.num"></td>
+                        <td><select2 v-model="newGrade.degree" :options="gradeDegrees"></select2></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Добавить" @click="editGrades_add()"><span class="glyphicon glyphicon-ok"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody v-for="grade in grades">
+                    <tr v-if="!grade.edit">
+                        <td>{{ grade.num }}</td>
+                        <td>{{ editGrages_getDegree(grade.degree) }}</td>
+                        <td>
+                            <button type="button" class="btn btn-default" title="Редактировать" @click="editGrades_edit(grade)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            <button type="button" class="btn btn-danger" title="Удалить" @click="editGrades_delete(grade)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                    <tr v-if="grade.edit">
+                        <td><input type="text" class="form-control" v-model="grade.num"></td>
+                        <td><select2 v-model="grade.degree" :options="gradeDegrees"></select2></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" title="Сохранить" @click="editGrades_save(grade)"><span class="glyphicon glyphicon-ok"></span></button>
+                            <button type="button" class="btn btn-default" title="Удалить" @click="editGrades_cancel(grade)"><span class="glyphicon glyphicon-remove"></span></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div slot="editGroups">groups</div>
         <div slot="editSubjects">subjects</div>
         <div slot="editLessons">lessons</div>
