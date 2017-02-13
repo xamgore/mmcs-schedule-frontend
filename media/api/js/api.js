@@ -137,7 +137,7 @@
              * @param {function} callback
              */
             schedule: (grade, callback) => {
-                api.groups.list(grade, groups => {
+                api.group.listGrade(grade, groups => {
                     let data = {
                         lessons: [],
                         curricula: [],
@@ -145,7 +145,7 @@
                     };
                     let queryCount = 0;
                     data.groups.forEach(({ id }) => {
-                        api.groups.schedule(id, ({ lessons, curricula }) => {
+                        api.group.schedule(id, ({ lessons, curricula }) => {
                             lessons.forEach(lesson => lesson.groupid = id);
                             Array.prototype.push.apply(data.lessons, lessons);
                             Array.prototype.push.apply(data.curricula, curricula);
