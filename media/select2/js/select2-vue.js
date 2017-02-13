@@ -12,6 +12,7 @@
                     data: this.options,
                     theme: 'bootstrap',
                     width: 'auto',
+                    language: 'ru',
                 })
                 .val(this.value).change()
                 .on('change', function () {
@@ -19,15 +20,16 @@
                 });
         },
         watch: {
-            value: function (value) {
-                $(this.$el).val(value).change();
+            value: function () {
+                $(this.$el).val(this.value).change();
             },
-            options: function (options) {
+            options: function () {
                 $(this.$el).select2({
                     minimumResultsForSearch: this.search ? 0 : -1,
-                    data: options,
+                    data: this.options,
                     theme: 'bootstrap',
                     width: 'auto',
+                    language: 'ru',
                 });
             },
         },
