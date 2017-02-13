@@ -57,15 +57,9 @@
                             case 'grade':
                             case 'group':
                                 api.grade.list(result => {
-                                    let degreeMap = {
-                                        bachelor: '',
-                                        master: 'Магистратура, ',
-                                        postgraduate: 'Аспирантура, ',
-                                    };
-
                                     this.grades = Select.getOptions('Курс', result.map(grade => ({
                                         id: grade.id,
-                                        text: degreeMap[grade.degree] + grade.num + ' курс',
+                                        text: grade.name,
                                     })));
 
                                     this.grade = this.initState && localStorage.grade ? localStorage.grade : 'default';
@@ -144,7 +138,7 @@
                                 break;
 
                             case 'group':
-                                api.groups.list(this.grade, result => {
+                                api.group.listGrade(this.grade, result => {
                                     this.groups = Select.getOptions('Группа', result.map(group => {
                                         let name = group.num + ' группа';
                                         if (group.name && group.name !== 'NULL') {
@@ -185,7 +179,7 @@
                             return;
                         }
 
-                        api.groups.schedule(this.group, result => swither.openSchedule('group', result));
+                        api.group.schedule(this.group, result => swither.openSchedule('group', result));
                     },
                     teacher: function () {
                         if (!this.teacher) return;

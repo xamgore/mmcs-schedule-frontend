@@ -97,10 +97,17 @@
              * @param {function} callback
              */
             list: callback => query('APIv1/grade/list', null, 'get', grades => {
+                let degrees = {
+                    'bachelor': 'Бакалавриат',
+                    'master': 'Магистратура',
+                    'postgraduate': 'Асписрантура',
+                };
+
                 callback(grades.map(grade => ({
                     id: grade.id,
                     num: String(grade.num),
                     degree: grade.degree,
+                    name: `${degrees[grade.degree]}, ${grade.num} курс`
                 })));
             }, null),
             /**
@@ -163,13 +170,13 @@
             },
         },
         // Секция групп
-        groups: {
+        group: {
             /**
-             * Получить список групп
+             * Получить список групп для курса
              * @param {string}   grade    ID курса
              * @param {function} callback
              */
-            list: (grade, callback) => query(`group/list/${grade}`, null, 'get', callback, null),
+            listGrade: (grade, callback) => query(`group/list/${grade}`, null, 'get', callback, null),
             /**
              * Добавить группу
              * @param {string}   num      Номер
@@ -177,7 +184,7 @@
              * @param {string}   grade    ID курса
              * @param {function} callback
              */
-            add: (num, name, grade, callback) => query('group', { num, degree, grade }, 'put', result => callback(result.res), () => callback(null)),
+            add: (num, name, grade, callback) => query('group', { num, name, grade }, 'put', result => callback(result.res), () => callback(null)),
             /**
              * Изменить группу
              * @param {string}   group    ID группы
@@ -185,7 +192,7 @@
              * @param {string}   name     Название
              * @param {function} callback
              */
-            update: (group, num, name, callback) => query(`group/${group}`, { num, name }, 'post', () => callback(true), () => callback(false)),
+            update: (group, num, name, grade, callback) => query(`group/${group}`, { num, name, grade }, 'post', () => callback(true), () => callback(false)),
             /**
              * Удалить группу
              * @param {string}   group    ID группы
