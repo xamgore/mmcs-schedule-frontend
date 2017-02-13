@@ -138,11 +138,9 @@
                         this.$forceUpdate();
                     },
                     editTeachers_save: function (teacher) {
-                        let teachersPos = this.teachers.indexOf(teacher);
-
                         api.teacher.update(teacher.id, teacher.name, teacher.degree, success => {
                             if (success) {
-                                this.teachers.splice(teachersPos, 1);
+                                this.teachers.splice(this.teachers.indexOf(teacher), 1);
                                 this.editTeachers_insert({
                                     id: teacher.id,
                                     name: teacher.name,
@@ -156,18 +154,12 @@
                         });
                     },
                     editTeachers_cancel: function (teacher) {
-                        let teachersPos = this.teachers.indexOf(teacher);
-
-                        this.teachers[teachersPos] = teacher.old;
-
-                        this.$forceUpdate();
+                        this.teachers.splice(this.rooms.indexOf(teacher), 1, teacher.old);
                     },
                     editTeachers_delete: function (teacher) {
-                        let teachersPos = this.teachers.indexOf(teacher);
-
                         api.teacher.delete(teacher.id, success => {
                             if (success) {
-                                this.teachers.splice(teachersPos, 1);
+                                this.teachers.splice(this.teachers.indexOf(teacher), 1);
 
                                 alerts.success('Преподаватель удален');
                             } else {
@@ -210,11 +202,9 @@
                         this.$forceUpdate();
                     },
                     editRooms_save: function (room) {
-                        let roomsPos = this.rooms.indexOf(room);
-
                         api.room.update(room.id, room.name, success => {
                             if (success) {
-                                this.rooms.splice(roomsPos, 1);
+                                this.rooms.splice(this.rooms.indexOf(room), 1);
                                 this.editRooms_insert(JSON.parse(JSON.stringify(room)));
 
                                 alerts.success('Аудитория изменена');
@@ -224,18 +214,12 @@
                         });
                     },
                     editRooms_cancel: function (room) {
-                        let roomsPos = this.rooms.indexOf(room);
-
-                        this.rooms[roomsPos] = room.old;
-
-                        this.$forceUpdate();
+                        this.rooms.splice(this.rooms.indexOf(room), 1, room.old);
                     },
                     editRooms_delete: function (room) {
-                        let roomsPos = this.rooms.indexOf(room);
-
                         api.room.delete(room.id, success => {
                             if (success) {
-                                this.rooms.splice(roomsPos, 1);
+                                this.rooms.splice(this.rooms.indexOf(room), 1);
 
                                 alerts.success('Аудитория удалена');
                             } else {
@@ -290,11 +274,9 @@
                         this.$forceUpdate();
                     },
                     editGrades_save: function (grade) {
-                        let gradesPos = this.grades.indexOf(grade);
-
                         api.grade.update(grade.id, grade.num, grade.degree, success => {
                             if (success) {
-                                this.grades.splice(gradesPos, 1);
+                                this.grades.splice(this.grades.indexOf(grade), 1);
                                 this.editGrades_insert({
                                     id: grade.id,
                                     num: grade.num,
@@ -308,18 +290,12 @@
                         });
                     },
                     editGrades_cancel: function (grade) {
-                        let gradesPos = this.grades.indexOf(grade);
-
-                        this.grades[gradesPos] = grade.old;
-
-                        this.$forceUpdate();
+                        this.grades.splice(this.grades.indexOf(grade), 1, grade.old);
                     },
                     editGrades_delete: function (grade) {
-                        let gradesPos = this.grades.indexOf(grade);
-
                         api.grade.delete(grade.id, success => {
                             if (success) {
-                                this.grades.splice(gradesPos, 1);
+                                this.grades.splice(this.grades.indexOf(grade), 1);
 
                                 alerts.success('Курс удален');
                             } else {
