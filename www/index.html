@@ -231,7 +231,7 @@
                 <tbody v-for="grade in grades">
                     <tr v-if="!grade.edit">
                         <td>{{ grade.num }}</td>
-                        <td>{{ editGrages_getDegree(grade.degree) }}</td>
+                        <td>{{ editGrades_getDegree(grade.degree) }}</td>
                         <td>
                             <button type="button" class="btn btn-default" title="Редактировать" @click="editGrades_edit(grade)"><span class="glyphicon glyphicon-pencil"></span></button>
                             <button type="button" class="btn btn-danger" title="Удалить" @click="editGrades_delete(grade)"><span class="glyphicon glyphicon-remove"></span></button>

@@ -3,10 +3,21 @@
 
     class Editor {
         /**
-         * Получение статуса и настройка панели
-         * @return {Editor} this
+         * Инициализация
          */
         set() {
+            this.setConstrols();
+            this.setAuth();
+            this.setEdit();
+            this.setStatus();
+
+            return this;
+        }
+
+        /**
+         * Инициализация панели
+         */
+        setConstrols() {
             let editor = this;
 
             editor.controls = new Vue({
@@ -21,6 +32,15 @@
                     },
                 },
             });
+
+            return this;
+        }
+
+        /**
+         * Инициализация окна авторизации
+         */
+        setAuth() {
+            let editor = this;
 
             editor.auth = new Vue({
                 el: '#authModal',
@@ -45,42 +65,68 @@
                 },
             });
 
-            editor.edit = new Vue({
-                el: '#editModal',
-                data: {
-                    tab: '',
-                    tabs: [ {
-                        id: 'editTeachers',
-                        title: 'Преподаватели',
-                    }, {
-                        id: 'editRooms',
-                        title: 'Аудитории',
-                    }, {
-                        id: 'editGrades',
-                        title: 'Курсы',
-                    }, {
-                        id: 'editGroups',
-                        title: 'Группы',
-                    }, {
-                        id: 'editSubjects',
-                        title: 'Предметы',
-                    }, {
-                        id: 'editLessons',
-                        title: 'Занятия',
-                    } ],
+            return this;
+        }
 
-                    teachers: [],
-                    newTeacher: {
-                        name: '',
-                        degree: '',
-                    },
+        /**
+         * Инициализация окна редактирования
+         */
+        setEdit() {
+            let editor = this;
 
-                    rooms: [],
-                    newRoom: {
-                        name: '',
-                    },
+            let tabs = [ {
+                id: 'teacher',
+                title: 'Преподаватели',
 
-                    grades: [],
+                defaultData: true,
+                customData: {},
+                fields: [ 'name', 'degree' ],
+                defaultValues: {
+                    name: '',
+                    degree: '',
+                },
+
+                defaultMethods: true,
+                customMethods: {},
+                messages: {
+                    addSusccess: 'Преподаватель добавлен',
+                    addError: 'Ошибка добаления преподавателя',
+                    editSusccess: 'Преподаватель изменен',
+                    editError: 'Ошибка изменения преподавателя',
+                    delteSusccess: 'Преподаватель удален',
+                    deleteError: 'Ошибка удаления преподавателя',
+                },
+            
+                loadTab: null,
+            }, {
+                id: 'room',
+                title: 'Аудитории',
+
+                defaultData: true,
+                customData: {},
+                fields: [ 'name' ],
+                defaultValues: {
+                    name: '',
+                },
+
+                defaultMethods: true,
+                customMethods: {},
+                messages: {
+                    addSusccess: 'Аудитория добавлена',
+                    addError: 'Ошибка добаления аудитории',
+                    editSusccess: 'Аудитория изменена',
+                    editError: 'Ошибка изменения аудитории',
+                    delteSusccess: 'Аудитория удалена',
+                    deleteError: 'Ошибка удаления аудитории',
+                },
+            
+                loadTab: null,
+            }, {
+                id: 'grade',
+                title: 'Курсы',
+
+                defaultData: true,
+                customData: {
                     gradeDegrees: [ {
                         id: 'bachelor',
                         text: 'Бакалавриат',
@@ -91,310 +137,163 @@
                         id: 'postgraduate',
                         text: 'Асписрантура',
                     } ],
-                    gradeDegreesSelect: [],
-                    newGrade: {
-                        num: '',
-                        degree: 'bachelor',
-                    },
+                },
+                fields: [ 'num', 'degree' ],
+                defaultValues: {
+                    num: '',
+                    degree: 'bachelor',
+                },
 
-                    subjects: [],
-                    newSubject: {
-                        name: '',
-                        abbr: '',
+                defaultMethods: true,
+                customMethods: {
+                    getDegree: function (degree) {
+                        let degrees = {};
+                        this.gradeDegrees.forEach(degree => degrees[degree.id] = degree.text);
+                        return degrees[degree];
                     },
                 },
-                methods: {
-                    shownOnce: function () {
-                        this.tab = 'editTeachers';
-                    },
-
-                    editTeachers_insert(insertTeacher) {
-                        let teachersPos = 0;
-                        this.teachers.some((teacher, index) => {
-                            if (teacher.name > insertTeacher.name && teacher.degree > insertTeacher.degree) {
-                                teachersPos = index;
-                                return true;
-                            }
-                        });
-                        this.teachers.splice(teachersPos, 0, insertTeacher);
-                    },
-                    editTeachers_add: function () {
-                        api.teacher.add(this.newTeacher.name, this.newTeacher.degree, id => {
-                            if (id) {
-                                this.editTeachers_insert({
-                                    id: id,
-                                    name: this.newTeacher.name,
-                                    degree: this.newTeacher.degree,
-                                });
-
-                                this.newTeacher.name = '';
-                                this.newTeacher.degree = '';
-
-                                alerts.success('Преподаватель добавлен');
-                            } else {
-                                alerts.danger('Ошибка добаления преподавателя');
-                            }
-                        });
-                    },
-                    editTeachers_edit: function (teacher) {
-                        teacher.old = JSON.parse(JSON.stringify(teacher));
-                        
-                        teacher.edit = true;
-
-                        this.$forceUpdate();
-                    },
-                    editTeachers_save: function (teacher) {
-                        api.teacher.update(teacher.id, teacher.name, teacher.degree, success => {
-                            if (success) {
-                                this.teachers.splice(this.teachers.indexOf(teacher), 1);
-                                this.editTeachers_insert({
-                                    id: teacher.id,
-                                    name: teacher.name,
-                                    degree: teacher.degree,
-                                });
-
-                                alerts.success('Преподаватель изменен');
-                            } else {
-                                alerts.danger('Ошибка изменения преподавателя');
-                            }
-                        });
-                    },
-                    editTeachers_cancel: function (teacher) {
-                        this.teachers.splice(this.rooms.indexOf(teacher), 1, teacher.old);
-                    },
-                    editTeachers_delete: function (teacher) {
-                        api.teacher.delete(teacher.id, success => {
-                            if (success) {
-                                this.teachers.splice(this.teachers.indexOf(teacher), 1);
-
-                                alerts.success('Преподаватель удален');
-                            } else {
-                                alerts.danger('Ошибка удаления преподавателя');
-                            }
-                        });
-                    },
-
-                    editRooms_insert(insertRoom) {
-                        let roomsPos = 0;
-                        this.rooms.some((room, index) => {
-                            if (room.name > insertRoom.name) {
-                                roomsPos = index;
-                                return true;
-                            }
-                        });
-                        this.rooms.splice(roomsPos, 0, insertRoom);
-                    },
-                    editRooms_add: function () {
-                        api.room.add(this.newRoom.name, id => {
-                            if (id) {
-                                this.editRooms_insert({
-                                    id: id,
-                                    name: this.newRoom.name,
-                                });
-
-                                this.newRoom.name = '';
-
-                                alerts.success('Аудитория добавлена');
-                            } else {
-                                alerts.danger('Ошибка добаления аудитории');
-                            }
-                        });
-                    },
-                    editRooms_edit: function (room) {
-                        room.old = JSON.parse(JSON.stringify(room));
-                        
-                        room.edit = true;
-
-                        this.$forceUpdate();
-                    },
-                    editRooms_save: function (room) {
-                        api.room.update(room.id, room.name, success => {
-                            if (success) {
-                                this.rooms.splice(this.rooms.indexOf(room), 1);
-                                this.editRooms_insert(JSON.parse(JSON.stringify(room)));
-
-                                alerts.success('Аудитория изменена');
-                            } else {
-                                alerts.danger('Ошибка изменения аудитории');
-                            }
-                        });
-                    },
-                    editRooms_cancel: function (room) {
-                        this.rooms.splice(this.rooms.indexOf(room), 1, room.old);
-                    },
-                    editRooms_delete: function (room) {
-                        api.room.delete(room.id, success => {
-                            if (success) {
-                                this.rooms.splice(this.rooms.indexOf(room), 1);
-
-                                alerts.success('Аудитория удалена');
-                            } else {
-                                alerts.danger('Ошибка удаления аудитории');
-                            }
-                        });
-                    },
-
-                    editGrades_insert(insertGrade) {
-                        let gradesPos = 0;
-                        this.grades.some((grade, index) => {
-                            if (grade.num > insertGrade.num && grade.degree > insertGrade.degree) {
-                                gradesPos = index;
-                                return true;
-                            }
-                        });
-                        this.grades.splice(gradesPos, 0, insertGrade);
-                    },
-                    editGrages_getDegree(degreeID) {
-                        let degreeName = '';
-                        this.gradeDegrees.some(degree => {
-                            if (degree.id === degreeID) {
-                                degreeName = degree.text;
-                                return true;
-                            }
-                        });
-                        return degreeName;
-                    },
-                    editGrades_add: function () {
-                        api.grade.add(this.newGrade.num, this.newGrade.degree, id => {
-                            if (id) {
-                                this.editGrades_insert({
-                                    id: id,
-                                    num: this.newGrade.num,
-                                    degree: this.newGrade.degree,
-                                });
-
-                                this.newGrade.num = '';
-                                this.newGrade.degree = 'bachelor';
-
-                                alerts.success('Курс добавлен');
-                            } else {
-                                alerts.danger('Ошибка добаления курса');
-                            }
-                        });
-                    },
-                    editGrades_edit: function (grade) {
-                        grade.old = JSON.parse(JSON.stringify(grade));
-                        
-                        grade.edit = true;
-
-                        this.$forceUpdate();
-                    },
-                    editGrades_save: function (grade) {
-                        api.grade.update(grade.id, grade.num, grade.degree, success => {
-                            if (success) {
-                                this.grades.splice(this.grades.indexOf(grade), 1);
-                                this.editGrades_insert({
-                                    id: grade.id,
-                                    num: grade.num,
-                                    degree: grade.degree,
-                                });
-
-                                alerts.success('Курс изменен');
-                            } else {
-                                alerts.danger('Ошибка изменения курса');
-                            }
-                        });
-                    },
-                    editGrades_cancel: function (grade) {
-                        this.grades.splice(this.grades.indexOf(grade), 1, grade.old);
-                    },
-                    editGrades_delete: function (grade) {
-                        api.grade.delete(grade.id, success => {
-                            if (success) {
-                                this.grades.splice(this.grades.indexOf(grade), 1);
-
-                                alerts.success('Курс удален');
-                            } else {
-                                alerts.danger('Ошибка удаления курса');
-                            }
-                        });
-                    },
-
-                    editSubjects_add: function () {
-                        api.subject.add(this.newSubject.name, this.newSubject.abbr, id => {
-                            if (id) {
-                                this.subjects.push({
-                                    id: id,
-                                    name: this.newSubject.name,
-                                    abbr: this.newSubject.abbr,
-                                });
-
-                                this.newSubject.name = '';
-                                this.newSubject.abbr = '';
-
-                                alerts.success('Предмет добавлен');
-                            } else {
-                                alerts.danger('Ошибка добаления предмета');
-                            }
-                        });
-                    },
-                    editSubjects_edit: function (subject) {
-                        subject.old = JSON.parse(JSON.stringify(subject));
-                        
-                        subject.edit = true;
-
-                        this.$forceUpdate();
-                    },
-                    editSubjects_save: function (subject) {
-                        api.subject.update(subject.id, subject.name, subject.abbr, success => {
-                            if (success) {
-                                this.subjects.splice(this.subjects.indexOf(subject), 1, {
-                                    id: subject.id,
-                                    name: subject.name,
-                                    abbr: subject.abbr,
-                                });
-
-                                alerts.success('Предмет изменен');
-                            } else {
-                                alerts.danger('Ошибка изменения предмета');
-                            }
-                        });
-                    },
-                    editSubjects_cancel: function (subject) {
-                        this.subjects.splice(this.subjects.indexOf(subject), 1, subject.old);
-                    },
-                    editSubjects_delete: function (subject) {
-                        api.subject.delete(subject.id, success => {
-                            if (success) {
-                                this.subjects.splice(this.subjects.indexOf(subject), 1);
-
-                                alerts.success('Предмет удален');
-                            } else {
-                                alerts.danger('Ошибка удаления предмета');
-                            }
-                        });
-                    },
+                messages: {
+                    addSusccess: 'Курс добавлен',
+                    addError: 'Ошибка добаления курса',
+                    editSusccess: 'Курс изменен',
+                    editError: 'Ошибка изменения курса',
+                    delteSusccess: 'Курс удален',
+                    deleteError: 'Ошибка удаления курса',
                 },
+            
+                loadTab: null,
+            }, {
+                id: 'subject',
+                title: 'Предметы',
+
+                defaultData: true,
+                fields: [ 'name', 'abbr' ],
+                defaultValues: {
+                    name: '',
+                    abbr: '',
+                },
+                customData: {},
+
+                defaultMethods: true,
+                messages: {
+                    addSusccess: 'Предмет добавлен',
+                    addError: 'Ошибка добаления предмета',
+                    editSusccess: 'Предмет изменен',
+                    editError: 'Ошибка изменения предмета',
+                    delteSusccess: 'Предмет удален',
+                    deleteError: 'Ошибка удаления предмета',
+                },
+                customMethods: {},
+            
+                loadTab: null,
+            } ];
+
+            function tabID(tab) {
+                return `edit${helpers.firstUpper(tab.id)}s`;
+            }
+
+            let data = {
+                tab: '',
+                tabs: tabs.map(tab => ({
+                    id: tabID(tab),
+                    title: tab.title,
+                })),
+            };
+            let methods = {
+                shownOnce: function () {
+                    this.tab = tabID(tabs[0]);
+                },
+            };
+
+            tabs.forEach(tab => {
+                let name = tab.id;
+                let listName = `${tab.id}s`;
+                let newName = `new${helpers.firstUpper(tab.id)}`;
+                let methodsPrefix = `${tabID(tab)}_`;
+
+                if (tab.defaultData) {
+                    data[listName] = [];
+                    data[newName] = JSON.parse(JSON.stringify(tab.defaultValues));
+                }
+                Object.keys(tab.customData).forEach(key => data[key] = tab.customData[key]);
+
+                if (tab.defaultMethods) {
+                    methods[`${methodsPrefix}add`] = function () {
+                        let args = tab.fields.map(field => this[newName][field]);
+                        args.push(id => {
+                            if (id) {
+                                this[newName].id = id;
+                                this[listName].unshift(this[newName]);
+
+                                this[newName] = JSON.parse(JSON.stringify(tab.defaultValues));
+
+                                alerts.success(tab.messages.addSusccess);
+                            } else {
+                                alerts.danger(tab.messages.addError);
+                            }
+                        });
+
+                        api[name].add.apply(api[name], args);
+                    };
+                    methods[`${methodsPrefix}edit`] = function (item) {
+                        item.old = JSON.parse(JSON.stringify(item));
+                        item.edit = true;
+                        this.$forceUpdate();
+                    };
+                    methods[`${methodsPrefix}save`] = function (item) {
+                        let args = [ 'id' ].concat(tab.fields).map(field => item[field]);
+                        args.push(success => {
+                            if (success) {
+                                item.edit = false;
+                                this.$forceUpdate();
+
+                                alerts.success(tab.messages.editSusccess);
+                            } else {
+                                alerts.danger(tab.messages.editError);
+                            }
+                        });
+
+                        api[name].update.apply(api[name], args);
+                    };
+                    methods[`${methodsPrefix}cancel`] = function (item) {
+                        this[listName].splice(this[listName].indexOf(item), 1, item.old);
+                    };
+                    methods[`${methodsPrefix}delete`] = function (item) {
+                        api[name].delete(item.id, success => {
+                            if (success) {
+                                this[listName].splice(this[listName].indexOf(item), 1);
+
+                                alerts.success(tab.messages.deleteSusccess);
+                            } else {
+                                alerts.danger(tab.messages.deleteError);
+                            }
+                        });
+                    };
+                }
+                methods[`${methodsPrefix}load`] = function () {
+                    this[listName] = [];
+                    api[name].list(result => this[listName] = result);
+                };
+                Object.keys(tab.customMethods).forEach(key => methods[methodsPrefix + key] = tab.customMethods[key]);
+            });
+
+            editor.edit = new Vue({
+                el: '#editModal',
+                data, methods,
                 watch: {
-                    tab: function () {
-                        switch (this.tab) {
-                            case 'editTeachers':
-                                this.teachers = [];
-                                api.teacher.list(teachers => this.teachers = teachers);
-                                break;
-
-                            case 'editRooms':
-                                this.rooms = [];
-                                api.room.list(rooms => this.rooms = rooms);
-                                break;
-
-                            case 'editGrades':
-                                this.grades = [];
-                                api.grade.list(grades => this.grades = grades);
-                                break;
-
-                            case 'editSubjects':
-                                this.subjects = [];
-                                api.subject.list(subjects => this.subjects = subjects);
-                                break;
-                        }
+                    tab: function (tab) {
+                        this[`${tab}_load`]();
                     },
                 },
             });
 
-            api.auth.status(ok => ok ? this.enable() : this.disable());
+            window.edit = editor.edit;
 
-            window.editor = this;
+            return this;
+        }
+
+        setStatus() {
+            api.auth.status(ok => ok ? this.enable() : this.disable());
 
             return this;
         }

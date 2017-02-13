@@ -65,6 +65,15 @@
             for (let i = 0; i < size; i++) arr[i] = i + first;
             return arr;
         }
+
+        /**
+         * Сделать первую букву заглавной
+         * @param  {string} str
+         * @return {string}
+         */
+        static firstUpper(str) {
+            return str.charAt(0).toUpperCase() + str.substr(1);
+        }
     }
 
     class array {
