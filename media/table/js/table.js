@@ -176,8 +176,8 @@
             this.cell = cell;
             this.pos = pos;
 
-            this.curicula = weekRaw ? weekRaw.map(curiculumRaw => new TableCuriculum(curiculumRaw, this)) : [ new TableCuriculum(null, this) ];
-            this.length = this.curicula.length;
+            this.curricula = weekRaw ? weekRaw.map(curiculumRaw => new TableCuriculum(curiculumRaw, this)) : [ new TableCuriculum(null, this) ];
+            this.length = this.curricula.length;
         }
 
         /**
@@ -191,7 +191,7 @@
             this.rows = [ this.cell.row.rows[rowPos], this.cell.row.rows[rowPos + 1] ];
 
             let colPos = this.rows[0].children().length;
-            this.curicula.forEach(group => group.draw());
+            this.curricula.forEach(group => group.draw());
             this.rows[0].children().eq(colPos).data('width', this.cell.col.length);
 
             return this;

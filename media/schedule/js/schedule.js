@@ -162,7 +162,7 @@
 
             this.setTimeAndPos(lessonRaw.timeslot, lessonRaw.groupid, times, columns);
 
-            this.buildCuricula(curriculaRaw, groupName);
+            this.buildCurricula(curriculaRaw, groupName);
 
             this.mergeRooms();
             this.mergeGroups();
@@ -229,7 +229,7 @@
          * @param  {string}         groupName    Имя группы
          * @return {ScheduleLesson}              this
          */
-        buildCuricula(curriculaRaw, groupName) {
+        buildCurricula(curriculaRaw, groupName) {
             this.curricula = new Array(this.subcount).fill(null);
             curriculaRaw.forEach(curriculumRaw => {
                 this.curricula[curriculumRaw.subnum - 1] = {
