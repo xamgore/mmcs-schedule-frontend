@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    let ulrPrefix = '//users.mmcs.sfedu.ru:3000/';
+    let ulrPrefix = '//users.mmcs.sfedu.ru:3000/APIv1/';
 
     window.api = {
         // Секция недели
@@ -11,7 +11,7 @@
              * @param {function} callback
              */
             get: callback => {
-                query('time/week', null, 'get', result => callback(Number(result.type)));
+                query('week', null, 'get', result => callback(Number(result.week)));
             },
         },
         // Секция времен пар
@@ -55,7 +55,7 @@
              * @param {string}   teacher  ID преподавателя
              * @param {function} callback
              */
-            schedule: (teacher, callback) => query(`APIv1/schedule/teacher/${teacher}`, null, 'get', callback, null),
+            schedule: (teacher, callback) => query(`schedule/teacher/${teacher}`, null, 'get', callback, null),
         },
         // Секция аудиторий
         room: {
@@ -88,7 +88,7 @@
              * @param {string}   room     ID аудитории
              * @param {function} callback
              */
-            schedule: (room, callback) => query(`APIv1/schedule/room/${room}`, null, 'get', callback, null),
+            schedule: (room, callback) => query(`schedule/room/${room}`, null, 'get', callback, null),
         },
         // Секция курсов
         grade: {
@@ -96,7 +96,7 @@
              * Получить список курсов
              * @param {function} callback
              */
-            list: callback => query('APIv1/grade/list', null, 'get', grades => {
+            list: callback => query('grade/list', null, 'get', grades => {
                 let degrees = {
                     'bachelor': 'Бакалавриат',
                     'master': 'Магистратура',
@@ -116,7 +116,7 @@
              * @param {string}   degree   Степень обучния
              * @param {function} callback
              */
-            add: (num, degree, callback) => query('APIv1/grade', { num, degree }, 'put', result => callback(result.res), () => callback(null)),
+            add: (num, degree, callback) => query('grade', { num, degree }, 'put', result => callback(result.res), () => callback(null)),
             /**
              * Изменить курс
              * @param {string}   grade    ID курса
@@ -124,13 +124,13 @@
              * @param {string}   degree   Степень обучния
              * @param {function} callback
              */
-            update: (grade, num, degree, callback) => query(`APIv1/grade/${grade}`, { num, degree }, 'post', () => callback(true), () => callback(false)),
+            update: (grade, num, degree, callback) => query(`grade/${grade}`, { num, degree }, 'post', () => callback(true), () => callback(false)),
             /**
              * Удалить курс
              * @param {string}   grade    ID курса
              * @param {function} callback
              */
-            delete: (grade, callback) => query(`APIv1/grade/${grade}`, null, 'delete', () => callback(true), () => callback(false)),
+            delete: (grade, callback) => query(`grade/${grade}`, null, 'delete', () => callback(true), () => callback(false)),
             /**
              * Получить расписание курса
              * @param {string}   grade    ID курса
@@ -193,7 +193,7 @@
              * @param {string}   grade    ID курса
              * @param {function} callback
              */
-            listGrade: (grade, callback) => query(`group/list/${grade}`, null, 'get', callback, null),
+            listGrade: (grade, callback) => query(`group/forGrade/${grade}`, null, 'get', callback, null),
             /**
              * Добавить группу
              * @param {string}   num      Номер
@@ -261,7 +261,7 @@
              * @param {function} callback
              */
             status: callback => {
-                query('APIv1/auth/status', null, 'get', ({ status }) => callback(status === 'manager'), null);
+                query('auth/status', null, 'get', ({ status }) => callback(status === 'manager'), null);
             },
             /**
              * Авторизоваться
@@ -270,7 +270,7 @@
              * @param {function} callback
              */
             login: (login, pass, callback) => {
-                query('APIv1/auth/login', { login, pass }, 'get', ({ APIKey }) => {
+                query('auth/login', { login, pass }, 'get', ({ APIKey }) => {
                     localStorage.APIKey = APIKey;
                     callback(true);
                 }, () => callback(false));

@@ -176,7 +176,7 @@
             this.cell = cell;
             this.pos = pos;
 
-            this.curricula = weekRaw ? weekRaw.map(curiculumRaw => new TableCuriculum(curiculumRaw, this)) : [ new TableCuriculum(null, this) ];
+            this.curricula = weekRaw ? weekRaw.map(curriculumRaw => new TableCurriculum(curriculumRaw, this)) : [ new TableCurriculum(null, this) ];
             this.length = this.curricula.length;
         }
 
@@ -198,24 +198,24 @@
         }
     }
 
-    class TableCuriculum {
+    class TableCurriculum {
         /**
-         * @param {object} curiculumRaw Предмет
+         * @param {object} curriculumRaw Предмет
          * @param {object} week         Неделя
          */
-        constructor(curiculumRaw, week) {
+        constructor(curriculumRaw, week) {
             this.week = week;
 
-            if (!curiculumRaw) {
+            if (!curriculumRaw) {
                 this.title = '';
                 this.content = '';
                 this.lessonID = null;
                 return;
             }
 
-            this.title = curiculumRaw.title;
-            this.content = curiculumRaw.content;
-            this.lessonID = curiculumRaw.lessonID;
+            this.title = curriculumRaw.title;
+            this.content = curriculumRaw.content;
+            this.lessonID = curriculumRaw.lessonID;
         }
 
         /**
