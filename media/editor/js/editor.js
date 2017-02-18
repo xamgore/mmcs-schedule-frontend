@@ -79,15 +79,14 @@
                 title: 'Преподаватели',
 
                 defaultData: true,
-                customData: {},
                 fields: [ 'name', 'degree' ],
                 defaultValues: {
                     name: '',
                     degree: '',
                 },
+                customData: {},
 
                 defaultMethods: true,
-                customMethods: {},
                 messages: {
                     addSusccess: 'Преподаватель добавлен',
                     addError: 'Ошибка добаления преподавателя',
@@ -96,6 +95,7 @@
                     delteSusccess: 'Преподаватель удален',
                     deleteError: 'Ошибка удаления преподавателя',
                 },
+                customMethods: {},
             
                 loadTab: null,
             }, {
@@ -103,14 +103,13 @@
                 title: 'Аудитории',
 
                 defaultData: true,
-                customData: {},
                 fields: [ 'name' ],
                 defaultValues: {
                     name: '',
                 },
+                customData: {},
 
                 defaultMethods: true,
-                customMethods: {},
                 messages: {
                     addSusccess: 'Аудитория добавлена',
                     addError: 'Ошибка добаления аудитории',
@@ -119,6 +118,7 @@
                     delteSusccess: 'Аудитория удалена',
                     deleteError: 'Ошибка удаления аудитории',
                 },
+                customMethods: {},
             
                 loadTab: null,
             }, {
@@ -126,6 +126,11 @@
                 title: 'Курсы',
 
                 defaultData: true,
+                fields: [ 'num', 'degree' ],
+                defaultValues: {
+                    num: '',
+                    degree: 'bachelor',
+                },
                 customData: {
                     gradeDegrees: {
                         'bachelor': 'Бакалавриат',
@@ -143,14 +148,8 @@
                         text: 'Асписрантура',
                     } ],
                 },
-                fields: [ 'num', 'degree' ],
-                defaultValues: {
-                    num: '',
-                    degree: 'bachelor',
-                },
 
                 defaultMethods: true,
-                customMethods: {},
                 messages: {
                     addSusccess: 'Курс добавлен',
                     addError: 'Ошибка добаления курса',
@@ -159,6 +158,7 @@
                     delteSusccess: 'Курс удален',
                     deleteError: 'Ошибка удаления курса',
                 },
+                customMethods: {},
             
                 loadTab: null,
             }, {
@@ -166,19 +166,18 @@
                 title: 'Группы',
 
                 defaultData: true,
-                customData: {
-                    groupGrades: {},
-                    groupGradesSelect: [],
-                },
                 fields: [ 'num', 'name', 'grade' ],
                 defaultValues: {
                     num: '',
                     name: '',
                     gradeid: '1'
                 },
+                customData: {
+                    groupGrades: {},
+                    groupGradesSelect: [],
+                },
 
                 defaultMethods: true,
-                customMethods: {},
                 messages: {
                     addSusccess: 'Группа добавлена',
                     addError: 'Ошибка добаления группы',
@@ -187,6 +186,7 @@
                     delteSusccess: 'Группа удалена',
                     deleteError: 'Ошибка удаления группы',
                 },
+                customMethods: {},
             
                 loadTab: function () {
                     this.grades = [];
@@ -233,10 +233,38 @@
                 customMethods: {},
             
                 loadTab: null,
+            }, {
+                id: 'week',
+                title: 'Неделя',
+
+                defaultData: false,
+                fields: [],
+                defaultValues: {},
+                customData: {
+                    weekDate: '',
+                },
+
+                defaultMethods: false,
+                messages: {},
+                customMethods: {
+                    set: function () {
+                        let [ year, month, day ] = this.weekDate.substr(0, 10).split('-');
+
+                        api.week.set(day, month, year, success => {
+                            if (success) {
+                                alerts.success('Дата установлена, перезагрузите страницу');
+                            } else {
+                                alerts.danger('Ошибка установки даты');
+                            }
+                        });
+                    },
+                },
+            
+                loadTab: function () {},
             } ];
 
             function tabID(tab) {
-                return `edit${helpers.firstUpper(tab.id)}s`;
+                return `edit${helpers.firstUpper(tab.id)}`;
             }
 
             let data = {

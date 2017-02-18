@@ -49,7 +49,9 @@
                 '</div>' +
             '</div>',
         mounted: function () {
-            $(this.$el).on('show.bs.tab', event => this.$emit('input', $(event.target).attr('href').substr(1)));
+            $(this.$el).on('show.bs.tab', event => {
+                if (event.target === this.$el) this.$emit('input', $(event.target).attr('href').substr(1));
+            });
 
             $(this.$el).find(`[href="#${this.value}"]`).tab('show');
         },
