@@ -7,12 +7,18 @@
         // Секция недели
         week: {
             /**
-             * Получить неделю (верхняя/нижняя)
+             * Получить неделю
              * @param {function} callback
              */
-            get: callback => {
-                query('week', null, 'get', result => callback(Number(result.week)));
-            },
+            get: callback => query('week', null, 'get', result => callback(Number(result.week)), null),
+            /**
+             * Задать верхнюю неделю
+             * @param {number}   day      День
+             * @param {number}   month    Месяц
+             * @param {number}   year     Год
+             * @param {function} callback
+             */
+            set: (day, month, year, callback) => query('week', { day, month, year }, 'post', () => callback(true), () => callback(false)),
         },
         // Секция времен пар
         time: {
@@ -136,25 +142,7 @@
              * @param {string}   grade    ID курса
              * @param {function} callback
              */
-            schedule: (grade, callback) => {
-                api.group.listGrade(grade, groups => {
-                    let data = {
-                        lessons: [],
-                        curricula: [],
-                        groups: groups,
-                    };
-                    let queryCount = 0;
-                    data.groups.forEach(({ id }) => {
-                        api.group.schedule(id, ({ lessons, curricula }) => {
-                            lessons.forEach(lesson => lesson.groupid = id);
-                            Array.prototype.push.apply(data.lessons, lessons);
-                            Array.prototype.push.apply(data.curricula, curricula);
-                            queryCount++;
-                            if (queryCount === data.groups.length) callback(data);
-                        });
-                    });
-                });
-            },
+            schedule: (grade, callback) => query(`schedule/grade/${grade}`, null, 'get', callback, null),
             /**
              * Получить расписание курса в день
              * @param {string}   grade    ID курса
