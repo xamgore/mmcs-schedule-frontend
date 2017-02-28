@@ -5,27 +5,54 @@
 //  Модули
 //===================================
 
-let gulp = require('gulp');
-let runSequence = require('run-sequence');
-let console = require('console');
-let lazypipe = require('lazypipe');
-let plumber = require('gulp-plumber');
-let empty = () => require('through')(function (data) { this.emit('data', data); }, function () { this.emit('end'); });
-let fs = require('fs-extra');
-fs.path = require('path');
-fs.delSync = path => require('del').sync(path);
+const gulp = require('gulp');
+const runSequence = require('run-sequence');
+const console = require('console');
+const lazypipe = require('lazypipe');
+const plumber = require('gulp-plumber');
+const filter = require('gulp-filter');
+const watch = require('gulp-watch');
+const yargs = require('yargs');
+const empty = () => require('through')(function (data) { this.emit('data', data); }, function () { this.emit('end'); });
+const fs = require('fs-extra');
+const path = require('path');
+const del = require('del');
 
 // Обработчик ошибок
-let errorHandler = error => console.error(error.message);
+function errorHandler(error) {
+    console.error(error.message);
+}
+
+// Создание потока
+function createPipe(pipesRaw) {
+    if (!pipesRaw || !pipesRaw.length) return empty;
+
+    let result = lazypipe();
+    pipesRaw.forEach(pipeRaw => {
+        let pipeData = JSON.parse(JSON.stringify(pipeRaw));
+        pipeData[0] = require(pipeData[0]);
+        result = result.pipe.apply(result, pipeData);
+    });
+    return result;
+}
+
+// Выполнение задачи
+function executeGulpTask({ src, dest, pipe, minify }, filePath) {
+    return gulp.src(src, { dot: true })
+        .pipe(filter(file => !filePath || file.path === filePath))
+        .pipe(plumber({ errorHandler }))
+        .pipe(pipe())
+        .pipe(opts.minify ? minify() : empty())
+        .pipe(gulp.dest(dest));
+}
 
 
 //===================================
 //  Параметры запуска
 //===================================
 
-let argv = require('yargs').argv;
 let opts = {
-    minify: argv.release
+    minify: yargs.argv.release
 };
 
 
@@ -33,98 +60,77 @@ let opts = {
 //  Настройки
 //===================================
 
-let config = {
-    media: {
-        src: "media",
-        dest: "www/static",
-    },
-};
+let config = require('./gulp-config');
 
-// Настройки для типов файлов
-config.media.types = {};
-config.media.types.css = {
-    path: {
-        src: `${config.media.src}/**/*.css`,
-        dest: `${config.media.dest}/`
-    },
-    pipe: lazypipe()
-        .pipe(require('gulp-autoprefixer'), 'last 2 versions', '> 1%', 'ie9'),
-    minify: require('gulp-cssnano')
-};
-config.media.types.less = {
-    path: {
-        src: `${config.media.src}/**/*.less`,
-        dest: `${config.media.dest}/`
-    },
-    pipe: lazypipe()
-        .pipe(require('gulp-less'))
-        .pipe(config.media.types.css.pipe),
-    minify: config.media.types.css.minify
-};
-config.media.types.js = {
-    path: {
-        src: `${config.media.src}/**/*.js`,
-        dest: `${config.media.dest}`
-    },
-    //pipe: lazypipe()
-    //    .pipe(require('gulp-babel'), { presets: [ 'es2015-without-strict' ] }),
-    minify: require('gulp-uglify')
-};
-config.media.types.etc = {
-    path: {
-        src: (() => {
-            let list = [ `${config.media.src}/**/*` ];
-            Object.keys(config.media.types).forEach(typeName => {
-                let type = config.media.types[typeName];
-                list.push(`!${type.path.src}`)
-            });
-            return list;
-        })(),
-        dest: config.media.dest
-    }
-};
+config.source.types.etc = { src: [ '**/*' ] };
+
+Object.keys(config.source.types).forEach(typeName => {
+    let type = config.source.types[typeName];
+    type.src = type.src.map(src => path.resolve(config.source.src, src));
+    type.dest = path.resolve(config.source.dest, type.dest || '');
+    type.pipe = createPipe(type.pipe);
+    type.minify = createPipe(type.minify);
+});
+
+Object.keys(config.source.types).forEach(typeName => {
+    if (typeName === 'etc') return;
+
+    let type = config.source.types[typeName];
+    type.src.forEach(src => config.source.types.etc.src.push(`!${src}`));
+});
 
 
 //===================================
-//  Задачи по работе с media
+//  Задачи по работе с source
 //===================================
 
 // Копирование файлов
-Object.keys(config.media.types).forEach(typeName => {
-    let type = config.media.types[typeName];
-    gulp.task(`media_${typeName}`, () => gulp.src(type.path.src)
-        .pipe(plumber({ errorHandler }))
-        .pipe(type.pipe ? type.pipe() : empty())
-        .pipe(opts.minify && type.minify ? type.minify() : empty())
-        .pipe(gulp.dest(type.path.dest)));
+Object.keys(config.source.types).forEach(typeName => {
+    let type = config.source.types[typeName];
+    gulp.task(`source_${typeName}`, () => executeGulpTask(type));
 });
 
-gulp.task('media_copy', callback => runSequence(
-    Object.keys(config.media.types).map(typeName => `media_${typeName}`),
+gulp.task('source_copy', callback => runSequence(
+    Object.keys(config.source.types).map(typeName => `source_${typeName}`),
     callback
 ));
 
 // Очистка папки сборки
-gulp.task('media_clean', callback => {
-    fs.delSync(config.media.dest);
-    callback();
-});
+gulp.task('source_clean', callback => del([ `${config.source.dest}/**`, `!${config.source.dest}` ].concat(config.source.ignoreDel.map(data => `!${path.resolve(config.source.dest, data)}`)), callback));
 
-// Генерация media
-gulp.task('media', callback => runSequence(
-    'media_clean',
-    'media_copy',
+// Генерация source
+gulp.task('source', callback => runSequence(
+    'source_clean',
+    'source_copy',
     callback
 ));
 
 // Отслеживание изменений
-gulp.task('media_watch', callback => {
-    Object.keys(config.media.types).forEach(typeName => {
-        let type = config.media.types[typeName];
-        gulp.watch(type.path.src, [ `media_${typeName}` ]);
+gulp.task('source_watch', callback => {
+    Object.keys(config.source.types).forEach(typeName => {
+        let type = config.source.types[typeName];
+        watch(type.src, vinyl => {
+            switch (vinyl.event) {
+                case 'add':
+                case 'change':
+                    executeGulpTask(type, vinyl.path).on('end', () => console.log(`File "${path.relative('.', vinyl.path)}": ${vinyl.event} as "${typeName}"`));
+                    break;
+
+                case 'unlink':
+                    console.log(`Уou must restart gulp to delete file "${path.relative(config.source.src, vinyl.path)}"`);
+                    break;
+            }
+        });
     });
     //callback();
 });
+
+
+//===================================
+//  Задачи по копированию config
+//===================================
+
+gulp.task('config', () => gulp.src(config.config.src).pipe(gulp.dest(config.config.dest)));
 
 
 //===================================
@@ -133,13 +139,15 @@ gulp.task('media_watch', callback => {
 
 // Задача по-умолчанию
 gulp.task('default', callback => runSequence(
-    'media',
+    'config',
+    'source',
     callback
 ));
 
 // Отслеживание изменений
 gulp.task('watch', callback => runSequence(
-    'media',
-    'media_watch',
+    'config',
+    'source',
+    'source_watch',
     callback
 ));
