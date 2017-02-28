@@ -1,8 +1,7 @@
 #######################
 #   Project
 
-# see gulp
-www/static
+/www/static/**
 
 
 #######################
@@ -18,13 +17,13 @@ etc
 
 .grunt
 
-
 # Makefile
 make
 
 
 #######################
-#       OS
+#   OS
+
 .DS_Store
 .AppleDouble
 .LSOverride
@@ -52,7 +51,7 @@ Temporary Items
 
 
 #######################
-#       IDE
+#   IDE
 
 *~
 
@@ -64,7 +63,6 @@ sftp-config.json
 *.tmlanguage.cache
 *.tmPreferences.cache
 *.stTheme.cache
-
 
 # Intellij IDEA
 .idea/

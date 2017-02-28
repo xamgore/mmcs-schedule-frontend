@@ -1,42 +1,37 @@
 {
-    "source": {
-        "src": "source",
-        "dest": "www/static",
-        "types": {
-            "css": {
-                "src": [ "**/*.css" ],
-                "pipe": [
-                    [ "gulp-autoprefixer", "last 2 versions" ]
-                ],
-                "minify": [
-                    [ "gulp-cssnano" ]
-                ]
-            },
-            "less": {
-                "src": [ "**/*.less" ],
-                "pipe": [
-                    [ "gulp-less" ],
-                    [ "gulp-autoprefixer", "last 2 versions" ]
-                ],
-                "minify": [
-                    [ "gulp-less" ],
-                    [ "gulp-cssnano" ]
-                ]
-            },
-            "js": {
-                "src": [ "**/*.js" ],
-                "_pipe": [
-                    [ "gulp-babel", { "presets": [ "es2015-without-strict" ] } ]
-                ],
-                "_minify": [
-                    [ "gulp-uglify" ]
-                ]
-            }
+    "src": "source",
+    "dest": "www/static",
+    "types": {
+        "css": {
+            "src": [ "**/*.css" ],
+            "pipe": [
+                [ "gulp-autoprefixer", "last 2 versions" ]
+            ],
+            "minify": [
+                [ "gulp-cssnano" ]
+            ]
         },
-        "ignoreDel": []
-    },
-    "config": {
-        "src": "wp-config.php",
-        "dest": "wordpress"
+        "less": {
+            "src": [ "**/*.less" ],
+            "pipe": [
+                [ "gulp-less" ],
+                [ "gulp-autoprefixer", "last 2 versions" ]
+            ],
+            "minify": [
+                [ "gulp-cssnano" ]
+            ]
+        },
+        "js": {
+            "src": [ "**/*.js" ],
+            "pipe": [
+                [ "gulp-babel", {
+                    "presets": [ "es2015-without-strict" ],
+                    "ignore": [ "vue.js" ]
+                } ]
+            ],
+            "minify": [
+                [ "gulp-uglify" ]
+            ]
+        }
     }
 }
