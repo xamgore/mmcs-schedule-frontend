@@ -123,7 +123,7 @@ gulp.task('source_watch', callback => {
                     console.log(`Уou must restart gulp to delete file "${path.relative(config.src, vinyl.path)}"`);
                     break;
             }
-        });
+        }).on('error', errorHandler);
     });
 });
 
