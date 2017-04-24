@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    let ulrPrefix = '//users.mmcs.sfedu.ru:3000/APIv1/';
+    let ulrPrefix = '/APIv1/';
 
     window.api = {
         // Секция недели
