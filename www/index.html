@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=1200">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <title>Интерактивное расписание мехмата ЮФУ</title>
+  <title>Интерактивное расписание</title>
   <link href="favicon.png" rel="icon">
 
 
@@ -142,7 +142,8 @@
 </modal>
 
 <modal title="Редактор" size="large" id="editModal" @show="show" @show.once="showOnce" v-cloak>
-    <tabs :tabs="tabs" v-model="tab">
+    <!-- dirty hack, remove concat -->
+    <tabs :tabs="tabs.concat({id:'editLectures',title:'Редактор пар'})" v-model="tab">
         <div slot="editTeacher">
             <table class="table table-list">
                 <thead>
@@ -340,6 +341,17 @@
 
         <div slot="editWeek">
             <datepicker class="edit-week" v-model="weekDate" @input="editWeek_set()"></datepicker>
+        </div>
+
+        <div slot="editLectures">
+            <div style="display: flex; justify-content: center; margin: 2em; align-items: center">
+
+              <a class="btn btn-info" v-for="f in [ {n:'Институт математики, механики и компьютерных наук',l:'mmcs'}, {n:'Факультет управления',l:'management'} ]" style="margin: 0.5em;"
+                                    :href="f.l + '/editor'">
+                  {{ f.n }}
+              </a>
+
+            </div>
         </div>
     </tabs>
 </modal>
