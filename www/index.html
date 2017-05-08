@@ -1,60 +1,62 @@
 <!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1200">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-<meta charset="utf-8">
-<meta name="viewport" content="width=1200">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-
-<link href="favicon.png" rel="icon">
-
-<title>Интерактивное расписание мехмата ЮФУ</title>
+  <title>Интерактивное расписание мехмата ЮФУ</title>
+  <link href="favicon.png" rel="icon">
 
 
-<script src="//code.jquery.com/jquery-3.1.0.min.js"></script>
-<script>!window.jQuery && document.write(unescape('%3Cscript src="//users.mmcs.sfedu.ru/~cdn/jquery-3.1.0.min.js"%3E%3C/script%3E'))</script>
+  <script src="//code.jquery.com/jquery-3.1.0.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="//users.mmcs.sfedu.ru/~cdn/jquery-3.1.0.min.js"%3E%3C/script%3E'))</script>
 
-<script src="static/vue/js/vue.js"></script>
+  <script src="static/vue/js/vue.js"></script>
 
-<script src="static/bootstrap/js/bootstrap.js"></script>
-<script src="static/bootstrap/js/bootstrap-vue.js"></script>
-<link href="static/bootstrap/css/bootstrap.css" rel="stylesheet">
+  <script src="static/bootstrap/js/bootstrap.js"></script>
+  <script src="static/bootstrap/js/bootstrap-vue.js"></script>
+  <link href="static/bootstrap/css/bootstrap.css" rel="stylesheet">
 
-<script src="static/select2/js/select2.full.js"></script>
-<script src="static/select2/js/i18n/ru.js"></script>
-<script src="static/select2/js/select2-vue.js"></script>
-<link href="static/select2/css/select2.css" rel="stylesheet">
-<link href="static/select2/css/select2-bootstrap.css" rel="stylesheet">
+  <script src="static/select2/js/select2.full.js"></script>
+  <script src="static/select2/js/i18n/ru.js"></script>
+  <script src="static/select2/js/select2-vue.js"></script>
+  <link href="static/select2/css/select2.css" rel="stylesheet">
+  <link href="static/select2/css/select2-bootstrap.css" rel="stylesheet">
 
-<script src="static/datepicker/js/datepicker.js"></script>
-<script src="static/datepicker/js/i18n/ru.js"></script>
-<script src="static/datepicker/js/datepicker-vue.js"></script>
-<link href="static/datepicker/css/datepicker3.css" rel="stylesheet">
+  <script src="static/datepicker/js/datepicker.js"></script>
+  <script src="static/datepicker/js/i18n/ru.js"></script>
+  <script src="static/datepicker/js/datepicker-vue.js"></script>
+  <link href="static/datepicker/css/datepicker3.css" rel="stylesheet">
 
-<link href="static/icons/css/icons.css" rel="stylesheet">
+  <link href="static/icons/css/icons.css" rel="stylesheet">
 
-<script src="static/helpers/js/helpers.js"></script>
+  <script src="static/helpers/js/helpers.js"></script>
 
-<script src="static/system/js/system.js"></script>
+  <script src="static/system/js/system.js"></script>
 
-<script src="static/api/js/api.js"></script>
+  <script src="static/api/js/api.js"></script>
 
-<script src="static/page/js/page.js"></script>
-<link href="static/page/css/page.css" rel="stylesheet">
+  <script src="static/page/js/page.js"></script>
+  <link href="static/page/css/page.css" rel="stylesheet">
 
-<script src="static/alerts/js/alerts.js"></script>
+  <script src="static/alerts/js/alerts.js"></script>
 
-<script src="static/switcher/js/switcher.js"></script>
+  <script src="static/switcher/js/switcher.js"></script>
 
-<script src="static/schedule/js/schedule.js"></script>
+  <script src="static/schedule/js/schedule.js"></script>
 
-<script src="static/table/js/table.js"></script>
-<script src="static/table/js/tweaker.js"></script>
-<link href="static/table/css/table.css" rel="stylesheet">
+  <script src="static/table/js/table.js"></script>
+  <script src="static/table/js/tweaker.js"></script>
+  <link href="static/table/css/table.css" rel="stylesheet">
 
-<script src="static/editor/js/editor.js"></script>
-<link href="static/editor/css/editor.css" rel="stylesheet">
+  <script src="static/editor/js/editor.js"></script>
+  <link href="static/editor/css/editor.css" rel="stylesheet">
 
-<script src="static/init/js/init.js"></script>
+  <script src="static/init/js/init.js"></script>
+</head>
 
+<body>
 
 <div class="page_header hidden-print">
     <div class="container">
@@ -83,7 +85,7 @@
             <div class="pull-left" id="editControl" v-cloak>
                 <span class="button icon-32 icon-32_edit pull-left" id="edit" title="Редактор" data-toggle="modal" data-target="#editModal" v-if="enabled"></span>
                 <span class="button icon-32 icon-32_profile pull-left" id="login" title="Авторизация" data-toggle="modal" data-target="#authModal" v-if="disabled"></span>
-                <span class="button icon-32 icon-32_logout pull-left" id="logout" title="Выход" @click="logout" v-if="enabled"></span>   
+                <span class="button icon-32 icon-32_logout pull-left" id="logout" title="Выход" @click="logout" v-if="enabled"></span>
             </div>
         </div>
     </div>
@@ -341,3 +343,6 @@
         </div>
     </tabs>
 </modal>
+
+</body>
+</html>
