@@ -20,13 +20,13 @@
                 });
         },
         watch: {
-            value: function () {
-                $(this.$el).val(this.value).change();
+            value: function (value) {
+                $(this.$el).val(value).change();
             },
-            options: function () {
-                $(this.$el).select2({
+            options: function (options) {
+                $(this.$el).select2('destroy').empty().select2({
                     minimumResultsForSearch: this.search ? 0 : -1,
-                    data: this.options,
+                    data: options,
                     theme: 'bootstrap',
                     width: 'auto',
                     language: 'ru',

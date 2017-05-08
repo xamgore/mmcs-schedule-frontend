@@ -131,7 +131,8 @@
             tweaker.mergeCellsVertical();
             tweaker.mergeCellsHorisontal();
             tweaker.mergeTitles();
-            if (system.week) tweaker.blurWeeks(system.weekID, system.weeks.length);
+            if (system.week === 0 || system.week === 1)
+                tweaker.blurWeeks(system.week, system.weeks.length);
             if (this.type === 'day') tweaker.setGroupsHeader();
             if (this.type === 'day') tweaker.mergeBothsHorisontal();
             if (this.type === 'day') tweaker.mergeWeeksHorisontal();
@@ -272,7 +273,7 @@
                         ) {
                             lastCurriculum.room.name += `, ${curriculum.room.name}`;
                             this.curricula.splice(index, 1, lastCurriculum);
-                        }                  
+                        }
                     });
                     break;
             }
@@ -298,7 +299,7 @@
                         ) {
                             lastCurriculum.group.name += `, ${curriculum.group.name}`;
                             this.curricula.splice(index, 1, lastCurriculum);
-                        }                       
+                        }
                     });
                     break;
             }

@@ -1,33 +1,30 @@
-(() => {
-    'use strict';
+$(() => {
+  window.$intro = $('#intro')
+  window.$schedule = $('#schedule')
 
-    $(() => {
-        let system = window.system = new System();
-        let page = new Page();
-        let alerts = window.alerts = new Alerts();
-        let switcher = new Switcher();
-        let editor = new Editor();
+  let system = window.system = new System()
+  window.alerts = new Alerts()
 
-        // Курсор во время API запросов
-        $(document).ajaxStart(() => $(document.body).css('cursor', 'progress'));
-        $(document).ajaxStop(() => $(document.body).css('cursor', 'auto'));
+  api.week.get(week => {
+    system.week = week
+    setWeekLabel()
+  })
 
-        // Получение недели и вывод ее в шапке
-        api.week.get(weekID => {
-            system.weekID = weekID;
-            page.setWeek();
-        });
+  // Получение времен для расписания
+  api.time.list(times => system.times = times)
 
-        // Получение времен для расписания
-        api.time.list(times => system.times = times);
+  // Настройка селекторов
+  setSwitcher()
 
-        // Настройка селекторов
-        switcher.set();
- 
-        // Настройка редактора
-        editor.set();
+  // Настройка редактора
+  new Editor().set()
 
-        // Обработка кнопки печати
-        $('#print').on('click', () => window.print());
-    });
-})();
+
+  // Курсор во время API запросов
+  $(document).ajaxStart(() => $(document.body).css('cursor', 'progress'))
+  $(document).ajaxStop(() => $(document.body).css('cursor', 'auto'))
+
+  // Обработка кнопки печати
+  // TODO: move to vue
+  $('#print').on('click', () => window.print())
+})

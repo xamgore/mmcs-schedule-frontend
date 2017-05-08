@@ -73,13 +73,14 @@
 <div class="page_nav hidden-print">
     <div class="container">
         <div class="pull-left" id="switch" v-cloak>
-            <select2 v-model="type" :options="types" v-if="type"></select2>
-            <select2 v-model="grade" :options="grades" v-if="grade"></select2>
-            <select2 v-model="day" :options="days" v-if="day"></select2>
-            <select2 v-model="group" :options="groups" v-if="group"></select2>
-            <select2 v-model="teacher" :options="teachers" v-if="teacher" :search="true"></select2>
-            <select2 v-model="room" :options="rooms" v-if="room" :search="true"></select2>
+            <select2 v-if="type" v-model="type" :options="types"></select2>
+            <select2 v-if="grade" v-model="grade" :options="grades"></select2>
+            <select2 v-if="day" v-model="day" :options="days"></select2>
+            <select2 v-if="group" v-model="group" :options="groups"></select2>
+            <select2 v-if="teacher" v-model="teacher" :options="teachers" :search="true"></select2>
+            <select2 v-if="room" v-model="room" :options="rooms" :search="true"></select2>
         </div>
+
         <div class="pull-right">
             <span class="button icon-32 icon-32_print pull-left" id="print" title="Печать"></span>
             <div class="pull-left" id="editControl" v-cloak>

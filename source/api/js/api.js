@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    let ulrPrefix = '/APIv1/';
+    window.urlPrefix = '/APIv1/'
 
     window.api = {
         // Секция недели
@@ -11,6 +11,7 @@
              * @param {function} callback
              */
             get: callback => query('week', null, 'get', result => callback(Number(result.week)), null),
+
             /**
              * Задать верхнюю неделю
              * @param {number}   day      День
@@ -150,7 +151,7 @@
              * @param {function} callback
              */
             scheduleForDay: (grade, day, callback) => {
-                api.grade.schedule(grade, data => callback({ 
+                api.grade.schedule(grade, data => callback({
                     lessons: data.lessons.filter(({ timeslot }) => timeslot[1] === day),
                     curricula: data.curricula,
                     groups: data.groups,
@@ -282,7 +283,7 @@
      * @param {function} callback
      */
     let query = (url, data, type, callback, errback) => {
-        url = `${ulrPrefix}${url}?APIKey=${localStorage.APIKey}`;
+        url = `${window.urlPrefix}${url}?APIKey=${localStorage.APIKey}`;
         data = data || {};
         type = (type || 'POST').toUpperCase();
         callback = callback || (() => {});

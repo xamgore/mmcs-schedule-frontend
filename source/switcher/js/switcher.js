@@ -1,299 +1,175 @@
-(() => {
-    'use strict';
+function setSwitcher() {
 
-    class Switcher {
-        /**
-         * Настройка селекторов
-         * @return {Switcher} this
-         */
-        set() {
-            let swither = this;
+  const addDefaultItem = (text, data) =>
+    [{ text, id: 'default', disabled: true }].concat(data)
 
-            this.selectors = new Vue({
-                el: '#switch',
-                data: {
-                    type: null,
-                    grade: null,
-                    day: null,
-                    group: null,
-                    teacher: null,
-                    room: null,
+  const extractIdAndName = (list, defaultName = '') =>
+    list.map(el => ({ id: el.id, text: el.name || defaultName }))
 
-                    types: null,
-                    grades: null,
-                    days: null,
-                    groups: null,
-                    teachers: null,
-                    rooms: null,
+  // TODO: rewrite on vue
+  const showIntro = () => {
+    $intro.show()
+    $schedule.hide()
+    $(window).trigger('onScheduleShow', [ false ])
+  }
 
-                    initState: true,
-                },
-                watch: {
-                    type: function () {
-                        if (!this.type) return;
+  // showIntro()
 
-                        if (!this.initState) {
-                            localStorage.type = this.type;
-                            delete localStorage.grade;
-                            delete localStorage.day;
-                            delete localStorage.group;
-                            delete localStorage.teacher;
-                            delete localStorage.room;
-                        }
 
-                        this.grade = null;
-                        this.day = null;
-                        this.group = null;
-                        this.teacher = null;
-                        this.room = null;
+  const scheduleTypes = addDefaultItem('Тип расписания', [
+    { id: 'grade', text: 'Курс' },
+    { id: 'group', text: 'Группа' },
+    { id: 'teacher', text: 'Преподаватель' },
+    { id: 'room', text: 'Аудитория' },
+    { id: 'chair', text: 'Кафедра', disabled: true },
+    { id: 'session', text: 'Сессия', disabled: true },
+  ])
 
-                        if (this.type === 'default') {
-                            this.initState = false;
-                            swither.closeSchedule();
-                            return;
-                        }
+  const openSchedule = (type, data) => {
+    $($schedule).html('')
 
-                        switch (this.type) {
-                            case 'grade':
-                            case 'group':
-                                api.grade.list(result => {
-                                    this.grades = Select.getOptions('Курс', result.map(grade => ({
-                                        id: grade.id,
-                                        text: grade.name,
-                                    })));
+    switch (type) {
+      case 'grade':
+        let weekdays = [ 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ' ]
 
-                                    this.grade = this.initState && localStorage.grade ? localStorage.grade : 'default';
-                                });
-                                break;
+        // takes the second character of (0,11:55:00,13:30:00,full)
+        const dayOf = lesson => +lesson.timeslot[1]
 
-                            case 'teacher':
-                                api.teacher.list(result => {
-                                    this.teachers = Select.getOptions('Преподаватель', result.map(teacher => ({
-                                        id: teacher.id,
-                                        text: teacher.name || 'Без имени',
-                                    })));
+        const buildScheduleForDay = (weekday, dayIndex) => {
+          let lessons = data.lessons.filter(les => dayOf(les) === dayIndex)
+          let info = Object.assign({}, data, { lessons, weekday })
 
-                                    this.teacher = this.initState && localStorage.teacher ? localStorage.teacher : 'default';
-                                });
-                                break;
-
-                            case 'room':
-                                api.room.list(result => {
-                                    this.rooms = Select.getOptions('Аудитория', result.map(room => ({
-                                        id: room.id,
-                                        text: room.name || 'Без названия',
-                                    })));
-
-                                    this.room = this.initState && localStorage.room ? localStorage.room : 'default';
-                                });
-                                break;
-                        }
-                    },
-                    grade: function () {
-                        if (!this.grade) return;
-
-                        if (!this.initState) {
-                            localStorage.grade = this.grade;
-                            delete localStorage.day;
-                            delete localStorage.group;
-                        }
-
-                        this.day = null;
-                        this.group = null;
-
-                        if (this.grade === 'default') {
-                            this.initState = false;
-                            swither.closeSchedule();
-                            return;
-                        }
-
-                        switch (this.type) {
-                            case 'grade':
-                                setTimeout(() => {
-                                    this.days = [ {
-                                        id: 'default',
-                                        text: 'Неделя',
-                                    }, {
-                                        id: '0',
-                                        text: 'Понедельник',
-                                    }, {
-                                        id: '1',
-                                        text: 'Вторник',
-                                    }, {
-                                        id: '2',
-                                        text: 'Среда',
-                                    }, {
-                                        id: '3',
-                                        text: 'Четверг',
-                                    }, {
-                                        id: '4',
-                                        text: 'Пятница',
-                                    }, {
-                                        id: '5',
-                                        text: 'Суббота',
-                                    } ];
-
-                                    this.day = this.initState && localStorage.day ? localStorage.day : 'default';
-                                });
-                                break;
-
-                            case 'group':
-                                api.group.listGrade(this.grade, result => {
-                                    this.groups = Select.getOptions('Группа', result.map(group => {
-                                        let name = group.num + ' группа';
-                                        if (group.name && group.name !== 'NULL') {
-                                            name = group.name + ', ' + name;
-                                        }
-
-                                        return {
-                                            id: group.id,
-                                            text: name,
-                                        };
-                                    }));
-
-                                    this.group = this.initState && localStorage.group ? localStorage.group : 'default';
-                                });
-                                break;
-                        }
-                    },
-                    day: function() {
-                        if (!this.day) return;
-
-                        if (!this.initState) localStorage.day = this.day;
-                        this.initState = false;
-
-                        if (this.day === 'default') {
-                            api.grade.schedule(this.grade, result => swither.openSchedule('grade', result));
-                        } else {
-                            api.grade.scheduleForDay(this.grade, this.day, result => swither.openSchedule('day', result));
-                        }
-                    },
-                    group: function() {
-                        if (!this.group) return;
-
-                        if (!this.initState) localStorage.group = this.group;
-                        this.initState = false;
-
-                        if (this.group === 'default') {
-                            swither.closeSchedule();
-                            return;
-                        }
-
-                        api.group.schedule(this.group, result => swither.openSchedule('group', result));
-                    },
-                    teacher: function () {
-                        if (!this.teacher) return;
-
-                        if (!this.initState) localStorage.teacher = this.teacher;
-                        this.initState = false;
-
-                        if (this.teacher === 'default') {
-                            swither.closeSchedule();
-                            return;
-                        }
-
-                        api.teacher.schedule(this.teacher, result => swither.openSchedule('teacher', result));
-                    },
-                    room: function () {
-                        if (!this.room) return;
-
-                        if (!this.initState) localStorage.room = this.room;
-                        this.initState = false;
-
-                        if (this.room === 'default') {
-                            swither.closeSchedule();
-                            return;
-                        }
-
-                        api.room.schedule(this.room, result => swither.openSchedule('room', result));
-                    },
-                },
-            });
-
-            this.selectors.types = Select.getOptions('Тип расписания', [ {
-                id: 'grade',
-                text: 'Курс',
-            },  {
-                id: 'group',
-                text: 'Группа',
-            }, {
-                id: 'teacher',
-                text: 'Преподаватель',
-            }, {
-                id: 'room',
-                text: 'Аудитория',
-            }, {
-                id: 'chair',
-                text: 'Кафедра',
-                disabled: true,
-            }, {
-                id: 'session',
-                text: 'Сессия',
-                disabled: true,
-            } ]);
-
-            this.selectors.type = localStorage.type || 'default';
-
-            return this;
+          new Schedule('day', info)
+            .draw($('<div class="schedule"></div>').appendTo($schedule))
         }
 
-        /**
-         * Открыть расписание
-         * @param  {string}   type Тип расписания
-         * @param  {object}   data Данные расписания
-         * @return {Switcher}      this
-         */
-        openSchedule(type, data) {
-            $(system.schedule).html('');
+        weekdays.forEach(buildScheduleForDay)
+        break
 
-            switch (type) {
-                case 'grade':
-                    [ 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ' ].forEach((weekday, index) => (new Schedule('day', { 
-                        lessons: data.lessons.filter(({ timeslot }) => timeslot[1] == index),
-                        curricula: data.curricula,
-                        groups: data.groups,
-                        weekday: weekday,
-                    })).draw($('<div class="schedule"></div>').appendTo($(system.schedule))));
-                    break;
 
-                case 'group':
-                case 'teacher':
-                case 'day':
-                case 'room':
-                    (new Schedule(type, data)).draw($('<div class="schedule"></div>').appendTo($(system.schedule)));
-                    break;
+      case 'group':
+      case 'teacher':
+      case 'day':
+      case 'room':
+        new Schedule(type, data)
+          .draw($('<div class="schedule"></div>').appendTo($schedule))
+        break
+    }
+
+    // show schedule
+    $intro.hide()
+    $schedule.show()
+    $(window).trigger('onScheduleShow', [ true ])
+  }
+
+  new Vue({
+    el: '#switch',
+    data: {
+      type: null,
+      types: scheduleTypes,
+      grade: null,
+      grades: null,
+      day: null,
+      days: null,
+      group: null,
+      groups: null,
+      teacher: null,
+      teachers: null,
+      room: null,
+      rooms: null
+    },
+
+    created() {
+      this.type = 'default'
+    },
+
+    watch: {
+      type: function (type) {
+        if (!type) return
+        // type is in ['grade', 'group', 'teacher', 'room']
+
+        this.grade = this.day = this.group = this.teacher = this.room = null
+
+        if (type === 'default') return showIntro()
+
+        if (type === 'group') type = 'grade'
+
+        const def = ({
+          grade:   { item: 'Курс' },
+          teacher: { item: 'Преподаватель', name: 'Без имени' },
+          room:    { item: 'Аудитория', name: 'Без названия' }
+        })[type]
+
+        api[type].list(items => {
+          this[type] = 'default'
+          this[type + 's'] = addDefaultItem(def.item, extractIdAndName(items, def.name || ''))
+        })
+      },
+
+      grade: function () {
+        if (!this.grade) return
+
+        this.day = this.group = null
+
+        if (this.grade === 'default')
+          return showIntro()
+
+        switch (this.type) {
+          case 'grade':
+            const names = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+            const items = names.map((n, i) => ({ id: i.toString(), text: n }))
+
+            this.days = addDefaultItem('Неделя', items)
+            this.day = 'default'
+            break
+
+          case 'group':
+            const extractName = gr => {
+              let name = gr.name && gr.name !== 'NULL' ? gr.name + ', ' : ''
+              return `${name} ${gr.num} группа`
             }
 
-            system.showSchedule();
+            api.group.listGrade(this.grade, groups => {
+              let items = groups.map(gr => ({ id: gr.id, text: extractName(gr) }))
+              this.groups = addDefaultItem('Группа', items)
+            })
 
-            return this;
+            this.group = 'default'
+            break
         }
+      },
 
-        /**
-         * Закрыть расписание
-         * @return {Switcher} this
-         */
-        closeSchedule() {
-            system.showIntro();
-            return this;
+      day: function() {
+        if (!this.day) return
+
+        if (this.day === 'default') {
+          api.grade.schedule(this.grade, result => openSchedule('grade', result))
+        } else {
+          api.grade.scheduleForDay(this.grade, this.day, result => openSchedule('day', result))
         }
-    }
+      },
 
-    class Select {
-        /**
-         * Сгенерировать список опций
-         * @param  {select}   text Текст опции по-умолчанию
-         * @param  {object[]} data Массив опций
-         * @return {Select}        this
-         */
-        static getOptions(text, data) {
-            return [ {
-                id: 'default',
-                text: text,
-                disabled: true,
-            } ].concat(data);
-        }
-    }
+      group: function() {
+        if (!this.group) return
+        if (this.group === 'default') return showIntro()
 
-    window.Switcher = Switcher;
-})();
+        api.group.schedule(this.group, result => openSchedule('group', result))
+      },
+
+      teacher: function () {
+        if (!this.teacher) return
+        if (this.teacher === 'default') return showIntro()
+
+        api.teacher.schedule(this.teacher, result => openSchedule('teacher', result))
+      },
+
+      room: function () {
+        if (!this.room) return
+        if (this.room === 'default') return showIntro()
+
+        api.room.schedule(this.room, result => openSchedule('room', result))
+      },
+    },
+  })
+
+}

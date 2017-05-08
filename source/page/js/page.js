@@ -1,27 +1,19 @@
-(() => {
-    'use strict';
+function setWeekLabel() {
+  new Vue({
+    el: '#week',
+    data: { week: system.week },
+    template: '<span class="week">{{ label }}</span>',
 
-    class Page {
-        /**
-         * Установить неделю в шапке
-         */
-        setWeek() {
-            let $week = $('#week');
+    computed: {
+      label() {
+        if (this.week === 0)
+          return 'Сейчас верхняя неделя'
+        if (this.week === 1)
+          return 'Сейчас нижняя неделя'
 
-            switch (system.week) {
-                case 'upper':
-                    $week.html('Сейчас верхняя неделя');
-                    break;
-
-                case 'lower':
-                    $week.html('Сейчас нижняя неделя');
-                    break;
-
-                default:
-                    $week.html('Неделя не известна');
-            }
-        }
+        return 'Неделя не известна'
+      }
     }
 
-    window.Page = Page;
-})();
+  })
+}
