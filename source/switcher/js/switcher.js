@@ -25,6 +25,11 @@ function setSwitcher() {
     { id: 'session', text: 'Сессия', disabled: true },
   ])
 
+  const faculties = addDefaultItem('Подразделение', [
+    { id: 'mmcs', text: 'ИММиКН. И.И. Воровича' },
+    { id: 'management',   text: 'Факультет управления' }
+  ])
+
   const openSchedule = (type, data) => {
     $($schedule).html('')
 
@@ -76,14 +81,22 @@ function setSwitcher() {
       teacher: null,
       teachers: null,
       room: null,
-      rooms: null
+      rooms: null,
+      faculty: null,
+      faculties: faculties
     },
 
-    created() {
-      this.type = 'default'
-    },
+    created() { this.type = this.faculty = 'default' },
 
     watch: {
+      faculty(fac) {
+        if (!fac) return
+        if (fac === 'default') return showIntro()
+
+        // dirty code, remove it in the future
+        window.urlPrefix = `/${fac}/APIv1/`
+      },
+
       type: function (type) {
         if (!type) return
         // type is in ['grade', 'group', 'teacher', 'room']

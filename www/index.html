@@ -73,7 +73,8 @@
 <div class="page_nav hidden-print">
     <div class="container">
         <div class="pull-left" id="switch" v-cloak>
-            <select2 v-if="type" v-model="type" :options="types"></select2>
+            <select2 v-if="faculty" v-model="faculty" :options="faculties"></select2>
+            <select2 v-if="type && faculty !== 'default'" v-model="type" :options="types"></select2>
             <select2 v-if="grade" v-model="grade" :options="grades"></select2>
             <select2 v-if="day" v-model="day" :options="days"></select2>
             <select2 v-if="group" v-model="group" :options="groups"></select2>

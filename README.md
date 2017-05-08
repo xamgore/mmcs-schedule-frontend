@@ -1,10 +1,10 @@
 ### How to build
 
 In case you don't want to setup local backend server (with api),
-go to the `source/api/js/api.js` file and change the 4th line to:
+go to the `source/api/js/api.js` file and change the 3rd line to:
 
 ```js
-let ulrPrefix = '//users.mmcs.sfedu.ru:3001/APIv1/';
+var hostPrefix = '//users.mmcs.sfedu.ru:3001'
 ```
 
 You need the `gulp` tool to build project,

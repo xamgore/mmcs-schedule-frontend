@@ -1,7 +1,9 @@
+window.urlPrefix = '/APIv1/'
+
+var hostPrefix = '//users.mmcs.sfedu.ru:3001';
+
 (() => {
     'use strict';
-
-    window.urlPrefix = '/APIv1/'
 
     window.api = {
         // Секция недели
@@ -283,7 +285,7 @@
      * @param {function} callback
      */
     let query = (url, data, type, callback, errback) => {
-        url = `${window.urlPrefix}${url}?APIKey=${localStorage.APIKey}`;
+        url = `${hostPrefix}${window.urlPrefix}${url}?APIKey=${localStorage.APIKey}`;
         data = data || {};
         type = (type || 'POST').toUpperCase();
         callback = callback || (() => {});
