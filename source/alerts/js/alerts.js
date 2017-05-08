@@ -14,7 +14,7 @@
                         this.alerts.push(alert);
                         setTimeout(this.delete.bind(this, alert), 3000);
                     },
-                    delete: function (alert) {
+                    remove: function (alert) {
                         alert.deleted = true;
                         this.$forceUpdate();
                     }

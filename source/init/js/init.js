@@ -5,16 +5,18 @@ $(() => {
   let system = window.system = new System()
   window.alerts = new Alerts()
 
+  let bus = window.bus = new Vue({ data: { faculty: null, week: null } })
+
   api.week.get(week => {
-    system.week = week
-    setWeekLabel()
+    bus.week = system.week = week
+    setWeekLabel(bus)
   })
 
   // Получение времен для расписания
   api.time.list(times => system.times = times)
 
   // Настройка селекторов
-  setSwitcher()
+  setSwitcher(bus)
 
   // Настройка редактора
   new Editor().set()

@@ -1,4 +1,4 @@
-function setSwitcher() {
+function setSwitcher(bus) {
 
   const addDefaultItem = (text, data) =>
     [{ text, id: 'default', disabled: true }].concat(data)
@@ -90,6 +90,7 @@ function setSwitcher() {
 
     watch: {
       faculty(fac) {
+        bus.faculty = fac
         if (!fac) return
         if (fac === 'default') return showIntro()
 

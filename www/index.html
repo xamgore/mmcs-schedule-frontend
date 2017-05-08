@@ -59,10 +59,10 @@
 <body>
 
 <div class="page_header hidden-print">
-    <div class="container">
+    <div class="container" id="header" v-cloak>
         <div class="pull-left">
-            <span class="title">Интерактивное расписание мехмата ЮФУ</span>
-            <span class="week" id="week"></span>
+            <span class="title">Интерактивное расписание {{ faculty }} ЮФУ</span>
+            <span class="week" v-text="label"></span>
         </div>
         <div class="pull-right">
             <a class="logo" href="http://sfedu.ru/"></a>
@@ -125,7 +125,7 @@
     <div v-for="alert in alerts">
         <transition name="alert">
             <div :class="'alert alert-' + alert.type + ' alert-dismissable'" v-if="!alert.deleted">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true" @click='delete(alert)'>&times;</button>
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true" @click='remove(alert)'>&times;</button>
                 <span v-html="alert.message"></span>
             </div>
         </transition>

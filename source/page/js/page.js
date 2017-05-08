@@ -1,10 +1,17 @@
-function setWeekLabel() {
+function setWeekLabel(bus) {
   new Vue({
-    el: '#week',
-    data: { week: system.week },
-    template: '<span class="week">{{ label }}</span>',
-
+    el: '#header',
     computed: {
+      week: () => bus.week,
+      fac: () => bus.faculty,
+      faculty() {
+        if (this.fac === 'mmcs')
+          return 'мехмата'
+        if (this.fac === 'management')
+          return 'факультета управления'
+
+        return ''
+      },
       label() {
         if (this.week === 0)
           return 'Сейчас верхняя неделя'
